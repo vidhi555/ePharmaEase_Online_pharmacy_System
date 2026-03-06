@@ -10,7 +10,7 @@ if (isset($_POST['cart'])) {
         // echo "Guest User".$guest_id;
         // die();
 
-
+        
         if ($user_id) {
             $check = $conn->prepare(
                 "SELECT cart_id FROM ep_cart WHERE p_id = :pid AND u_id = :uid"
@@ -34,12 +34,15 @@ if (isset($_POST['cart'])) {
         } else {
             // fetch product
             $product = $conn->prepare(
-                "SELECT name, price FROM ep_products WHERE p_id = :pid"
+                "SELECT name, price,stock FROM ep_products WHERE p_id = :pid"
             );
             $product->execute(['pid' => $pid]);
             $p = $product->fetch(PDO::FETCH_ASSOC);
 
-            if (!$p) {
+            if($p['stock']<=5){
+                sweetAlert("Insufficient Product Stock!","Sorry!This Product is not available!","warning");
+            }else{
+                if (!$p) {
                 // $_SESSION['warning'] = "Product not found";
                 sweetAlert("Error!", "Product Not Found!!", "warning");
             } else {
@@ -58,6 +61,7 @@ if (isset($_POST['cart'])) {
                     'gid' => $guest_id
                 ]);
                 sweetAlert("Item Added!", "Successfully Added in Your cart!", "success");
+            }
             }
         }
     } catch (PDOException $e) {

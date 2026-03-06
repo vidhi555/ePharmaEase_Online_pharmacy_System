@@ -1,8 +1,9 @@
 <section class="related-product-area section-margin--small mt-0">
 	<div class="container">
-		<div class="section-intro pb-60px">
-			<p>Popular Item in the market</p>
-			<h2>Related <span class="section-intro__style">Product</span></h2>
+		<div class="section-intro pb-60px text-center">
+			<img data-aos="fade-up" src="img/logo6.png" alt="logo" style="width: 100px;height: 80px;">
+			<p>Recommended Health Product</p>
+			<h2 style="margin-top: 5px;"><span class="section-intro__style">Explore Similar Products</span></h2>
 		</div>
 		<div class="row ">
 
@@ -14,15 +15,15 @@
 				if ($product) {
 					$fetchcid = $product['c_id'];
 
-					$query = $conn->prepare("SELECT * FROM ep_products WHERE c_id = :cid LIMIT 8");
+					$query = $conn->prepare("SELECT * FROM ep_products WHERE c_id = :cid ORDER BY price DESC LIMIT 8");
 					$query->execute(['cid' => $fetchcid]);
 
 					$fetch_products = $query->fetchAll(PDO::FETCH_ASSOC);
 					foreach ($fetch_products as $p) { ?>
-						<div class="col-md-6 col-lg-3 col-xl-3 mt-3">
+						<div class="col-md-6 col-lg-3 col-xl-3 mt-4" data-aos="fade-up">
 							<div class="single-search-product-wrapper">
 								<div class="single-search-product d-flex">
-									<a href="single-product.php?p_id=<?= $p['p_id'] ?>"><img src="../LearnAdmin/upload/<?= $p['image'] ?>" alt=""></a>
+									<a href="single-product.php?p_id=<?= $p['p_id'] ?>"><img src="../LearnAdmin/All_images_uploads/<?= $p['image'] ?>" alt=""></a>
 									<div class="desc">
 										<h6 class="rating"><?php
 															for ($i = 0; $i < 5; $i++) {
@@ -31,8 +32,8 @@
 
 															?>
 										</h6>
-										<a href="#" class="title"><?= $p['name'] ?></a>
-										<div class="price">Rs.<?= $p['price'] ?></div>
+										<a href="single-product.php?p_id=<?= $p['p_id'] ?>" class="title"><?= $p['name'] ?></a>
+										<div class="price">$<?= $p['price'] ?></div>
 									</div>
 								</div>
 							</div>

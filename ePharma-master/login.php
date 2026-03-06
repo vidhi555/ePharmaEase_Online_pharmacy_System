@@ -118,6 +118,12 @@ require_once('header.php') ?>
 						</div>
 					<?php } ?>
 
+					<?php if (!empty( $_SESSION['success_msg'])) { ?>
+                            <div class="alert alert-info" style="background-color: #e7f3fe;border-left: 6px solid #2196F3;">
+                                <?=  $_SESSION['success_msg'] ?>
+                            </div>
+                            <?php unset( $_SESSION['success_msg']); ?>
+                        <?php } ?>
 					<h3>Log in to enter</h3>
 					<form class="row login_form" action="" id="contactForm" method="post">
 						<div class="col-md-12 form-group">

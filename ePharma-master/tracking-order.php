@@ -29,6 +29,7 @@ require_once("header.php");
 <!--================Tracking Box Area =================-->
 <section class="tracking_box_area section-margin--small">
 	<div class="container">
+		<a href="user_profile.php">← Back</a>
 		<div class="tracking_box_inner">
 			<p>To track your order please enter your Order ID in the box below and press the "Track" button. This
 				was given to you on your receipt and in the confirmation email you should have received.</p>
@@ -97,6 +98,12 @@ try {
 					<p>Delivered</p>
 				</div>
 			</div> -->
+
+			<?php if($o['order_status'] == 'cancelled'){ ?>
+				<div class="alert alert-danger text-center">
+					⚠ This order has been cancelled. You may reorder the items anytime.
+				</div>
+			<?php }else{ ?>
 								<div class="order-steps">
 									<?php
 									try {
@@ -107,7 +114,13 @@ try {
 									} catch (PDOException $e) {
 										echo "$e";
 									}
+									
+									$today = date('Y-m-d');
+									$delay = ($today > $o['expected_date'] && $o['order_status']!='Delivered');
 									?>
+
+									
+
 									<div class="step <?= $current_index >= 0 ? 'completed' : '' ?>">
 										<span class="circle">✔</span>
 										<p>Order Placed</p>
@@ -120,10 +133,12 @@ try {
 										<span class="circle">🚚</span>
 										<p>Shipped</p>
 									</div>
-									<div class="step <?= $current_index >= 3  ? 'completed' : '' ?>">
-										<span class="circle">⏳</span>
-										<p>Delivered</p>
-									</div>
+									<div class="step <?= $current_index >= 3 ? 'completed' : '' ?> <?= $delay ? 'delay-step' : '' ?>">
+									<span class="circle"><?= $delay ? '⚠' : '⏳' ?></span>
+									<p>
+										<?= $delay ? 'Delivery Delayed' : 'Delivered' ?>
+									</p>
+								</div>
 								</div>
 
 								<!-- ORDER DETAILS -->
@@ -138,14 +153,30 @@ try {
 									</div>
 									<div class="detail-box">
 										<h5>Total Amount</h5>
-										<p>₹<?= $o['total_amount'] ?></p>
+										<p>$<?= $o['total_amount'] ?></p>
 									</div>
+									
 									<div class="detail-box">
-										<h5>Expected Delivery</h5>
-										<p><?= date('d/m/Y', strtotime("+3 days")) ?></p>
-									</div>
+									<h5>Expected Delivery</h5>
+									<p><?= date('d/m/Y', strtotime($o['expected_date'])) ?></p>
+
+									<?php
+									$today = date('Y-m-d');
+									if($today > $o['expected_date'] && $o['order_status']!='Delivered'){
+										echo "<small style='color:red;font-weight:600;'>Delivery Delayed</small>";
+									}
+									?>
+								</div>
+									
 								</div>
 							</div>
+							
+							<?php if($delay){ ?>
+							<div class="alert alert-danger text-center">
+								Your delivery is delayed. We apologize for the inconvenience.
+							</div>
+							<?php } ?>
+							<?php } ?>
 						</div>
 					</section>
 

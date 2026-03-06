@@ -10,8 +10,8 @@ if (isset($_POST['submit'])) {
     $name = $_POST['name'];
     $email = $_POST['email'];
     $password = $_POST['password'];
-    $mobile = $_POST['mobile'];
-    $dob = $_POST['dob'];
+    $mobile = $_POST['phone'];
+    
     $address = $_POST['address'];
     $gender = $_POST['gender'] ?? '';
 
@@ -20,20 +20,26 @@ if (isset($_POST['submit'])) {
 
     if (
         empty($name) || empty($email) || empty($password) ||
-        empty($mobile) || empty($dob) || empty($address) ||
+        empty($mobile)  || empty($address) ||
         empty($gender)
     ) {
         $errors[] = "Please Fill required fields!!!";
         // sweetAlert("Warning", "Please Fill required fields!!!", "warning");
+    }
+    // check duplicate email
+    $dup_email = $conn->prepare("SELECT * FROM ep_users WHERE email = :dup_email AND role = 'admin'");
+    $dup_email->execute(['dup_email'=>$email]);
+    $fetch_row = $dup_email->fetch(PDO::FETCH_ASSOC);
+    if($fetch_row > 0){
+        $errors[] = "This Email is Already Exist.Try with another Email!";
     } 
-    if (strlen($mobile) != 10) {
-        $errors[] = "Invalid Mobile number!!";
-        // sweetAlert("Warning", "Mobile number must be 10 digit!!", "warning");
+
+    if(!preg_match('/^[a-zA-Z0-9]{6}$/',$password)){
+          $errors[] = "Password must be exactly 6 characters (letters & numbers only)";
     } 
-     if (strlen($password) < 8) {
-        $errors[] = "Password must be at least 8 characters!";
-        // sweetAlert("Warning", "Password must be at least 8 characters!", "warning");
-    } 
+    if(!preg_match("/^\+?[0-9]{10,15}$/", $mobile)){
+        $errors[] = "Invalid Mobile number Length.";
+    }
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $errors[] = "Invalid Email Format!";
         // sweetAlert("Warning", "Invalid Email Format!!", "warning");
@@ -49,7 +55,7 @@ if (isset($_POST['submit'])) {
             "email"     => $email,
             "password"  => $hash_password,
             "mobile"    => $mobile,
-            "dob"       => $dob,
+            
             "address"   => $address,
             "gender"    => $gender,
             "role"      => "admin"
@@ -63,24 +69,9 @@ if (isset($_POST['submit'])) {
     }
 }
 
+$page_title = "Sign Up";
+require_once('header2.php');
 ?>
-
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Signup</title>
-    <!-- Stylesheets -->
-    <link rel="shortcut icon" href="./assets/images/logo6.ico" type="image/x-icon">
-    <link href="./assets/css/bootstrap.min.css" rel="stylesheet">
-    <link href="./assets/icons/fontawesome/css/fontawesome.min.css" rel="stylesheet">
-    <link href="./assets/icons/fontawesome/css/brands.min.css" rel="stylesheet">
-    <link href="./assets/icons/fontawesome/css/solid.min.css" rel="stylesheet">
-    <link href="./assets/plugin/quill/quill.snow.css" rel="stylesheet">
-    <link href="./assets/css/style4.css" rel="stylesheet">
-</head>
 
 <body>
     <div class="container">
@@ -97,7 +88,7 @@ if (isset($_POST['submit'])) {
         </div>
         <?php } ?>
         <div class="row justify-content-center min-vh-100 align-items-center">
-            <div class="col-11 col-sm-8 col-md-6 col-lg-4" style="width: 45%;border-radius: 20px;background: aliceblue;padding: 37px;box-shadow: 0 8px 25px #303030;">
+            <div class="col-11 col-sm-8 col-md-6 col-lg-4" style="width: auto;border-radius: 20px;background: aliceblue;padding: 37px;box-shadow: 0 8px 25px #303030;">
 
                 <!-- Logo -->
                 <div class="text-center mb-4">
@@ -108,7 +99,7 @@ if (isset($_POST['submit'])) {
 
                 <!-- Sign In Form -->
                 <h2 class="mb-4 text-dark h4">Sign Up</h2>
-                <form method="post">
+                <form method="post" id="register_form">
 
                     <!-- Name Input -->
                     <div class="mb-3 position-relative">
@@ -155,24 +146,14 @@ if (isset($_POST['submit'])) {
                             <span style="<?= $class ?>">*</span>
                         <?php  } ?>
                         <div class="position-relative">
-                            <input type="number" name="mobile" class="form-control form-control-lg rounded-3"
-                                id="mobile" placeholder="+91 00000 00000" value="<?= isset($_POST['mobile']) ? htmlspecialchars($_POST['mobile']) : '' ?>">
+                            <input id="phone" type="tel" name="phone" style="<?= $class ?>" class="form-control" placeholder="00000 00000" value="<?= isset($_POST['phone']) ? htmlspecialchars($_POST['phone']) : '' ?>" >
+
+                           
                             <i class="fas fa-mobile-alt input-icon"></i>
                         </div>
                     </div>
 
-                    <!-- DOB Input -->
-                    <div class="mb-3 position-relative">
-                        <label for="dob" class="form-label text-muted small">Birth Date</label>
-                        <?php if(!empty($errors)){ ?>
-                            <span style="<?= $class ?>">*</span>
-                        <?php  } ?>
-                        <div class="position-relative">
-                            <input type="date" name="dob" class="form-control text-muted small form-control-lg rounded-3"
-                                id="dob" value="<?= $_POST['dob'] ?? '' ?>">
-                            <!-- <i class="fas fa-user input-icon"></i> -->
-                        </div>
-                    </div>
+                   
 
                     <!-- Address Input -->
                     <div class="mb-3 position-relative">
@@ -223,4 +204,6 @@ if (isset($_POST['submit'])) {
         </div>
     </div>
     </div>
-    <?php require_once("sweetAlert.php") ?>
+    <?php require_once("sweetAlert.php");
+        require_once("footer.php");
+    ?>

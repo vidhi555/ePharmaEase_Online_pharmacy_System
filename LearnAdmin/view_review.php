@@ -5,48 +5,10 @@ require('crud.php');
 $table = "ep_review";
 $rid = $_GET['review_id'];
 
-
+$page_title = "Review Details";
+require_once('header2.php');
 ?>
-<!DOCTYPE html>
-<html lang="en">
 
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Review Detail</title>
-  <!-- Stylesheets -->
-  <link rel="shortcut icon" href="./assets/images/logo6.ico" type="image/x-icon">
-  <link href="./assets/css/bootstrap.min.css" rel="stylesheet">
-  <link href="./assets/icons/fontawesome/css/fontawesome.min.css" rel="stylesheet">
-  <link href="./assets/icons/fontawesome/css/brands.min.css" rel="stylesheet">
-  <link href="./assets/icons/fontawesome/css/solid.min.css" rel="stylesheet">
-  <link href="./assets/plugin/quill/quill.snow.css" rel="stylesheet">
-  <link href="./assets/css/style4.css" rel="stylesheet">
-
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <script>
-    function confirmDelete(id) {
-      Swal.fire({
-        title: 'Are you sure?',
-        text: "Do you really want to delete these Review?",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'OK',
-        cancelButtonText: 'Cancel',
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          // Redirect or AJAX call
-          window.location.href = "delete_review.php?review_id=" + id;
-        }
-      });
-    }
-  </script>
-</head>
-<style>
-
-</style>
 
 <body>
   <!-- Preloader -->
@@ -76,7 +38,14 @@ $rid = $_GET['review_id'];
           <div class="col-12">
             <div class="d-flex align-items-lg-center  flex-column flex-md-row flex-lg-row mt-3">
               <div class="flex-grow-1">
-                <h3 class="mb-2 text-color-2"><a href="userreview.php">Back</a> > Review Detail</h3>
+                <!-- <h3 class="mb-2 text-color-2"><a href="userreview.php">Back</a> > Review Detail</h3> -->
+                <nav>
+                  <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="index.php">Home</a></li>
+                    <li class="breadcrumb-item"><a href="userreview.php">Review</a></li>
+                    <li class="breadcrumb-item active">Review Details</li>
+                  </ol>
+                </nav>
               </div>
 
             </div><!-- end card header -->
@@ -85,10 +54,10 @@ $rid = $_GET['review_id'];
         </div>
         <?php
         try {
-          $query = $conn->prepare("SELECT * FROM ep_review r JOIN ep_products p ON r.p_id = p.p_id WHERE review_id = :rid");
+          $query = $conn->prepare("SELECT r.*, p.image , p.name as pname , u.name , u.email , u.image as user_img FROM ep_review r JOIN ep_products p ON r.p_id = p.p_id JOIN ep_users u ON u.u_id = r.u_id WHERE review_id = :rid");
           $query->execute([':rid' => $rid]);
           $fetch_review = $query->fetch(PDO::FETCH_ASSOC);
-        //   $count_review = $query->rowCount();
+          //   $count_review = $query->rowCount();
           if ($fetch_review) {
         ?>
 
@@ -97,19 +66,41 @@ $rid = $_GET['review_id'];
               <!-- Main content -->
               <div class="product-detail-card">
                 <div class="review-left">
-                  <img src="./upload/<?= $fetch_review['image'] ?>" alt="review Image">
+                  <div class="flip-box">
+                    <div class="flip-inner">
+
+                      <!-- Front Side (Image) -->
+                      <div class="flip-front">
+                        <img src="./All_images_uploads/<?= $fetch_review['image'] ?>" alt="review Image">
+                      </div>
+
+                      <!-- Back Side (User Info) -->
+                      <div class="flip-back">
+                        <h6 class="revired_back_header">Reviewed-By:</h6>
+                        <img src="../ePharma-master/uploads/<?= $fetch_review['user_img'] ?>" alt="user_image" style="width: 100px;">
+                        <h6 style="text-transform: capitalize;"><?= $fetch_review['name'] ?></h6>
+                        <p class="small"><?= $fetch_review['email'] ?></p>
+                        <!-- <p class="small">
+                          <?= date("d M Y", strtotime($fetch_review['created_at'])) ?>
+                        </p> -->
+                        <!-- <span class="badge bg-success">Verified</span> -->
+                      </div>
+
+                     
+                    </div>
+                  </div>
                 </div>
 
                 <div class="product-right">
                   <div class="product-header">
-                    <h3><?= $fetch_review['name'] ?></h3>
-                    <button class="icon-btn delete" onclick="confirmDelete(<?= $fetch_review['review_id'] ?>)"><i class="fas fa-trash"></i></button>
+                    <h3><?= $fetch_review['pname'] ?></h3>
+                    <button class="icon-btn delete" onclick="confirmDelete(<?= $fetch_review['review_id'] ?>,'delete_review.php?review_id=')"><i class="fas fa-trash"></i></button>
 
                   </div>
-                  
-                  <p><?php for($i=1;$i<=$fetch_review['rate'];$i++){
-                    echo "<i class='fas fa-star rating-stars text-size-18'></i>";
-                  } ?></p>
+
+                  <p><?php for ($i = 1; $i <= $fetch_review['rate']; $i++) {
+                        echo "<i class='fas fa-star rating-stars text-size-18'></i>";
+                      } ?></p>
                   <p class="product-desc"><strong>Title:</strong> <?= $fetch_review['title'] ?></p>
                   <p class="product-desc">
                     "<?= $fetch_review['description'] ?? 'No description available.' ?>"
@@ -120,6 +111,9 @@ $rid = $_GET['review_id'];
 
             </div>
       </div>
+
+
+
       <!-- Footer -->
       <?php include('footer.php'); ?>
     </div>

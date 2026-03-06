@@ -13,21 +13,25 @@ try {
   if (isset($_POST['update_profile'])) {
     $name = $_POST['name'];
     $email = $_POST['email'];
-    $mobile = $_POST['mobile'];
+    $mobile = $_POST['phone'];
     $address = $_POST['address'];
-    $dob = $_POST['dob'];
+
     $gender = $_POST['gender'];
 
-    //Image Validation
-    $photo = $_FILES['photo']['name'];
-    $tmp_photo = $_FILES['photo']['tmp_name'];
-    $ext = pathinfo($photo, PATHINFO_EXTENSION);
-    $allowed_type = ['jpg', 'jpeg', 'png', 'webg'];
-    $img_name = 'user' . time() . "." . $ext;
-    $target = 'uploads/' . basename($img_name);
-    if (!move_uploaded_file($tmp_photo, $target)) {
-      // sweetAlert("warning","Invalid Image Type.","warning");
-      $errors[] = "Image Uploading Failed!";
+    if (!empty($_FILES['photo']['name'])) {
+      //Image Validation
+      $photo = $_FILES['photo']['name'];
+      $tmp_photo = $_FILES['photo']['tmp_name'];
+      $ext = pathinfo($photo, PATHINFO_EXTENSION);
+      $allowed_type = ['jpg', 'jpeg', 'png', 'webg'];
+      $img_name = 'user' . time() . "." . $ext;
+      $target = 'All_images_uploads/' . basename($img_name);
+      if (!move_uploaded_file($tmp_photo, $target)) {
+        // sweetAlert("warning","Invalid Image Type.","warning");
+        $errors[] = "Image Uploading Failed!";
+      }
+    } else {
+      $img_name = $_POST['old_image'];
     }
 
 
@@ -35,19 +39,20 @@ try {
     if (!empty($errors)) {
       sweetAlert("Error", "Please Try Again!", "error");
     } else {
-      $query = "UPDATE ep_users SET `name`= :name,`email`= :email ,`mobile`= :mno,`dob`= :dob,`address`= :address ,`gender`= :gender , image = :photo WHERE u_id= :uid";
+      $query = "UPDATE ep_users SET `name`= :name,`email`= :email ,`mobile`= :mno,`address`= :address ,`gender`= :gender , image = :photo WHERE u_id= :uid";
       $update_user = $conn->prepare($query);
       $update_user->execute([
         'name' => $name,
         'email' => $email,
         'mno' => $mobile,
-        'dob' => $dob,
+
         'address' => $address,
         'gender' => $gender,
         'photo' => $img_name,
         'uid' => $uid
       ]);
       $success[] = "Update Successfully";
+      sweetAlert("Update Successful!", "Profile Update Successfully!", "success");
       header("location:profile.php");
       exit;
     }
@@ -55,25 +60,71 @@ try {
 } catch (PDOException $e) {
   echo $e;
 }
+
+// change Password
+  $errors = [];
+  try {
+    if (isset($_POST['update_password'])) {
+      $old_pwd = $_POST['current_password'];
+      $new_password = $_POST['new_password'];
+      $confirm_password = $_POST['confirm_password'];
+      $hash_password = password_hash($new_password, PASSWORD_DEFAULT);
+
+      $admin_id = $_SESSION['admin_id'];
+      $old_pass = $conn->prepare("SELECT * FROM ep_users WHERE role = 'admin' AND u_id = :uid");
+      $old_pass->execute([
+        'uid' => $admin_id
+      ]);
+
+      $fetch_user = $old_pass->fetch(PDO::FETCH_ASSOC);
+
+       
+
+        // echo $old_pwd;
+        // echo $fetch_user['password'];
+        // die();
+
+        if(!password_verify($old_pwd ,$fetch_user['password'])){
+          // sweetAlert("warning","Old Password is Wrong!","warning");
+          $errors[] = "Old Password is Wrong!";
+        }
+
+        if(empty($old_pwd) || empty($new_password) || empty($confirm_password)){
+          $errors[] = "Please Fill all Fields!";
+        }
+
+         if($new_password !== $confirm_password){
+          // sweetAlert("Warning","New Password & confirm password is not Matched!!","warning");
+          $errors[] = "New Password & confirm password is not Matched!!";
+        }
+
+        if(!preg_match('/^[a-zA-Z0-9]{6}$/',$new_password)){
+          $errors[] = "Password must be exactly 6 characters (letters & numbers only)";
+        }
+          
+        if(!empty($errors)){
+          sweetAlert("Error","Please Try Again!Something Went Wrong!","warning");
+        }else{
+          $update_pass = $conn->prepare("UPDATE ep_users SET password = :pwd WHERE u_id = :uid");
+          $update_pass->execute([
+            'pwd'=>$hash_password,
+            'uid'=>$admin_id
+          ]);
+          sweetAlert("Done","Password Updated Successfull","success");
+          header("location:profile.php");
+        exit;
+        }
+        
+      
+    }
+  } catch (PDOException $e) {
+    echo $e;
+  }
+
+
+$page_title = "Profile Page";
+require_once('header2.php');
 ?>
-
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Admin Profile</title>
-  <!-- Stylesheets -->
-  <link rel="shortcut icon" href="./assets/images/logo6.ico" type="image/x-icon">
-  <link href="./assets/css/bootstrap.min.css" rel="stylesheet">
-  <link href="./assets/icons/fontawesome/css/fontawesome.min.css" rel="stylesheet">
-  <link href="./assets/icons/fontawesome/css/brands.min.css" rel="stylesheet">
-  <link href="./assets/icons/fontawesome/css/solid.min.css" rel="stylesheet">
-  <link href="./assets/plugin/quill/quill.snow.css" rel="stylesheet">
-  <link href="./assets/css/style4.css" rel="stylesheet">
-</head>
-
 <body>
   <!-- Preloader -->
   <div id="preloader">
@@ -136,7 +187,7 @@ try {
                   ?>
                         <div class="text-center mb-4">
 
-                          <img src="uploads/<?= $fetch_admin['image'] ?>"
+                          <img src="All_images_uploads/<?= $fetch_admin['image'] ?>"
                             class="rounded-circle mb-3 shadow-sm"
                             width="120"
                             height="120"
@@ -153,6 +204,11 @@ try {
                             data-bs-toggle="modal"
                             data-bs-target="#editProfileModal">
                             <i class="fas fa-edit me-1"></i> Edit Profile
+                          </button>
+                          <button class="btn btn-primary btn-sm mt-2"
+                            data-bs-toggle="modal"
+                            data-bs-target="#editPasswordModal">
+                            <i class="fas fa-lock"></i> Change Password
                           </button>
                         </div>
 
@@ -173,7 +229,7 @@ try {
 
                           <div class="col-md-6">
                             <label class="text-muted small">Mobile</label>
-                            <p class="fw-semibold mb-0">+91 <?= $fetch_admin['mobile'] ?></p>
+                            <p class="fw-semibold mb-0"><?= $fetch_admin['mobile'] ?></p>
                           </div>
 
                           <div class="col-md-6">
@@ -181,10 +237,7 @@ try {
                             <p class="fw-semibold mb-0"><?= $fetch_admin['address'] ?></p>
                           </div>
 
-                          <div class="col-md-6">
-                            <label class="text-muted small">Birth Date</label>
-                            <p class="fw-semibold mb-0"><?= date("d M ,Y", strtotime($fetch_admin['dob'])) ?></p>
-                          </div>
+
 
                           <div class="col-md-6">
                             <label class="text-muted small">Gender</label>
@@ -210,7 +263,7 @@ try {
 
 
   </div>
-  <?php include('footer.php'); ?>
+
 
   <!-- Edit Profile Modal -->
   <div class="modal fade" id="editProfileModal" tabindex="-1">
@@ -231,7 +284,7 @@ try {
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
 
-        <form method="POST" action="" enctype="multipart/form-data">
+        <form method="POST" action="" id="register_form" enctype="multipart/form-data">
           <div class="modal-body">
 
             <div class="row g-3">
@@ -250,8 +303,8 @@ try {
 
               <div class="col-md-6">
                 <label class="form-label">Mobile</label>
-                <input type="number" class="form-control"
-                  name="mobile" value="<?= $fetch_admin['mobile'] ?>">
+                  <input id="phone" type="tel" style="width: 300px;" class="form-control"
+                  name="phone" value="<?= $fetch_admin['mobile'] ?>">
               </div>
 
               <div class="col-md-6">
@@ -260,11 +313,7 @@ try {
                   name="address" value="<?= $fetch_admin['address'] ?>">
               </div>
 
-              <div class="col-md-6">
-                <label class="form-label">Birth Date</label>
-                <input type="date" class="form-control"
-                  name="dob" value="<?= $fetch_admin['dob'] ?>">
-              </div>
+
 
               <div class="col-md-6">
                 <label class="form-label">Gender</label>
@@ -278,6 +327,7 @@ try {
                 <label class="form-label">Update Photo</label>
                 <input type="file" class="form-control" name="photo">
               </div>
+              <input type="hidden" name="old_image" value="<?= $fetch_admin['image'] ?>">
 
             </div>
 
@@ -306,6 +356,64 @@ try {
       </div>
     </div>
   </div>
+
+
+  <div class="modal fade" id="editPasswordModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content rounded-4">
+        <?php if(!empty($errors)){ ?>
+        <div class="alert alert-danger">
+          <ul>
+            <?php foreach($errors as $error){ ?>
+            <li><?= $error ?></li>
+            <?php } ?>
+          </ul>
+        </div>
+        <?php } ?>
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold">Change Password</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+
+        <form method="POST" action="" enctype="multipart/form-data">
+          <div class="modal-body">
+
+            <div class="row g-3">
+              <div class="col-md-12">
+                <label class="text-muted small">Current Password</label>
+                <input type="password" name="current_password" class="form-control custom-input" placeholder="Current password">
+
+                <div class="col-md-12">
+                  <label class="text-muted small">New Password</label>
+                  <input type="password" name="new_password" class="form-control custom-input" placeholder="Enter new password">
+                </div>
+                <div class="col-md-12">
+                  <label class="text-muted small">Confirm Password</label>
+                  <input type="password" name="confirm_password" class="form-control custom-input" placeholder="Confirm new password">
+                </div>
+
+              </div>
+
+            </div>
+
+            <div class="modal-footer">
+              <button type="button"
+                class="btn btn-light"
+                data-bs-dismiss="modal">
+                Cancel
+              </button>
+              <button type="submit"
+                name="update_password"
+                class="btn btn-primary">
+                Update Password
+              </button>
+            </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <?php include('footer.php'); ?>
+
   <style>
     .card img {
       object-fit: cover;

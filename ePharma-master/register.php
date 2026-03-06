@@ -17,7 +17,7 @@ if (isset($_POST['submit'])) {
 	$password = $_POST['password'];
 	$confirmPassword = $_POST['confirmPassword'];
 	$mobile = $_POST['phone'];
-	$dob = $_POST['dob'];
+	
 	$address = $_POST['address'];
 	$gender = $_POST['gender'] ?? '';
 
@@ -28,7 +28,7 @@ if (isset($_POST['submit'])) {
 	if (
 		empty($username) || empty($email) ||
 		empty($password) || empty($mobile) ||
-		empty($dob) || empty($address) ||
+		 empty($address) ||
 		empty($gender)
 	) {
 		$errors[] = "Please Fill Required Fiels!!";
@@ -39,16 +39,23 @@ if (isset($_POST['submit'])) {
 		$errors[] = "Invalid Email Format!!";
 		// sweetAlert("Warning","Invalid Email Format!","warning");
 	}
+	if(!empty($email)){
+		$check_duplicate_email = $conn->prepare("SELECT * FROM ep_users WHERE email = :email ");
+		$check_duplicate_email->execute(['email'=>$email]);
+		$fetch_dup_email = $check_duplicate_email->fetchColumn(PDO::FETCH_ASSOC);
+		if($fetch_dup_email){
+			$errors[] = "That email address is already registered. Please choose another.";
+		} 
+	}
 	// if (strlen($mobile) != 10) {
 	// 	//validate mobile no
 	// 	$errors[] =  "Mobile Number Must be 10 Digits !!";
 	// 	// sweetAlert("Warning","Mobile No. Must be 10 Digits !!","warning");
 	// }
 
-	if (strlen($password) < 6) {
-		$errors[] = "Password Must be Greater than 6 character!!";
-		// sweetAlert("Warning","Password Must be Greater than 6 character!!","warning");
-	}
+	if(!preg_match('/^[a-zA-Z0-9]{6}$/',$password)){
+          $errors[] = "Password must be exactly 6 characters (letters & numbers only)";
+        }
 	if ($password !== $confirmPassword) {
 		$errors[] = "Password is not Match with Confirm-Password!";
 		// sweetAlert("Warning","Password is not Match with Confirm-Password!","warning");
@@ -57,14 +64,14 @@ if (isset($_POST['submit'])) {
 	if (!empty($errors)) {
 		sweetAlert("Error!", "Please Try Again!", "error");
 	} else {
-		$sql = "INSERT INTO `ep_users`( `name`, `email`,`password`, `mobile`, `dob`, `address`, `gender`, `image`, `role`) VALUES (:username,:email,:password,:mobile,:dob,:address,:gender,:photo,:role)";
+		$sql = "INSERT INTO `ep_users`( `name`, `email`,`password`, `mobile`,  `address`, `gender`, `image`, `role`) VALUES (:username,:email,:password,:mobile,:address,:gender,:photo,:role)";
 		$result = $conn->prepare($sql);
 		$data = $result->execute([
 			'username' => $username,
 			'email' => $email,
 			'password' => $hash_password,
 			'mobile' => $mobile,
-			'dob' => $dob,
+			
 			'address' => $address,
 			'gender' => $gender,
 			'photo' => "user.jpg",
@@ -207,9 +214,7 @@ require_once('header.php') ?>
 							<input id="phone" type="tel" name="phone" style="width: 353px;<?= $class ?>" class="form-control" placeholder="Mobile No." placeholder="Mobile No." onfocus="this.placeholder = ''" onblur="this.placeholder = 'Mobile No.'" value="<?= isset($_POST['phone']) ? htmlspecialchars($_POST['phone']) : '' ?>">
 							<!-- <input type="number" class="form-control" id="mobile" name="mobile" placeholder="Mobile No." onfocus="this.placeholder = ''" onblur="this.placeholder = 'Mobile No.'" value="<?= isset($_POST['mobile']) ? htmlspecialchars($_POST['mobile']) : '' ?>"> -->
 						</div>
-						<div class="col-md-12 form-group">
-							<input type="date" class="form-control" style="<?= $class ?>" id="dob" name="dob" placeholder="Birth Date" onfocus="this.placeholder = ''" onblur="this.placeholder = 'Birth Date'" value="<?= isset($_POST['dob']) ? htmlspecialchars($_POST['dob']) : '' ?>">
-						</div>
+						
 						<div class="col-md-12 form-group">
 							<textarea class="form-control" name="address" style="<?= $class ?>" id="address" placeholder="Address" cols="30" rows="4" onfocus="this.placeholder = ''" onblur="this.placeholder = 'Address'"><?= isset($_POST['address']) ? htmlspecialchars($_POST['address']) : '' ?></textarea>
 						</div>

@@ -12,14 +12,14 @@ if (isset($_POST['submit'])) {
   $cname = $_POST['categoryName'];
   $cdesc = $_POST['categoryDesc'];
 
-   //image upload
+  //image upload
   $pimg = $_FILES['categoryimg']['name'];
   $tempimg = $_FILES['categoryimg']['tmp_name'];
   $ext = pathinfo($pimg, PATHINFO_EXTENSION);
   $allowed = ['jpg', 'jpeg', 'png', 'webp'];
   $img_name = "category_" . time() . "." . $ext;
 
-  $target = "category/" . basename($img_name);
+  $target = "All_images_uploads/" . basename($img_name);
   //move_uploaded_file($tempimg,$target);
   if (!in_array(strtolower($ext), $allowed)) {
     $errors[] = "Invalid image format!!";
@@ -52,137 +52,93 @@ if (isset($_POST['update'])) {
   $cname = $_POST['categoryName'];
   $cdesc = $_POST['categoryDesc'];
 
-   if(!empty($_FILES['cat_img']['name'])){
+  if (!empty($_FILES['cat_img']['name'])) {
     //image upload
-  $updateimg = $_FILES['cat_img']['name'];
-  $tempimg = $_FILES['cat_img']['tmp_name'];
-  $ext = pathinfo($updateimg, PATHINFO_EXTENSION);
-  $allowed = ['jpg', 'jpeg', 'png', 'webp'];
-  $img_name = "category_" . time() . "." . $ext;
-  $size = $_FILES['cat_img']['size'];
-  $max_size = 2097152;
+    $updateimg = $_FILES['cat_img']['name'];
+    $tempimg = $_FILES['cat_img']['tmp_name'];
+    $ext = pathinfo($updateimg, PATHINFO_EXTENSION);
+    $allowed = ['jpg', 'jpeg', 'png', 'webp'];
+    $img_name = "category_" . time() . "." . $ext;
+    $size = $_FILES['cat_img']['size'];
+    $max_size = 2097152;
 
-  if($size>$max_size){
-    $errors[] = "Invalid Image Size!";
-  }
+    if ($size > $max_size) {
+      $errors[] = "Invalid Image Size!";
+    }
 
-  $target = "category/" . basename($img_name);
-  //move_uploaded_file($tempimg,$target);
-  if (!in_array(strtolower($ext), $allowed)) {
-    $errors[] = "Invalid image format!!";
-  }
+    $target = "All_images_uploads/" . basename($img_name);
+    //move_uploaded_file($tempimg,$target);
+    if (!in_array(strtolower($ext), $allowed)) {
+      $errors[] = "Invalid image format!!";
+    }
 
-  if (!move_uploaded_file($tempimg, $target)) {
-    $errors[] = "Image upload failed!!!";
-    // sweetAlert("Warning!", "Image upload failed!!", "warning");
-    // exit;
-  }
-   }else{
+    if (!move_uploaded_file($tempimg, $target)) {
+      $errors[] = "Image upload failed!!!";
+      // sweetAlert("Warning!", "Image upload failed!!", "warning");
+      // exit;
+    }
+  } else {
     $img_name = $_POST['old_image'];
   }
-     
- 
 
   $data = [
     "category_name" => $cname,
-    "description"=>$cdesc,
-    "cat_image"=>$img_name
-    ];
+    "description" => $cdesc,
+    "cat_image" => $img_name
+  ];
   $condition = "c_id = $id";
   //update function call
   $q = update_record($table, $data, $condition);
   if (!$q) {
     // $message = "Updation Fail";
     sweetAlert("Warning!", "Updation Fail!Try Again!!!", "warning");
-  }else{
-    sweetAlert("Updated Successfully.","","success");
+  } else {
+    sweetAlert("Updated Successfully.", "", "success");
   }
 }
-if (isset($_POST['search_cat'])) {
-  $search_cat = $_POST['search_cat'];
-  // echo $search_cat;
-  // die();
-  try {
-    $sql = "SELECT * FROM ep_category WHERE category_name LIKE '{$search_cat}%' LIMIT 5";
-    $res = $conn->prepare($sql);
-    if ($res->execute()) {
-      $products = $res->fetchAll(PDO::FETCH_ASSOC);
-      foreach ($products as $p) {
+if (isset($_POST['page'])) {
+
+  $search = $_POST['search'] ?? '';
+
+  $limit = 5;
+  $page = $_POST['page'];
+  $offset = ($page - 1) * $limit;
+
+  $q = $conn->prepare("SELECT * FROM ep_category WHERE category_name LIKE :search LIMIT $offset , $limit");
+  $q->execute([
+    'search' => $search . '%'
+  ]);
+  $data = $q->fetchAll(PDO::FETCH_ASSOC);
+
+  foreach ($data as $p) {
 ?>
-
-        <tr>
-                          <!-- <td><input type="checkbox" class="custom-checkbox row-checkbox"></td> -->
-                           <td><?= $p['c_id'] ?></td>
-                           <td><img src="category/<?= $p['cat_image'] ?>" alt="cat_img" width="90px" height="90px"></td>
-                          
-                          <td><?= $p['category_name'] ?></td>
-                          <td><?= substr($p['description'],0,50); ?>...</td>
-                          <td class="text-center">
-                            <a class="btn btn-sm btn-warning mb-2 mb-lg-0 me-0 me-lg-2" href="view_category_page.php?c_id=<?= $p['c_id'] ?>"><i class="fa-regular fa-eye view-icon"></i></a>
-
-                            <button type="button"
-                              data-bs-toggle="modal"
-                              data-bs-target="#categoryEditModal"
-                              class="btn btn-sm btn-primary me-2"
-
-                              data-cid="<?= $p['c_id'] ?>"
-                              data-cname="<?= htmlspecialchars($p['category_name']) ?>"
-                              data-cdesc="<?= htmlspecialchars($p['description']) ?>"
-                              data-cimg="<?= $p['cat_image'] ?>"
-
-                              ><i class="fa-regular fa-pen-to-square"></i></button>
-                              <button class="btn btn-sm btn-danger" onclick="confirmDelete(<?= $p['c_id'] ?>)"><i class="fa-solid fa-trash-can"></i></button>
-                          </td>
-                        </tr>
+    <tr>
+      <td><img src="All_images_uploads/<?= $p['cat_image'] ?>" alt="cat_img" width="90px" height="90px">
+        <?= $p['category_name'] ?></td>
+      <td><?= substr($p['description'], 0, 50) ?>...</td>
+      <td class="text-center">
+        <a class="btn btn-sm btn-warning mb-2 mb-lg-0 me-0 me-lg-2" href="view_category_page.php?c_id=<?= $p['c_id'] ?>"><i class="fa-regular fa-eye view-icon"></i></a>
+        <button type="button"
+          data-bs-toggle="modal"
+          data-bs-target="#categoryEditModal"
+          class="btn btn-sm btn-primary me-2"
+          data-cid="<?= $p['c_id'] ?>"
+          data-cname="<?= htmlspecialchars($p['category_name']) ?>"
+          data-cdesc="<?= htmlspecialchars($p['description']) ?>"
+          data-cimg="<?= $p['cat_image'] ?>"><i class="fa-regular fa-pen-to-square"></i></button>
+        <button class="btn btn-danger btn-sm" onclick="confirmDelete(<?= $p['c_id'] ?> , 'delete_category.php?c_id=')"><i class="fas fa-trash"></i></button>
+      </td>
+    </tr>
 <?php
-      }
-    }
-    if(!$products){
-          echo "<tr><td colspan='4' class='text-center'> Category Not found!!</td></tr>";
-    }
-  } catch (PDOException $e) {
-    echo $e;
   }
   exit;
 }
+
+$page_title = "Category";
+require_once("header2.php");
+
 ?>
-<!DOCTYPE html>
-<html lang="en">
 
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Category</title>
-  <!-- Stylesheets -->
-  <link rel="shortcut icon" href="./assets/images/logo6.ico" type="image/x-icon">
-  <link href="./assets/css/bootstrap.min.css" rel="stylesheet">
-  <link href="./assets/icons/fontawesome/css/fontawesome.min.css" rel="stylesheet">
-  <link href="./assets/icons/fontawesome/css/brands.min.css" rel="stylesheet">
-  <link href="./assets/icons/fontawesome/css/solid.min.css" rel="stylesheet">
-  <link href="./assets/plugin/quill/quill.snow.css" rel="stylesheet">
-  <link href="./assets/css/style4.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script>
-function confirmDelete(id) {
-    Swal.fire({
-        title: 'Are you sure?',
-        text: "Do you really want to delete these Category?",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'OK',
-        cancelButtonText: 'Cancel',
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // Redirect or AJAX call
-            window.location.href = "delete_category.php?c_id=" + id;
-        }
-    });
-}
-</script>
-
-</head>
 
 <body>
   <!-- Preloader -->
@@ -208,15 +164,24 @@ function confirmDelete(id) {
       <div class="main-content">
         <div class="row">
           <div class="col-12">
-            <div class="d-flex align-items-lg-center  flex-column flex-md-row flex-lg-row mt-3">
+            <nav>
+              <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="index.php">Home</a></li>
+                <li class="breadcrumb-item active">Category</li>
+
+              </ol>
+            </nav>
+
+            <div class="category-header d-flex align-items-lg-center  flex-column flex-md-row flex-lg-row mt-3">
               <div class="flex-grow-1">
-                <h3 class="mb-2 text-color-2">Category</h3>
+                <h3 class="mb-2 text-color-2">Top Category</h3>
               </div>
               <div class="mt-3 mt-lg-0">
                 <div class="d-flex align-items-center">
 
                   <!-- Date Range Button -->
-                  <div class="cursor-pointer bg-white d-flex align-items-center text-color-1 px-3 py-2 rounded-2 text-normal fw-bolder letter-spacing-26 dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+
+                  <div class="search-wrapper cursor-pointer bg-white d-flex align-items-center text-color-1 px-3 py-2 rounded-2 text-normal fw-bolder letter-spacing-26 dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                     <div class="input-group flex-nowrap">
                       <span style="border:none;" class="input-group-text bg-white " id="addon-wrapping"><i class="fa-solid search-icon fa-magnifying-glass text-color-1"></i></span>
                       <input style="border:none;" type="text" id="livesearch" name="search" class="form-control search-input border-l-none ps-0" placeholder="Search Category" aria-label="Username" aria-describedby="addon-wrapping">
@@ -241,8 +206,8 @@ function confirmDelete(id) {
                   <thead>
                     <tr>
                       <!-- <th><input type="checkbox" id="select-all" class="custom-checkbox"></th> -->
-                       <th>ID</th>
-                      
+
+
                       <th>Category Name</th>
                       <th>Description</th>
 
@@ -250,57 +215,7 @@ function confirmDelete(id) {
                     </tr>
                   </thead>
                   <tbody id="result">
-                    <?php
 
-
-                    //Load Products Data
-
-                    $limit = 5;
-                    if (isset($_GET['page'])) {
-                      $page = $_GET['page'];
-                    } else {
-                      $page = 1;
-                    }
-                    $offset = ($page - 1) * $limit;
-                    $q = "SELECT * FROM ep_category LIMIT {$offset},{$limit}";
-                    $res = $conn->prepare($q);
-                    if ($res->execute()) {
-                      $products = $res->fetchAll(PDO::FETCH_ASSOC);
-                      // Id shows sequential numbers
-                      $id = $offset;
-                      foreach ($products as $index => $p) {
-                      $id++;
-                    ?>
-
-                        <tr>
-                          <!-- <td><input type="checkbox" class="custom-checkbox row-checkbox"></td> -->
-                           <td><?php  echo $id; ?></td>
-                           <td><img src="category/<?= $p['cat_image'] ?>" alt="cat_img" width="90px" height="90px">
-                          
-                          <?= $p['category_name'] ?></td>
-                          <td><?= substr($p['description'],0,50); ?>...</td>
-                          <td class="text-center">
-                            <a class="btn btn-sm btn-warning mb-2 mb-lg-0 me-0 me-lg-2" href="view_category_page.php?c_id=<?= $p['c_id'] ?>"><i class="fa-regular fa-eye view-icon"></i></a>
-
-                            <button type="button"
-                              data-bs-toggle="modal"
-                              data-bs-target="#categoryEditModal"
-                              class="btn btn-sm btn-primary me-2"
-
-                              data-cid="<?= $p['c_id'] ?>"
-                              data-cname="<?= htmlspecialchars($p['category_name']) ?>"
-                              data-cdesc="<?= htmlspecialchars($p['description']) ?>"
-                              data-cimg="<?= $p['cat_image'] ?>"
-
-                              ><i class="fa-regular fa-pen-to-square"></i></button>
-                              <button class="btn btn-sm btn-danger" onclick="confirmDelete(<?= $p['c_id'] ?>)"><i class="fa-solid fa-trash-can"></i></button>
-                          </td>
-                        </tr>
-                    <?php
-                      }
-                    }
-
-                    ?>
                   </tbody>
                 </table>
               </div>
@@ -309,40 +224,9 @@ function confirmDelete(id) {
                 <nav aria-label="Page navigation" class="mb-3 mb-md-0 mb-lg-0">
                   <ul class="pagination">
                     <?php
-                    $q = $conn->prepare("SELECT COUNT(*)
-                                        FROM $table");
-                    $q->execute();
-                    $count = $q->fetchColumn();
-                    // echo $count;
-                    if ($count > 0) {
-                      $pages = ceil($count / $limit);  //find total pages of all records per limit
+                    $s = $_POST['search'] ?? '';
+                    createPagination("ep_category", "category_name", $s, 5);
                     ?>
-                      <li class="page-item">
-                        <?php if ($page > 1) { ?>
-                          <a class="page-link" href="category.php?page=<?= $page - 1 ?>" aria-label="Previous"><i class="fa-solid fa-chevron-left text-size-12"></i></a>
-                        <?php } ?>
-                      </li>
-                      <?php
-                      for ($i = 1; $i <= $pages; $i++) {
-                      ?>
-                        <li class="page-item"><a class="page-link" href="category.php?page=<?= $i ?>"><?php echo $i; ?></a></li>
-                      <?php
-                      } ?>
-                      <li class="page-item">
-                        <?php if ($page < $pages) { ?>
-                          <a class="page-link" href="category.php?page=<?= $page + 1 ?>" aria-label="Next"><i class="fa-solid fa-chevron-right text-size-12"></i></a>
-                        <?php } ?>
-                      </li>
-
-                    <?php } ?>
-                    <!-- <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                              <li class="page-item"><a class="page-link" href="#">2</a></li>
-                              <li class="page-item"><a class="page-link" href="#"><i class="fas fa-ellipsis-h"></i></a></li>
-                              <li class="page-item"><a class="page-link" href="#">6</a></li>
-                              <li class="page-item"><a class="page-link" href="#">7</a></li>
-                              <li class="page-item">
-                                <a class="page-link" href="#" aria-label="Next"><i class="fa-solid fa-chevron-right text-size-12"></i></a>
-                              </li> -->
                   </ul>
                 </nav>
                 <!-- <div class="d-flex justify-content-end">
@@ -435,7 +319,7 @@ function confirmDelete(id) {
     </div>
 
 
-
+    <script src="pagi.js"></script>
     <script>
       //add event listner
       document.getElementById('categoryEditModal').addEventListener('show.bs.modal', function(event) {
@@ -444,34 +328,7 @@ function confirmDelete(id) {
         document.getElementById('edit_cid').value = btn.getAttribute('data-cid');
         document.getElementById('edit_category').value = btn.getAttribute('data-cname');
         document.getElementById('categorydescedit').value = btn.getAttribute('data-cdesc');
-        document.getElementById('old_image').value = image; 
-        document.getElementById('edit_img_prev').src = "category/"+image; 
-      });
-
-      //searching category
-      $(document).ready(function() {
-        function load_category() {
-
-          var search_cat = $("#livesearch").val();
-
-          // alert(search_cat);
-          $.ajax({
-            url: window.location.href,
-            method: "POST",
-            data: {
-              search_cat: search_cat
-            },
-
-            success: function(data) {
-              $("#result").html(data).show();
-            }
-          });
-
-        }
-
-        $(document).on("keyup", "#livesearch", function() {
-          load_category();
-        });
-
+        document.getElementById('old_image').value = image;
+        document.getElementById('edit_img_prev').src = "All_images_uploads/" + image;
       });
     </script>

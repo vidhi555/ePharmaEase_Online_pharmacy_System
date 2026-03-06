@@ -21,10 +21,10 @@ if (isset($_POST['category_id'])) {
                 <div class="card text-center card-product">
                     <form method="post">
                         <div class="card-product__img">
-                            <p class="card-product__price">₹<?= $p['price'] ?></p>
+                            <p class="card-product__price">$<?= $p['price'] ?></p>
 
                             <a href="single-product.php?p_id=<?= $p['p_id'] ?>">
-                                <img class="card-img" src="../LearnAdmin/upload/<?= $p['image'] ?>" alt="">
+                                <img class="card-img" src="../LearnAdmin/All_images_uploads/<?= $p['image'] ?>" alt="">
                             </a>
 
                             <input type="hidden" name="product_id" value="<?= $p['p_id'] ?>">

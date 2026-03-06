@@ -15,11 +15,35 @@ session_start();
 
 
 //sweet Alert function for message
-function sweetAlert($title, $text, $icon = 'info')
+function sweetAlert($title, $text, $icon = 'info',$redirect = null)
 {
     $_SESSION['swal'] = [
         'title' => $title,
         'text'  => $text,
-        'icon'  => $icon
+        'icon'  => $icon,
+        'redirect'=>$redirect
     ];
+}
+
+
+//Pagination buttton reusable function
+function createPagination($table, $column = '', $search = '', $limit = 5)
+{
+    global $conn;
+    
+    if ($search != '' && $column != '') {
+        $stmt = $conn->prepare("SELECT COUNT(*) FROM $table WHERE $column LIKE :search");
+        $stmt->execute([':search' => $search . '%']);
+    } else {
+        $stmt = $conn->query("SELECT COUNT(*) FROM $table");
+    }
+
+    $total = $stmt->fetchColumn();
+    $pages = ceil($total / $limit);
+
+    for ($i = 1; $i <= $pages; $i++) {
+        echo "<li class='page-item'>
+                <a href='#' class='page-link page-btn' data-page='$i'>$i</a>
+              </li>";
+    }
 }

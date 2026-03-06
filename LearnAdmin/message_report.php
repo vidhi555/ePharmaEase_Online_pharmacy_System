@@ -7,43 +7,47 @@ if (!isset($_SESSION['user'])) {
   header("Location: login.php");
   exit;
 }
-?>
-<!DOCTYPE html>
-<html lang="en">
 
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Customer Messages</title>
-  <!-- Stylesheets -->
-  <link rel="shortcut icon" href="./assets/images/logo6.ico" type="image/x-icon">
-  <link href="./assets/css/bootstrap.min.css" rel="stylesheet">
-  <link href="./assets/icons/fontawesome/css/fontawesome.min.css" rel="stylesheet">
-  <link href="./assets/icons/fontawesome/css/brands.min.css" rel="stylesheet">
-  <link href="./assets/icons/fontawesome/css/solid.min.css" rel="stylesheet">
-  <link href="./assets/plugin/quill/quill.snow.css" rel="stylesheet">
-  <link href="./assets/css/style4.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <script>
-    function confirmDelete(id) {
-      Swal.fire({
-        title: 'Are you sure?',
-        text: "Do you really want to delete these Message?",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'OK',
-        cancelButtonText: 'Cancel',
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          // Redirect or AJAX call
-          window.location.href = "delete_message.php?msg_id=" + id;
-        }
-      });
-    }
-  </script>
-</head>
+// pagination
+if (isset($_POST['page'])) {
+  $page = $_POST['page'];
+  $limit = 5;
+  $offset = ($page - 1) * $limit;
+
+  $query = $conn->prepare("SELECT * FROM ep_message LIMIT $offset,$limit");
+  $query->execute();
+  $fetch_msg = $query->fetchAll(PDO::FETCH_ASSOC);
+  $id = $offset;
+  foreach ($fetch_msg as $msg) {
+    $id++;
+
+?>
+    <tr>
+      <!-- <td><input type="checkbox" class="custom-checkbox row-checkbox"></td> -->
+
+      <td><?= $id ?></td>
+      <td><?= $msg['name'] ?></td>
+      <td><?= $msg['email'] ?></td>
+      <td style="text-wrap: wordwrap;"><?= $msg['subject'] ?></td>
+
+      <!-- <td><span class="badge bg-success">Active</span></td> -->
+      <td class="text-center">
+        <!-- <a href="#" data-bs-toggle="modal" data-bs-target="#EditModal" class="btn btn-sm btn-primary mb-2"><i class="fa-regular fa-pen-to-square"></i></a> -->
+        <a class="btn btn-sm btn-warning mb-2 mb-lg-0 me-0 me-lg-2" href="view_mesage.php?msg_id=<?= $msg['msg_id'] ?>"><i class="fa-regular fa-eye view-icon"></i></a>
+
+        <button class="btn btn-sm btn-danger" onclick="confirmDelete(<?= $msg['msg_id'] ?>,'delete_message.php?msg_id=')"><i class="fa-solid fa-trash-can"></i></button>
+
+      </td>
+    </tr>
+
+<?php
+  }
+  exit();
+}
+
+$page_title = "Customer Message";
+require_once('header2.php');
+?>
 
 <body>
   <!-- Preloader -->
@@ -68,6 +72,12 @@ if (!isset($_SESSION['user'])) {
       <div class="main-content">
         <div class="row">
           <div class="col-12">
+            <nav>
+              <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="index.php">Home</a></li>
+                <li class="breadcrumb-item active">Message</li>
+              </ol>
+            </nav>
             <div class="d-flex align-items-lg-center  flex-column flex-md-row flex-lg-row mt-3">
               <div class="flex-grow-1">
                 <h3 class="mb-2 text-size-26 text-color-2">Customer Inquiries</h3>
@@ -107,59 +117,16 @@ if (!isset($_SESSION['user'])) {
                       <th>User Name</th>
                       <th>User Email</th>
                       <th>Title</th>
-                      
+
 
                       <!-- <th>Status</th> -->
                       <th class="text-center">Action</th>
                     </tr>
                   </thead>
-                  <tbody>
-                    <?php
-                    try {
+                  <tbody id="result">
 
 
-                      $limit = 5;
-                      if (isset($_GET['page'])) {
-                        $page = $_GET['page'];
-                      } else {
-                        $page = 1;
-                      }
-                      $offset = ($page - 1) * $limit;
-                      $query = $conn->prepare("SELECT * FROM ep_message LIMIT $offset,$limit ");
-                      if ($query->execute()) {
-                        $messages = $query->fetchAll(PDO::FETCH_ASSOC);
-                        $id = $offset; //print sequential numbers
-                        
-                        foreach ($messages as $msg) {
-                          $id++
-                        
-                    ?>
-                          <tr>
-                            <!-- <td><input type="checkbox" class="custom-checkbox row-checkbox"></td> -->
 
-                            <td><?= $id ?></td>
-                            <td><?= $msg['name'] ?></td>
-                            <td><?= $msg['email'] ?></td>
-                            <td style="text-wrap: wordwrap;"><?= $msg['subject'] ?></td>
-                            
-                            <!-- <td><span class="badge bg-success">Active</span></td> -->
-                            <td class="text-center">
-                              <!-- <a href="#" data-bs-toggle="modal" data-bs-target="#EditModal" class="btn btn-sm btn-primary mb-2"><i class="fa-regular fa-pen-to-square"></i></a> -->
-                              <a class="btn btn-sm btn-warning mb-2 mb-lg-0 me-0 me-lg-2" href="view_mesage.php?msg_id=<?= $msg['msg_id'] ?>"><i class="fa-regular fa-eye view-icon"></i></a>
-
-                              <button class="btn btn-sm btn-danger" onclick="confirmDelete(<?= $msg['msg_id'] ?>)"><i class="fa-solid fa-trash-can"></i></button>
-
-                            </td>
-                          </tr>
-
-                    <?php
-                        }
-                      }
-                    } catch (PDOException $e) {
-                      echo $e;
-                    }
-
-                    ?>
 
                   </tbody>
                 </table>
@@ -167,32 +134,8 @@ if (!isset($_SESSION['user'])) {
               <div class="pb-3 ps-3 mt-3 d-flex justify-content-center justify-content-md-between justify-content-lg-between flex-wrap flex-md-nowrap">
                 <nav aria-label="Page navigation" class="mb-3 mb-md-0 mb-lg-0">
                   <ul class="pagination">
-                    <?php
-                    $q = $conn->prepare("SELECT * FROM ep_message");
-                    $q->execute();
-
-                    $count = $q->rowCount();
-                    if ($count > 0) {
-                      $pages = ceil($count / $limit);  //find total pages of all records per limit
-                    ?>
-                      <li class="page-item">
-                        <?php if ($page > 1) { ?>
-                          <a class="page-link" href="message_report.php?page=<?= $page - 1 ?>" aria-label="Previous"><i class="fa-solid fa-chevron-left text-size-12"></i></a>
-                        <?php } ?>
-                      </li>
-                      <?php
-                      for ($i = 1; $i <= $pages; $i++) {
-                      ?>
-                        <li class="page-item"><a class="page-link" href="message_report.php?page=<?= $i ?>"><?php echo $i; ?></a></li>
-                      <?php
-                      } ?>
-                      <li class="page-item">
-                        <?php if ($page < $pages) { ?>
-                          <a class="page-link" href="message_report.php?page=<?= $page + 1 ?>" aria-label="Next"><i class="fa-solid fa-chevron-right text-size-12"></i></a>
-                        <?php } ?>
-                      </li>
-
-                    <?php } ?>
+                    <?php $search = $_POST['search'] ?? ''; ?>
+                    <?= createPagination('ep_message', '', $search, 5); ?>
                   </ul>
                 </nav>
                 <!-- <div class="d-flex justify-content-end">
@@ -217,3 +160,37 @@ if (!isset($_SESSION['user'])) {
       <?php include('footer.php'); ?>
     </div>
   </div>
+  <script>
+    function loadData(page = 1) {
+      $.ajax({
+        url: window.location.href,
+        type: "POST",
+        data: {
+          page: page
+        },
+        success: function(data) {
+          $("#result").html(data);
+        }
+      });
+    }
+
+    function loadPagination() {
+      $.ajax({
+        url: "pagination_category.php",
+        success: function(data) {
+          $("#pagination").html(data);
+        }
+      });
+    }
+
+    // click pagination
+    $(document).on("click", ".page-btn", function(e) {
+      e.preventDefault();
+      var page = $(this).data("page");
+      loadData(page);
+    });
+
+    // first load
+    loadData();
+    loadPagination();
+  </script>

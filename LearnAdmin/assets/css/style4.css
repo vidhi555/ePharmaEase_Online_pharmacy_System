@@ -812,7 +812,21 @@ table tr th:last-child, table tr td:last-child {
 .pagination .page-link {
   outline: none;
 }
+/* New pagination Link ========== */
 
+.pagination-link:hover {
+  color: var(--text-color-1);
+}
+.active .pagination-link {
+  background-color: var(--text-color-1);
+  color: #fff;
+  border-color: var(--text-color-1);
+}
+.pagination-link {
+    border: 1px solid aliceblue;
+    color: antiquewhite;
+    background: cornflowerblue;
+}
 
 .page-selector {
   display: flex;
@@ -1511,7 +1525,7 @@ table tr th:last-child, table tr td:last-child {
   white-space: nowrap;
 }
 
-.pagination .page-link:focus {
+.pagination .pagination-link:focus {
   box-shadow: none;
   outline: none;
 }

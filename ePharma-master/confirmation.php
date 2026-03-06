@@ -1,8 +1,10 @@
 <?php
 require_once('connection/db.php');
-require_once('session.php');
+// require_once('session.php');
 
-$oid = $_SESSION['last_order_id'] ;
+$oid = $_SESSION['last_order_id'];
+// echo $_SESSION['last_order_id'];
+// die();
 ?>
 
 
@@ -14,7 +16,7 @@ require_once("header.php");
 <!--================ End Header Menu Area =================-->
 
 <!-- ================ start banner area ================= -->
-<section class="blog-banner-area fade-up" id="category">
+<section class="blog-banner-area " data-aos="fade-in" id="category">
   <div class="container h-100">
     <div class="blog-banner">
       <div class="text-center">
@@ -35,11 +37,17 @@ require_once("header.php");
 <?php
 try {
   //check session
-  if (!empty($user_id)) {
+  // if (!empty($user_id)) {
+
     //display order details of specific order id and logged user
     // $oid = $conn->lastInsertId();
-
-    $query = $conn->prepare("SELECT * FROM ep_orders_items i JOIN ep_orders_master m ON i.o_id = m.o_id JOIN ep_products p ON p.p_id = i.p_id WHERE m.u_id = :uid and m.o_id = :oid");
+    $user_id = $_SESSION['user_id'] ?? '';
+    // echo $user_id;
+    // die();
+    $query = $conn->prepare("SELECT * FROM ep_orders_items i 
+JOIN ep_orders_master m ON i.o_id = m.o_id 
+JOIN ep_products p ON p.p_id = i.p_id 
+WHERE i.u_id = :uid and i.o_id = :oid");
     $res = $query->execute([
       'uid' => $user_id,
       'oid' => $oid
@@ -67,7 +75,7 @@ try {
                   </tr>
                   <tr>
                     <td>Total</td>
-                    <td>: ₹<?= $fetch_orders['total_amount'] ?></td>
+                    <td>: $<?= $fetch_orders['total_amount'] ?></td>
                   </tr>
                   <tr>
                     <td>Payment method</td>
@@ -81,8 +89,8 @@ try {
                 <h3 class="billing-title">Billing Address</h3>
                 <table class="order-rable">
                   <tr>
-                    <td>District</td>
-                    <td>: <?= $fetch_orders['district'] ?></td>
+                    <td>Address</td>
+                    <td>: <?= $fetch_orders['address'] ?></td>
                   </tr>
                   <tr>
                     <td>City</td>
@@ -145,7 +153,7 @@ try {
                     //   'uid'=>$user_id,
                     //   'oid'=>$oid
                     // ]);
-                    $query = $conn->prepare("SELECT * FROM ep_orders_items i JOIN ep_orders_master m ON i.o_id = m.o_id JOIN ep_products p ON p.p_id = i.p_id WHERE m.u_id = :uid and m.o_id = :oid");
+                    $query = $conn->prepare("SELECT * FROM ep_orders_items i JOIN ep_orders_master m ON i.o_id = m.o_id JOIN ep_products p ON p.p_id = i.p_id WHERE i.u_id = :uid and i.o_id = :oid");
                     $res = $query->execute([
                       'uid' => $user_id,
                       'oid' => $oid
@@ -164,7 +172,7 @@ try {
                           <h5>x <?= $f['qty'] ?></h5>
                         </td>
                         <td>
-                          <p>₹<?= $f['price'] ?></p>
+                          <p>$<?= $f['price'] ?></p>
                         </td>
                       </tr>
                     <?php } ?>
@@ -176,7 +184,7 @@ try {
                         <h5></h5>
                       </td>
                       <td>
-                        <p>₹<?= $grand ?></p>
+                        <p>$<?= number_format($grand,2) ?></p>
                       </td>
                     </tr>
                     <tr>
@@ -187,7 +195,7 @@ try {
                         <h5></h5>
                       </td>
                       <td>
-                        <p>Flat rate: <?= $grand < 1000 ? '₹50' : 'free' ?></p>
+                        <p>Flat rate: <?= $grand < 10 ? '$1.20' : 'free' ?></p>
                       </td>
                     </tr>
                     <tr>
@@ -198,8 +206,13 @@ try {
                         <h5></h5>
                       </td>
                       <td>
-                        <h4><b>₹<?= $f['total_amount'] ?></b></h4>
+                        <h4><b>$<?= number_format($f['total_amount'],2) ?></b></h4>
                       </td>
+                    </tr>
+                    <tr>
+                      <td colspan="5"><p>✔ Your order has been placed successfully.  
+A confirmation email with order details has been sent to your email.
+</p></td>
                     </tr>
                   <?php } ?>
                 </tbody>
@@ -216,7 +229,7 @@ try {
       <!--================ End footer Area  =================-->
 
 
-<?php   }
+<?php   
   }
 } catch (PDOException $e) {
   echo $e;

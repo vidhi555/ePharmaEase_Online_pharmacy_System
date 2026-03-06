@@ -62,11 +62,11 @@ if (
         <!-- <td><input type="checkbox" class="custom-checkbox row-checkbox"></td> -->
         <td>
           <div class="d-flex justify-content-start align-items-center">
-            <img src="./upload/<?= $p['image'] ?>" class="tbl-img" alt="img">
+            <img src="./All_images_uploads/<?= $p['image'] ?>" class="tbl-img" alt="img">
             <span class="ms-2"><?= ucfirst($p['name']) ?></span>
           </div>
         </td>
-        <!-- <td><img class="tbl-img"  src="upload/<?= $p['image'] ?>" alt=""></td> -->
+        <!-- <td><img class="tbl-img"  src="All_images_uploads/<?= $p['image'] ?>" alt=""></td> -->
         <td style="width: 1000px;word-wrap: break-word;white-space: normal;"><?= substr($p['description'], 0, 50); ?>...</td>
         <td>₹<?= $p['price'] ?></td>
         <td><?php
@@ -139,7 +139,7 @@ if (isset($_POST['submit'])) {
   $allowed = ['jpg', 'jpeg', 'png', 'webp'];
   $img_name = "product_" . time() . "." . $ext;
 
-  $target = "upload/" . basename($img_name);
+  $target = "All_images_uploads/" . basename($img_name);
   //move_uploaded_file($tempimg,$target);
   if (!in_array(strtolower($ext), $allowed)) {
     $errors[] = "Invalid image format!!";
@@ -217,7 +217,7 @@ require_once('edit.php');
   <link href="./assets/icons/fontawesome/css/brands.min.css" rel="stylesheet">
   <link href="./assets/icons/fontawesome/css/solid.min.css" rel="stylesheet">
   <link href="./assets/plugin/quill/quill.snow.css" rel="stylesheet">
-  <link href="./assets/css/style4.css" rel="stylesheet">
+  <link href="./assets/css/style5.css" rel="stylesheet">
 
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script>
@@ -379,11 +379,11 @@ require_once('edit.php');
                           <!-- <td><input type="checkbox" class="custom-checkbox row-checkbox"></td> -->
                           <td>
                             <div class="d-flex justify-content-start align-items-center">
-                              <img src="./upload/<?= $p['image'] ?>" class="tbl-img" alt="img">
+                              <img src="./All_images_uploads/<?= $p['image'] ?>" class="tbl-img" alt="img">
                               <span class="ms-2"><?= ucfirst($p['name']) ?></span>
                             </div>
                           </td>
-                          <!-- <td><img class="tbl-img"  src="upload/<?= $p['image'] ?>" alt=""></td> -->
+                          <!-- <td><img class="tbl-img"  src="All_images_uploads/<?= $p['image'] ?>" alt=""></td> -->
                           <td style="width: 1000px;word-wrap: break-word;white-space: normal;"><?= substr($p['description'], 0, 50); ?>...</td>
                           <td>₹<?= $p['price'] ?></td>
                           <td><?php
@@ -709,7 +709,7 @@ require_once('edit.php');
         document.getElementById('edit_category').value = btn.getAttribute('data-category');
 
         // set image
-        document.getElementById('edit_img_prev').src = "upload/" + old_img;
+        document.getElementById('edit_img_prev').src = "All_images_uploads/" + old_img;
 
       });
     </script>

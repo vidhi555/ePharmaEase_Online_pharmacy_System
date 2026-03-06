@@ -4,46 +4,71 @@ require('crud.php');
 $pid = $_GET['p_id'];
 // echo $pid;
 require_once('edit.php');
+
+$page_title = "Product Detail";
+require_once('header2.php');
 ?>
-<!DOCTYPE html>
-<html lang="en">
 
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Product Detail</title>
-  <!-- Stylesheets -->
-  <link rel="shortcut icon" href="./assets/images/logo6.ico" type="image/x-icon">
-  <link href="./assets/css/bootstrap.min.css" rel="stylesheet">
-  <link href="./assets/icons/fontawesome/css/fontawesome.min.css" rel="stylesheet">
-  <link href="./assets/icons/fontawesome/css/brands.min.css" rel="stylesheet">
-  <link href="./assets/icons/fontawesome/css/solid.min.css" rel="stylesheet">
-  <link href="./assets/plugin/quill/quill.snow.css" rel="stylesheet">
-  <link href="./assets/css/style4.css" rel="stylesheet">
-
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <script>
-    function confirmDelete(id) {
-      Swal.fire({
-        title: 'Are you sure?',
-        text: "Do you really want to delete these Product?",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'OK',
-        cancelButtonText: 'Cancel',
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          // Redirect or AJAX call
-          window.location.href = "delete_product.php?p_id=" + id;
-        }
-      });
-    }
-  </script>
-</head>
 <style>
+  /* LEFT IMAGE SECTION */
+  .product-left {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    max-width: 420px;
+  }
 
+  /* SINGLE IMAGE BOX */
+  .single-prd-item {
+    width: 150px;
+    height: 150px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #f5f9ff;
+    border: 1px solid #e3ecff;
+    cursor: pointer;
+    transition: 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* IMAGE */
+  .single-prd-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: 0.3s;
+  }
+
+  /* HOVER EFFECT */
+  .single-prd-item:hover {
+    transform: translateY(-4px);
+    border-color: #2563eb;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  }
+
+  .single-prd-item:hover img {
+    transform: scale(1.08);
+  }
+
+  /* IF MANY IMAGES → SCROLL */
+  .product-left {
+    /* max-height: 270px; */
+    overflow-y: auto;
+    padding-right: 5px;
+  }
+
+  /* SCROLLBAR DESIGN */
+  .product-left::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .product-left::-webkit-scrollbar-thumb {
+    background: #c7d8ff;
+    border-radius: 10px;
+  }
 </style>
 
 <body>
@@ -74,7 +99,13 @@ require_once('edit.php');
           <div class="col-12">
             <div class="d-flex align-items-lg-center  flex-column flex-md-row flex-lg-row mt-3">
               <div class="flex-grow-1">
-                <h3 class="mb-2 text-color-2"><a href="products.php">Back</a> > Product Detail</h3>
+                <nav>
+                  <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="index.php">Home</a></li>
+                    <li class="breadcrumb-item"><a href="products.php">Product</a></li>
+                    <li class="breadcrumb-item active">Product Details</li>
+                  </ol>
+                </nav>
               </div>
 
             </div><!-- end card header -->
@@ -83,7 +114,7 @@ require_once('edit.php');
         </div>
         <?php
         try {
-          $query = $conn->prepare("SELECT * FROM ep_products p JOIN ep_category c ON p.c_id = c.c_id WHERE p_id = :pid ");
+          $query = $conn->prepare("SELECT p.* , c.category_name FROM ep_products p JOIN ep_category c ON p.c_id = c.c_id WHERE p_id = :pid ");
           $query->execute([':pid' => $pid]);
           $fetch_product = $query->fetch(PDO::FETCH_ASSOC);
           if ($fetch_product) {
@@ -94,7 +125,23 @@ require_once('edit.php');
               <!-- Main content -->
               <div class="product-detail-card">
                 <div class="product-left">
-                  <img src="upload/<?= $fetch_product['image'] ?>" alt="Product Image">
+                  <!-- <img src="All_images_uploads/<?= $fetch_product['image'] ?>" alt="Product Image"> -->
+                  <?php
+                  try {
+                    $get_image = $conn->prepare("SELECT * FROM ep_image_gallery WHERE p_id = :pid");
+                    $get_image->execute(['pid' => $pid]);
+                    $fetch_iamge = $get_image->fetchAll(PDO::FETCH_ASSOC);
+                    foreach ($fetch_iamge as $a) {
+                  ?>
+                      <div class="single-prd-item">
+                        <img class="img-fluid" src="../LearnAdmin/All_images_uploads/<?= $a['image_name'] ?>" alt="p_image" style="width: auto;">
+                      </div>
+                  <?php
+                    }
+                  } catch (PDOException $e) {
+                    echo $e;
+                  }
+                  ?>
                 </div>
 
                 <div class="product-right">
@@ -118,7 +165,7 @@ require_once('edit.php');
                         data-img="<?= $fetch_product['image'] ?>">
                         <i class="fas fa-edit"></i>
                       </button>
-                      <button class="icon-btn delete" onclick="confirmDelete(<?= $fetch_product['p_id'] ?>)"><i class="fas fa-trash"></i></button>
+                      <button class="icon-btn delete" onclick="confirmDelete(<?= $fetch_product['p_id'] ?>,'delete_product.php?p_id=')"><i class="fas fa-trash"></i></button>
 
                       <!-- <a href="edit_product.php?p_id=<?= $fetch_product['p_id'] ?>" class="icon-btn edit">
                     <i class="fas fa-edit"></i>
@@ -137,7 +184,7 @@ require_once('edit.php');
 
                   <ul class="product-info">
                     <li><strong>Category:</strong> <?= $fetch_product['category_name'] ?></li>
-                    <li><strong>Price:</strong> ₹<?= $fetch_product['price'] ?></li>
+                    <li><strong>Price:</strong> $<?= $fetch_product['price'] ?></li>
                     <li><strong>Stock:</strong> <?= $fetch_product['stock'] ?></li>
                     <li><strong>Expiry Date: </strong><?= date("d/m/Y", strtotime($fetch_product['expiry_date'])) ?></li>
                     <li><strong>Status: </strong><?= $fetch_product['status'] ?></li>
@@ -237,8 +284,8 @@ require_once('edit.php');
               <div class="col-12">
                 <label class="form-label text-color-2 text-normal">Product Image</label>
                 <img src="" alt="product" id="edit_img_prev" style="height: 100px;width: 100px;border: 1px solid lightblue;">
-                <input type="file" name="pimg" class="form-control">
-               
+                <input type="file" name="pimg[]" multiple class="form-control">
+
               </div>
 
               <div class="col-12 mt-5">
@@ -260,22 +307,22 @@ require_once('edit.php');
 ?>
 
 <script>
- document.getElementById('EditModal').addEventListener('show.bs.modal', function(event) {
+  document.getElementById('EditModal').addEventListener('show.bs.modal', function(event) {
 
-        let btn = event.relatedTarget;
-        let old_img = btn.getAttribute('data-img');
-        // alert(old_img);
-        document.getElementById('edit_p_id').value = btn.getAttribute('data-id');
-        document.getElementById('edit_pname').value = btn.getAttribute('data-name');
-        document.getElementById('edit_desc').value = btn.getAttribute('data-desc');
-        document.getElementById('edit_price').value = btn.getAttribute('data-price');
-        document.getElementById('edit_stock').value = btn.getAttribute('data-stock');
-        document.getElementById('edit_edate').value = btn.getAttribute('data-expiry');
-        document.getElementById('edit_status').value = btn.getAttribute('data-status');
-        document.getElementById('old_image').value = btn.getAttribute('data-img');
-        document.getElementById('edit_category').value = btn.getAttribute('data-category');
+    let btn = event.relatedTarget;
+    let old_img = btn.getAttribute('data-img');
+    // alert(old_img);
+    document.getElementById('edit_p_id').value = btn.getAttribute('data-id');
+    document.getElementById('edit_pname').value = btn.getAttribute('data-name');
+    document.getElementById('edit_desc').value = btn.getAttribute('data-desc');
+    document.getElementById('edit_price').value = btn.getAttribute('data-price');
+    document.getElementById('edit_stock').value = btn.getAttribute('data-stock');
+    document.getElementById('edit_edate').value = btn.getAttribute('data-expiry');
+    document.getElementById('edit_status').value = btn.getAttribute('data-status');
+    document.getElementById('old_image').value = btn.getAttribute('data-img');
+    document.getElementById('edit_category').value = btn.getAttribute('data-category');
 
-        // set image
-        document.getElementById('edit_img_prev').src = "upload/" + old_img;
+    // set image
+    document.getElementById('edit_img_prev').src = "All_images_uploads/" + old_img;
   });
 </script>

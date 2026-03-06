@@ -35,8 +35,8 @@ if (isset($_POST['filter_data']) && isset($_POST['search_data'])) {
         <div class="card text-center card-product">
           <form action="" method="post">
             <div class="card-product__img">
-              <h6 class="card-product__price">₹<?= $p['price'] ?></h6>
-              <a href="single-product.php?p_id=<?= $p['p_id'] ?>"><img class="card-img" src="../LearnAdmin/upload/<?= $p['image'] ?>" alt="product"></a>
+              <h6 class="card-product__price">$<?= $p['price'] ?></h6>
+              <a href="single-product.php?p_id=<?= $p['p_id'] ?>"><img class="card-img" src="../LearnAdmin/All_images_uploads/<?= $p['image'] ?>" alt="product"></a>
               <input type="hidden" name="product_id" value="<?= $p['p_id'] ?>">
               <input type="hidden" name="cart_id" value="<?= $p['p_id'] ?>">
               <ul class="card-product__imgOverlay">
@@ -99,7 +99,7 @@ try {
         <div class="container h-100">
           <div class="blog-banner">
             <div class="text-center">
-              <h1><?= $category_name ?></h1>
+              <h1>Top Category</h1>
               <nav aria-label="breadcrumb" class="banner-breadcrumb">
                 <ol class="breadcrumb">
                   <li class="breadcrumb-item"><a href="index.php">Home</a></li>
@@ -114,12 +114,12 @@ try {
 
 
       <!-- ================ category section start ================= -->
-      <section class="section-margin--small mb-5">
+      <section class="section-margin--small-ct mb-5">
         <div class="container shadow-lg" style="background: #ffffff;padding: 15px 15px 0;border-radius: 15px;">
           <div class="row ">
             
             
-            <div class="col-xl-12 col-lg-8 col-md-7">
+            <div class="col-xl-12 col-lg-8 col-md-7" id="css_media_category">
               <!-- Start Filter Bar -->
               <div class="filter-bar d-flex flex-wrap align-items-center shadow-sm">
                 <div class="sorting ">
@@ -162,7 +162,7 @@ try {
                   <h2 style="    color: #4a90e2;
     text-transform: capitalize;
     text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.3);"><?= $category_name ?></h2>
-                  <p><?= $cat_desc ?></p>
+                  <p data-aos="zoom-in"><?= $cat_desc ?></p>
                 </div>
                 <div class="row mt-3" id="product-list">
                   <!-- cards  -->
@@ -188,11 +188,11 @@ try {
                       $available_stock = $p['stock'];
                   ?>
                       <div class="col-md-6 col-lg-4">
-                        <div class="card text-center card-product">
+                        <div class="card text-center card-product animate__animated animate__fadeInUp">
                           <form action="" method="post">
                             <div class="card-product__img">
-                              <h6 class="card-product__price">₹<?= $p['price'] ?></h6>
-                              <a href="single-product.php?p_id=<?= $p['p_id'] ?>"><img class="card-img" src="../LearnAdmin/upload/<?= $p['image'] ?>" alt=""></a>
+                              <h6 class="card-product__price">$<?= $p['price'] ?></h6>
+                              <a href="single-product.php?p_id=<?= $p['p_id'] ?>"><img class="card-img" src="../LearnAdmin/All_images_uploads/<?= $p['image'] ?>" alt=""></a>
                               <input type="hidden" name="product_id" value="<?= $p['p_id'] ?>">
                               <input type="hidden" name="cart_id" value="<?= $p['p_id'] ?>">
                               <ul class="card-product__imgOverlay">
@@ -359,3 +359,51 @@ try {
     });
   });
 </script>
+<style>
+  /* ================= GLOBAL ================= */
+body{
+    background: linear-gradient(135deg,#f3f8ff,#eef7ff);
+    font-family: 'Poppins', sans-serif;
+}
+
+/* container card */
+.section-margin--small-ct .container{
+    background:#fff;
+    border-radius:18px;
+    padding:20px;
+    box-shadow:0 10px 30px rgba(0,0,0,.06);
+}
+
+
+/* ================= CATEGORY DESCRIPTION ================= */
+.description{
+    background:linear-gradient(135deg,#e8f2ff,#f5faff);
+    padding:25px;
+    border-radius:14px;
+    margin-bottom:25px;
+    text-align:center;
+}
+
+.description h2{
+    font-weight:700;
+    letter-spacing:.5px;
+    margin-bottom:10px;
+}
+
+.description p{
+    color:#6c7a92;
+    max-width:750px;
+    margin:auto;
+    text-align: justify;
+}
+
+
+
+/* ================= RESPONSIVE ================= */
+@media(max-width:768px){
+    .filter-bar-search input{
+        width:150px;
+    }
+}
+
+</style>

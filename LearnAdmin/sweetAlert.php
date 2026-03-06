@@ -17,6 +17,10 @@ if (isset($_SESSION['swal'])) {
             text: "<?= addslashes($swal['text']); ?>",
             icon: "<?= $swal['icon']; ?>",
             button: "OK"
+        }).then(()=>{
+           <?php  if(!empty($_SESSION['redirect'])){  ?>
+                window.location.href = "<?= $swal['redirect'] ?>";
+           <?php  } ?>
         });
     </script>
 <?php

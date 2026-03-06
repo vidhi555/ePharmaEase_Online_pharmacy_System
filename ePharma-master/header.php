@@ -11,7 +11,9 @@ if ($user_id) {
   $q->execute(['guest_id' => $gust_id]);
 }
 $count = $q->fetchColumn();
+
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -31,10 +33,12 @@ $count = $q->fetchColumn();
   <!-- Mobile no. with country code -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@18.1.1/build/css/intlTelInput.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+  <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet">
 
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-  <link rel="stylesheet" href="./css/style9.css">
+  <link rel="stylesheet" href="./css/style14.css">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
   <script>
     function confirm_order() {
@@ -138,7 +142,7 @@ $count = $q->fetchColumn();
         </div>
 
         <div class="flex-btn">
-          <a href="user_profile.php" class="btn">Profile</a>
+          <a href="user_profile.php" class="btn">My Account</a>
           <a href="logout.php" class="btn"
             onclick="return confirm('Logout from this website?');">Logout</a>
         </div>
@@ -164,35 +168,42 @@ $count = $q->fetchColumn();
     $gtotal = 0;
     if ($count > 0) {
       if ($user_id) {
-        $cart = $conn->prepare("SELECT * FROM ep_cart c JOIN ep_products p ON p.p_id = c.p_id where u_id = :user_id");
+        $cart = $conn->prepare("SELECT * FROM ep_cart c JOIN ep_products p ON p.p_id = c.p_id where u_id = :user_id ");
         $cart->execute(['user_id' => $user_id]);
       } else {
         $cart = $conn->prepare("SELECT * FROM ep_cart c JOIN ep_products p ON p.p_id = c.p_id where guest_id = :guest_id");
         $cart->execute(['guest_id' => $gust_id]);
       }
       $fetch_cart = $cart->fetchAll(PDO::FETCH_ASSOC);
-
-      if ($cart->rowCount() > 0) {
+      $total_product = $cart->rowCount();
+      if ($total_product > 0) {
         foreach ($fetch_cart as $cart) { ?>
           <div class="cart-item">
-            <img src="../LearnAdmin/upload/<?= $cart['image'] ?>" class="product-img">
+            <img src="../LearnAdmin/All_images_uploads/<?= $cart['image'] ?>" class="product-img">
             <div class="item-details">
               <h4><?= $cart['pname'] ?></h4>
               <p>Qty:<?= $cart['qty'] ?></p>
-              <p>₹<?= $cart['price'] ?></p>
+              <p>$<?= $cart['price'] ?></p>
             </div>
-
+            
             <!-- <a href="deletecart.php?cart_id=<?= $cart['cart_id'] ?>"><span class="delete">🗑</span></a> -->
           </div>
         <?php
           $total = $cart['qty'] * $cart['price'];
           $gtotal += $total;
         }
+       
         ?>
+
         <div class="subtotal">
           <span>Subtotal:</span>
-          <span>₹ <?= $gtotal ?></span>
+          <span>$ <?= number_format($gtotal,2) ?></span>
+          
         </div>
+         <!-- Buttons -->
+    <button class="btn-checkout" ><a href="checkout.php">Checkout</a></button>
+    <button class="btn-view"><a href="cart.php">View Cart</a></button>
+
       <?php
       }
     } else { ?>
@@ -201,10 +212,7 @@ $count = $q->fetchColumn();
     <?php  }
     ?>
 
-    <!-- Buttons -->
-    <button class="btn-checkout"><a href="checkout.php">Checkout</a></button>
-    <button class="btn-view"><a href="cart.php">View Cart</a></button>
-
+   
   </div>
 
   <script>

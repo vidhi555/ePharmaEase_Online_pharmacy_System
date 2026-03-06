@@ -10,45 +10,9 @@ require_once("PHPMailer/src/SMTP.php");
 require_once('db.php');
 $mid = $_GET['msg_id'];
 
+$page_title = "Message Detail";
+require_once('header2.php');
 ?>
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Message Detail</title>
-    <!-- Stylesheets -->
-    <link rel="shortcut icon" href="./assets/images/logo6.ico" type="image/x-icon">
-    <link href="./assets/css/bootstrap.min.css" rel="stylesheet">
-    <link href="./assets/icons/fontawesome/css/fontawesome.min.css" rel="stylesheet">
-    <link href="./assets/icons/fontawesome/css/brands.min.css" rel="stylesheet">
-    <link href="./assets/icons/fontawesome/css/solid.min.css" rel="stylesheet">
-    <link href="./assets/plugin/quill/quill.snow.css" rel="stylesheet">
-    <link href="./assets/css/style4.css" rel="stylesheet">
-
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
-        function confirmDelete(id) {
-            Swal.fire({
-                title: 'Are you sure?',
-                text: "Do you really want to delete these Message?",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'OK',
-                cancelButtonText: 'Cancel',
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    // Redirect or AJAX call
-                    window.location.href = "delete_message.php?msg_id=" + id;
-                }
-            });
-        }
-    </script>
-</head>
-
 <body>
     <!-- Preloader -->
     <div id="preloader">
@@ -77,7 +41,13 @@ $mid = $_GET['msg_id'];
                     <div class="col-12">
                         <div class="d-flex align-items-lg-center  flex-column flex-md-row flex-lg-row mt-3">
                             <div class="flex-grow-1">
-                                <h3 class="mb-2 text-color-2"><a href="message_report.php">Back</a> > Message Detail</h3>
+                            <nav>
+                                <ol class="breadcrumb">
+                                    <li class="breadcrumb-item"><a href="index.php">Home</a></li>
+                                    <li class="breadcrumb-item"><a href="message_report.php">Message</a></li>
+                                    <li class="breadcrumb-item active">Message Details</li>
+                                </ol>
+                                </nav>
                             </div>
 
                         </div><!-- end card header -->
@@ -108,7 +78,7 @@ $mid = $_GET['msg_id'];
                                                 data-bs-target="#categoryEditModal"
                                                 class="icon-btn edit"
                                                 class="icon-btn edit"><i class="fas fa-reply"></i></button>
-                                            <button class="icon-btn delete" onclick="confirmDelete(<?= $fetch_msg['msg_id'] ?>)"><i class="fas fa-trash"></i></button>
+                                            <button class="icon-btn delete" onclick="confirmDelete(<?= $fetch_msg['msg_id'] ?>,'delete_message.php?msg_id=')"><i class="fas fa-trash"></i></button>
                                         </div>
                                     </div>
 
@@ -118,6 +88,7 @@ $mid = $_GET['msg_id'];
                                     <p class="product-desc"><strong>Message:</strong>
                                         "<?= $fetch_msg['message'] ?? 'No description available.' ?>"
                                     </p>
+                                    <p class="product-desc"><strong>Date: </strong><?= date('d/m/Y',strtotime($fetch_msg['message_at'])) ?></p>
                                     <p class="text-muted">
                                         <strong>Status:</strong>
                                         <?php if ($fetch_msg['status'] == 'New') { ?>

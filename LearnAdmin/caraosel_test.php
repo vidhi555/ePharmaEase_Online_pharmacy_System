@@ -171,7 +171,7 @@
               <div class="card text-center card-product">
                 <form action="" method="post">
                 <div class="card-product__img">
-                  <img class="card-img" src="../LearnAdmin/upload/<?= $p['image'] ?>" alt="">
+                  <img class="card-img" src="../LearnAdmin/All_images_uploads/<?= $p['image'] ?>" alt="">
                   <input type="hidden" name="product_id" value="<?= $p['p_id'] ?>">
                       <input type="hidden" name="cart_id" value="<?= $p['p_id'] ?>">
                   <ul class="card-product__imgOverlay">
@@ -192,7 +192,7 @@
                   </h6>
                   <p style="text-transform: capitalize;"><?= $p['category_name'] ?></p>
                   <h4 class="card-product__title"><a href="single-product.php?p_id=<?= $p['p_id'] ?>"><?= $p['name'] ?></a></h4>
-                  <p class="card-product__price">₹<?= $p['price'] ?></p>
+                  <p class="card-product__price">$<?= $p['price'] ?></p>
                 </div>
                 </form>
               </div>
@@ -239,7 +239,7 @@
               <div class="card text-center card-product">
                 <form action="" method="post">
                 <div class="card-product__img">
-                  <img class="card-img" src="../LearnAdmin/upload/<?= $p['image'] ?>" alt="">
+                  <img class="card-img" src="../LearnAdmin/All_images_uploads/<?= $p['image'] ?>" alt="">
                   <input type="hidden" name="product_id" value="<?= $p['p_id'] ?>">
                       <input type="hidden" name="cart_id" value="<?= $p['p_id'] ?>">
                   <ul class="card-product__imgOverlay">
@@ -252,7 +252,7 @@
                 <div class="card-body">
                   <p><?= $p['category_name'] ?></p>
                   <h4 class="card-product__title"><a href="single-product.php?p_id=<?= $p['p_id'] ?>"><?= $p['name'] ?></a></h4>
-                  <p class="card-product__price">₹<?= $p['price'] ?></p>
+                  <p class="card-product__price">$<?= $p['price'] ?></p>
                 </div>
                 </form>
               </div>

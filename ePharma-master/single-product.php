@@ -1,19 +1,23 @@
 <?php
 require_once("connection/db.php");
 
-$pid = $pid = $_GET['p_id'] ?? '';
+$pid = $_GET['p_id'] ?? '';
 // require_once('insert_cart_logic.php');
+
+$user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : NULL;
+$guest_id = !$user_id ? session_id() : NULL;
+
+// echo "User:$user_id";
+// echo "Guest:$guest_id";
+// die();
 
 if (isset($_POST['cart'])) {
     try {
         //   $pid = $_POST['product_id'];
         //   $user_id = $_SESSION['user_id'];
-        if (!isset($_SESSION['user_id'])) {
-            $user_id = "";
-            sweetAlert("Alert", "Please Login First!", "warning");
-        } else {
-            $user_id = $_SESSION['user_id'];
-            // check product already in cart
+
+
+        if($user_id){
             $check = $conn->prepare(
                 "SELECT cart_id FROM ep_cart WHERE p_id = :pid AND u_id = :uid"
             );
@@ -21,6 +25,15 @@ if (isset($_POST['cart'])) {
                 'pid' => $pid,
                 'uid' => $user_id
             ]);
+        }else{
+            $check = $conn->prepare(
+                "SELECT cart_id FROM ep_cart WHERE p_id = :pid AND guest_id = :gid"
+            );
+            $check->execute([
+                'pid' => $pid,
+                'gid' => $guest_id
+            ]);
+        }
             if ($check->rowCount() > 0) {
                 sweetAlert("Already in your cart!!", "This product is Already exist in your cart!!!", "warning");
             } else {
@@ -38,20 +51,70 @@ if (isset($_POST['cart'])) {
                 } else {
                     // insert into cart
                     $insert = $conn->prepare(
-                        "INSERT INTO ep_cart (u_id, p_id, pname, qty, price)
-                     VALUES (:uid, :pid, :pname, :qty, :price)"
+                        "INSERT INTO ep_cart (u_id, p_id, pname, qty, price,guest_id)
+                     VALUES (:uid, :pid, :pname, :qty, :price ,:gid)"
                     );
                     $insert->execute([
                         'uid'   => $user_id,
                         'pid'   => $pid,
                         'pname' => $p['name'],
                         'qty'   => $_POST['qty'],
-                        'price' => $p['price']
+                        'price' => $p['price'],
+                        'gid'=>$guest_id
                     ]);
                     sweetAlert("Item Added!", "Successfully Added in Your cart!", "success");
                 }
             }
-        }
+
+
+
+
+
+
+        // if (!isset($_SESSION['user_id'])) {
+        //     $user_id = "";
+        //     sweetAlert("Alert", "Please Login First!", "warning");
+        // } else {
+        //     $user_id = $_SESSION['user_id'];
+        //     // check product already in cart
+        //     $check = $conn->prepare(
+        //         "SELECT cart_id FROM ep_cart WHERE p_id = :pid AND u_id = :uid"
+        //     );
+        //     $check->execute([
+        //         'pid' => $pid,
+        //         'uid' => $user_id
+        //     ]);
+        //     if ($check->rowCount() > 0) {
+        //         sweetAlert("Already in your cart!!", "This product is Already exist in your cart!!!", "warning");
+        //     } else {
+
+        //         // fetch product
+        //         $product = $conn->prepare(
+        //             "SELECT name, price FROM ep_products WHERE p_id = :pid"
+        //         );
+        //         $product->execute(['pid' => $pid]);
+        //         $p = $product->fetch(PDO::FETCH_ASSOC);
+
+        //         if (!$p) {
+        //             // $_SESSION['warning'] = "Product not found";
+        //             sweetAlert("Error!", "Product Not Found!!", "warning");
+        //         } else {
+        //             // insert into cart
+        //             $insert = $conn->prepare(
+        //                 "INSERT INTO ep_cart (u_id, p_id, pname, qty, price)
+        //              VALUES (:uid, :pid, :pname, :qty, :price)"
+        //             );
+        //             $insert->execute([
+        //                 'uid'   => $user_id,
+        //                 'pid'   => $pid,
+        //                 'pname' => $p['name'],
+        //                 'qty'   => $_POST['qty'],
+        //                 'price' => $p['price']
+        //             ]);
+        //             sweetAlert("Item Added!", "Successfully Added in Your cart!", "success");
+        //         }
+        //     }
+        // }
     } catch (PDOException $e) {
         // echo "ERROR: " . $e->getMessage();
         sweetAlert("Error!", "$e", "error");
@@ -76,7 +139,7 @@ require_once('header.php') ?>
                 <nav aria-label="breadcrumb" class="banner-breadcrumb">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item"><a href="index.php">Home</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Choose the Right Medicine</li>
+                        <li class="breadcrumb-item active" aria-current="page">Product Detail</li>
                     </ol>
                 </nav>
             </div>
@@ -88,7 +151,7 @@ require_once('header.php') ?>
 <?php
 try {
     //Display Specific Product
-    $query = $conn->prepare("SELECT * FROM ep_products p JOIN ep_category c ON c.c_id = p.c_id WHERE p_id = $pid AND status = 'Active'");
+    $query = $conn->prepare("SELECT p.* , c.category_name FROM ep_products p JOIN ep_category c ON c.c_id = p.c_id WHERE p_id = $pid AND status = 'Active'");
     $query->execute();
     $product = $query->fetch(PDO::FETCH_ASSOC);
 
@@ -97,23 +160,44 @@ try {
             <div class="container">
                 <div class="row s_product_inner ">
                     <div class="col-lg-6 slide-right">
-                        <div class="owl-carousel owl-theme s_Product_carousel" style="background: #f6f6f6;border-radius:20px;">
-                            <div class="single-prd-item">
-                                <img class="img-fluid" src="../LearnAdmin/upload/<?= $product['image'] ?>" alt="p_image">
+                        <div class="owl-carousel owl-theme s_Product_carousel" style="background: #f6f6f6;border-radius:20px;" >
+                            <?php 
+                                try{
+                                    $get_image = $conn->prepare("SELECT * FROM ep_image_gallery WHERE p_id = :pid");
+                                    $get_image->execute(['pid'=>$pid]);
+                                    $fetch_iamge = $get_image->fetchAll(PDO::FETCH_ASSOC);
+                                    foreach($fetch_iamge as $a){
+                                        ?>
+                                    <div class="single-prd-item" style="    width: 635px;
+    margin-left: 1px;">
+                                        <img style="display: block;
+    width: 100%;
+    height: 500px;
+    border: 1px solid #333;
+    object-fit: contain;
+    border-radius: 70px;
+    position: relative;" class="img-fluid" src="../LearnAdmin/All_images_uploads/<?= $a['image_name'] ?>" alt="p_image" >
+                                    </div>
+                                        <?php
+                                    }
+                                }catch(PDOException $e){
+                                    echo $e;
+                                }
+                            ?>
+                            
+                            <!-- <div class="single-prd-item">
+                                <img class="img-fluid" src="img/images__2_-removebg-preview.png" alt="" style="width: 100%;">
                             </div>
                             <div class="single-prd-item">
-                                <img class="img-fluid" src="../LearnAdmin/upload/<?= $product['image'] ?>" alt="">
-                            </div>
-                            <div class="single-prd-item">
-                                <img class="img-fluid" src="../LearnAdmin/upload/<?= $product['image'] ?>" alt="">
-                            </div>
+                                <img class="img-fluid" src="img/713auhs-O9L._AC_UF1000,1000_QL80_.jpg" style="width: 100%;">
+                            </div> -->
                         </div>
                     </div>
                     <div class="col-lg-5 offset-lg-1 slide-left">
                         <form action="" method="post">
                             <div class="s_product_text">
-                                <h2 style="color:#1565c0;"><?= $product['name'] ?></h2>
-                                <p><?= $product['description'] ?></p>
+                                <h3 style="color:#1565c0;"><?= $product['name'] ?></h3>
+                                <p style="text-align: justify;"><?= $product['description'] ?></p>
                                 <ul class="list">
                                     <input type="hidden" name="product_id" value="<?= $product['p_id'] ?>">
                                     <input type="hidden" name="cart_id" value="<?= $product['p_id'] ?>">
@@ -125,13 +209,13 @@ try {
                                 </ul>
 
                                 <div class="product_count">
-                                    <h2>₹<?= $product['price'] ?></h2>
+                                    <h2>$<?= $product['price'] ?></h2>
                                     <label for="qty">Quantity:</label>
-                                    <input type="number" name="qty" min="1" value="1" class="increase items-count">
+                                    <input type="number" name="qty" min="1" max="<?= $product['stock'] ?>" value="1" class="increase items-count">
 
                                     <!-- <a class="button primary-btn" name="cart" href="cart.php?p_id=<?= $product['p_id'] ?>">Add to Cart</a> -->
                                 </div>
-                                <button type="submit" class="btn btn-primary" name="cart">Add To Cart</button>
+                                <button type="submit" class="btn btn-primary" name="cart" style="font-family: 'Roboto';margin-left: 10px;">Add To Cart</button>
 
                                 <!-- <div class="card_area d-flex align-items-center">
 									<a class="icon_btn" href="#"><i class="lnr lnr lnr-diamond"></i></a>
@@ -204,30 +288,31 @@ try {
     <div class="container">
         <ul class="nav nav-tabs" id="myTab" role="tablist">
             <li class="nav-item">
-                <a class="nav-link" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true">Description</a>
+                <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true">Description</a>
             </li>
-            <!-- <li class="nav-item">
+                <li class="nav-item">
 					<a class="nav-link" id="profile-tab" data-toggle="tab" href="#profile" role="tab" aria-controls="profile"
-						aria-selected="false">Specification</a>
+						aria-selected="false">Additional Information</a>
 				</li>
-				<li class="nav-item">
+				<!-- <li class="nav-item"> 
 					<a class="nav-link" id="contact-tab" data-toggle="tab" href="#contact" role="tab" aria-controls="contact"
 						aria-selected="false">Comments</a> -->
             </li>
             <li class="nav-item">
-                <a class="nav-link active" id="review-tab" data-toggle="tab" href="#review" role="tab" aria-controls="review"
+                <a class="nav-link" id="review-tab" data-toggle="tab" href="#review" role="tab" aria-controls="review"
                     aria-selected="false">Reviews</a>
             </li>
         </ul>
         <div class="tab-content" id="myTabContent">
-            <div class="tab-pane fade" id="home" role="tabpanel" aria-labelledby="home-tab">
+            <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
                 <?php
                 //Display Specific Product
-                $query = $conn->prepare("SELECT * FROM ep_products p JOIN ep_category c ON c.c_id = p.c_id WHERE p_id = $pid");
+                $query = $conn->prepare("SELECT p.*,c.category_name FROM ep_products p JOIN ep_category c ON c.c_id = p.c_id WHERE p_id = $pid");
                 $query->execute();
                 $product = $query->fetch(PDO::FETCH_ASSOC);
 
                 ?>
+                <h3 style="color: #1565c0;">Description:</h3>
                 <p class="text-muted" style="text-align: justify;"><?= $product['description'] ?></p>
 
             </div>
@@ -235,38 +320,24 @@ try {
                 <div class="table-responsive">
                     <table class="table">
                         <tbody>
+                            
                             <tr>
                                 <td>
-                                    <h5>Width</h5>
+                                    <h5>Category Name</h5>
                                 </td>
                                 <td>
-                                    <h5>128mm</h5>
+                                    <h5><?= $product['category_name'] ?></h5>
                                 </td>
                             </tr>
                             <tr>
                                 <td>
-                                    <h5>Height</h5>
+                                    <h5>Generic Name</h5>
                                 </td>
                                 <td>
-                                    <h5>508mm</h5>
+                                    <h5><?= $product['name'] ?></h5>
                                 </td>
                             </tr>
-                            <tr>
-                                <td>
-                                    <h5>Depth</h5>
-                                </td>
-                                <td>
-                                    <h5>85mm</h5>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <h5>Weight</h5>
-                                </td>
-                                <td>
-                                    <h5>52gm</h5>
-                                </td>
-                            </tr>
+                            
                             <tr>
                                 <td>
                                     <h5>Quality checking</h5>
@@ -275,14 +346,7 @@ try {
                                     <h5>yes</h5>
                                 </td>
                             </tr>
-                            <tr>
-                                <td>
-                                    <h5>Freshness Duration</h5>
-                                </td>
-                                <td>
-                                    <h5>03days</h5>
-                                </td>
-                            </tr>
+                            
                             <tr>
                                 <td>
                                     <h5>When packeting</h5>
@@ -291,14 +355,14 @@ try {
                                     <h5>Without touch of hand</h5>
                                 </td>
                             </tr>
-                            <tr>
+                            <!-- <tr>
                                 <td>
                                     <h5>Each Box contains</h5>
                                 </td>
                                 <td>
                                     <h5>60pcs</h5>
                                 </td>
-                            </tr>
+                            </tr> -->
                         </tbody>
                     </table>
                 </div>
@@ -386,7 +450,7 @@ try {
                     </div>
                 </div>
             </div>
-            <div class="tab-pane fade show active" id="review" role="tabpanel" aria-labelledby="review-tab">
+            <div class="tab-pane fade " id="review" role="tabpanel" aria-labelledby="review-tab">
                 <div class="row">
                     <div class="col-lg-6">
                         <div class="row total_rate">
@@ -517,7 +581,7 @@ try {
                         <div class="review_list">
                             <?php
                             try {
-                                $query = $conn->prepare("SELECT * FROM ep_review r JOIN ep_users p ON r.u_id = p.u_id WHERE p_id = :pid ORDER BY rate DESC");
+                                $query = $conn->prepare("SELECT * FROM ep_review r JOIN ep_users p ON r.u_id = p.u_id WHERE p_id = :pid");
                                 $query->execute(['pid' => $pid]);
                                 $fetch_review = $query->fetchAll(PDO::FETCH_ASSOC);
                                 $count = $query->rowCount();
@@ -527,6 +591,7 @@ try {
                                         <h4><?= $count ?> review for <?= $product['name'] ?>:</h4>
                                         <hr>
                                     </div>
+                                    
                                     <?php
                                     foreach ($fetch_review as $rev) {
                                     ?>
@@ -559,10 +624,49 @@ try {
                             } catch (PDOException $e) {
                                 echo $e;
                             }
-                            ?>
-
-
+                            if($count > 2){
+                                ?>
+                                 <!-- Arrow Button -->
+                        <div class=" text-center">
+                            <button id="loadmore" class="load_more_btn"><i class="fa fa-arrow-down"></i></button>
                         </div>
+                                <?php } ?>
+                       
+                            
+                        
+                        </div>
+                        <style>
+                            .review_item{
+                                display: none;
+                            }
+                            
+                            #loadmore.active i{
+                                transform: rotate(180deg);
+                                transition: 0.3s;
+                            }
+                        </style>
+                        <script>
+                            $(document).ready(function(){
+                                let expand = false;
+                                 $(".review_item").slice(0,5).show();
+                                $("#loadmore").on("click",function(){
+                                    // alert("HEllo");
+                                   
+                                    if(!expand){
+                                        $(".review_item:hidden").slice(0,5).slideDown();
+                                        $(this).addClass("active");
+                                        expand =true;
+                                        //  alert("Show");
+                                    }else{
+                                       
+                                        $(".review_item").slice(5).slideUp();
+                                        $(this).removeClass("active");
+                                        expand = false;
+                                        //  alert("Not");
+                                    }
+                                });
+                            });
+                        </script>
                     </div>
                     <div class="col-lg-6">
                         <div class="review_box">
@@ -672,7 +776,9 @@ try {
 <?php
 try {
     if (isset($_POST['review'])) {
-        $uid = $_SESSION['user_id'];
+        $user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : NULL;
+        $guest_id = !$user_id ? session_id() : NULL;
+
 
         // $name = $_POST['name'];
         // $email = $_POST['email'];
@@ -682,30 +788,44 @@ try {
         // echo $rate;
         // die();
 
-        $check = $conn->prepare("SELECT * FROM ep_cart WHERE p_id = :pid AND u_id = :uid ");
-        $check->execute([
-            'pid' => $pid,
-            'uid' => $user_id
-        ]);
+        if($user_id){
+            $check = $conn->prepare("SELECT * FROM ep_cart WHERE p_id = :pid AND u_id = :uid ");
+            $check->execute([
+                'pid' => $pid,
+                'uid' => $user_id
+            ]);
+        }else{
+            $check = $conn->prepare("SELECT * FROM ep_cart WHERE p_id = :pid AND guest_id = :gid ");
+            $check->execute([
+                'pid' => $pid,
+                'gid' => $guest_id
+            ]);
+        }
         $fetch_pid = $check->fetch(PDO::FETCH_ASSOC);
         $cart_pid = $fetch_pid['p_id'] ?? '';
+        
         if ($cart_pid != $pid) {
-            sweetAlert("First, Add to cart this Product!!!!", "", "warning");
+            sweetAlert("First, Add to cart this Product!!!!", "You Can Send Review After Purchasing It.", "warning");
         } else {
             if (empty($subject) || empty($message) || empty($rate) || empty($pid)) {
                 sweetAlert("Fill the required fields!!!", "", "warning");
             } else {
 
-                $query = "INSERT INTO `ep_review`( `u_id`, `title`, `description`, `rate`, `p_id`) VALUES (:uid, :title , :description , :rate, :pid)";
-                $review = $conn->prepare($query);
-                $review->execute([
-                    'uid' => $uid,
-                    'title' => $subject,
-                    'description' => $message,
-                    'rate' => $rate,
-                    'pid' => $pid,
-                ]);
-                sweetAlert("Review Submitted successfully.", " ", "success");
+                if($user_id){
+                    $query = "INSERT INTO `ep_review`( `u_id`, `title`, `description`, `rate`, `p_id`) VALUES (:uid, :title , :description , :rate, :pid)";
+                    $review = $conn->prepare($query);
+                    $review->execute([
+                        'uid' => $uid,
+                        'title' => $subject,
+                        'description' => $message,
+                        'rate' => $rate,
+                        'pid' => $pid,
+                    ]);
+                    sweetAlert("Review Submitted successfully.", " ", "success");
+                }else{
+                    sweetAlert("Access Denied!", "Guest users are not allowed to submit reviews. Please login first.", "warning");
+                }
+                
             }
         }
     }

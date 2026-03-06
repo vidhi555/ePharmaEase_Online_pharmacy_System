@@ -31,8 +31,8 @@ if (isset($_POST['filter_data']) && isset($_POST['search_data'])) {
                 <div class="card text-center card-product">
                     <form action="" method="post">
                         <div class="card-product__img">
-                            <h6 class="card-product__price">₹<?= $p['price'] ?></h6>
-                            <a href="single-product.php?p_id=<?= $p['p_id'] ?>"><img class="card-img" src="../LearnAdmin/upload/<?= $p['image'] ?>" alt="product"></a>
+                            <h6 class="card-product__price">$<?= $p['price'] ?></h6>
+                            <a href="single-product.php?p_id=<?= $p['p_id'] ?>"><img class="card-img" src="../LearnAdmin/All_images_uploads/<?= $p['image'] ?>" alt="product"></a>
                             <input type="hidden" name="product_id" value="<?= $p['p_id'] ?>">
                             <input type="hidden" name="cart_id" value="<?= $p['p_id'] ?>">
                             <ul class="card-product__imgOverlay">

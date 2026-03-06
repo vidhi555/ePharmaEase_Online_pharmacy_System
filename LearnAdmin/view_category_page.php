@@ -23,7 +23,7 @@ if (isset($_POST['update'])) {
     $errors[] = "Invalid Image Size!";
   }
 
-  $target = "category/" . basename($img_name);
+  $target = "All_images_uploads/" . basename($img_name);
   //move_uploaded_file($tempimg,$target);
   if (!in_array(strtolower($ext), $allowed)) {
     $errors[] = "Invalid image format!!";
@@ -56,47 +56,10 @@ if (isset($_POST['update'])) {
   }
 }
 
+$page_title = "Category details";
+require_once('header2.php');
 ?>
-<!DOCTYPE html>
-<html lang="en">
 
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>category Detail</title>
-  <!-- Stylesheets -->
-  <link rel="shortcut icon" href="./assets/images/logo6.ico" type="image/x-icon">
-  <link href="./assets/css/bootstrap.min.css" rel="stylesheet">
-  <link href="./assets/icons/fontawesome/css/fontawesome.min.css" rel="stylesheet">
-  <link href="./assets/icons/fontawesome/css/brands.min.css" rel="stylesheet">
-  <link href="./assets/icons/fontawesome/css/solid.min.css" rel="stylesheet">
-  <link href="./assets/plugin/quill/quill.snow.css" rel="stylesheet">
-  <link href="./assets/css/style4.css" rel="stylesheet">
-
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <script>
-    function confirmDelete(id) {
-      Swal.fire({
-        title: 'Are you sure?',
-        text: "Do you really want to delete these Category?",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'OK',
-        cancelButtonText: 'Cancel',
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          // Redirect or AJAX call
-          window.location.href = "delete_category.php?p_id=" + id;
-        }
-      });
-    }
-  </script>
-</head>
-<style>
-
-</style>
 
 <body>
   <!-- Preloader -->
@@ -126,7 +89,14 @@ if (isset($_POST['update'])) {
           <div class="col-12">
             <div class="d-flex align-items-lg-center  flex-column flex-md-row flex-lg-row mt-3">
               <div class="flex-grow-1">
-                <h3 class="mb-2 text-color-2"><a href="category.php">Back</a> > Category Detail</h3>
+                <!-- <h3 class="mb-2 text-color-2"><a href="category.php">Back</a> > Category Detail</h3> -->
+                <nav>
+                  <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="index.php">Home</a></li>
+                    <li class="breadcrumb-item"><a href="category.php">Category</a></li>
+                    <li class="breadcrumb-item active">Category Details</li>
+                  </ol>
+                </nav>
               </div>
 
             </div><!-- end card header -->
@@ -147,7 +117,7 @@ if (isset($_POST['update'])) {
               <!-- Main content -->
               <div class="product-detail-card">
                 <div class="product-left">
-                  <img src="category/<?= $fetch_product['cat_image'] ?>" alt="Product Image">
+                  <img src="All_images_uploads/<?= $fetch_product['cat_image'] ?>" alt="Product Image">
                 </div>
 
                 <div class="product-right">
@@ -165,7 +135,7 @@ if (isset($_POST['update'])) {
                         data-cname="<?= htmlspecialchars($fetch_product['category_name']) ?>"
                         data-cdesc="<?= htmlspecialchars($fetch_product['description']) ?>"
                         data-cimg="<?= $fetch_product['cat_image'] ?>"><i class="fa-regular fa-pen-to-square"></i></button>
-                      <button class="icon-btn delete" onclick="confirmDelete(<?= $fetch_product['c_id'] ?>)"><i class="fas fa-trash"></i></button>
+                      <button class="icon-btn delete" onclick="confirmDelete(<?= $fetch_product['c_id'] ?>,'delete_category.php?p_id=')"><i class="fas fa-trash"></i></button>
 
 
                     </div>
@@ -238,6 +208,6 @@ if (isset($_POST['update'])) {
         document.getElementById('edit_category').value = btn.getAttribute('data-cname');
         document.getElementById('categorydescedit').value = btn.getAttribute('data-cdesc');
         document.getElementById('old_image').value = image; 
-        document.getElementById('edit_img_prev').src = "category/"+image; 
+        document.getElementById('edit_img_prev').src = "All_images_uploads/"+image; 
       });
 </script>

@@ -8,7 +8,7 @@ require_once('header.php');
 ?>
 
 <!-- ================ start banner area ================= -->
-<section class="blog-banner-area fade-up" id="category">
+<section class="blog-banner-area" data-aos="fade-in" id="category">
     <div class="container h-100">
         <div class="blog-banner">
             <div class="text-center">
@@ -32,7 +32,7 @@ require_once('header.php');
 
             <div class="col-lg-6 mb-4 mb-lg-0 slide-right">
                 <div class="about_image">
-                    <img class="img-fluid rounded" src="img/home/enhance_aakw5bno4hln8a2w2g3e.png" alt="About ePharmaEase">
+                    <img class="img-fluid rounded" src="img/download.jpg" alt="About ePharmaEase">
                 </div>
             </div>
 
@@ -66,11 +66,15 @@ require_once('header.php');
 <!--================End about us Area =================-->
 <section class="section-margin testimonial-section">
     <div class="container">
-
+        <div class="title_crat text-center" data-aos="fade-up">
+            <h3>Ratings & Reviews</h3>
+            <img src="img/image-removebg-preview.png" alt="">
+        </div>
+   
         <div class="testimonial-wrapper">
 
             <!-- LEFT CONTENT -->
-            <div class="testimonial-left">
+            <div class="testimonial-left" data-aos="fade-right">
                 <h2>Our Happy Customers</h2>
                 <p>
                     Our happy customers are a reflection of our commitment to quality and care. At ePharmaEase, we ensure reliable service, genuine medicines, and timely delivery, making healthcare more accessible and convenient for everyone.
@@ -78,11 +82,11 @@ require_once('header.php');
             </div>
 
             <!-- RIGHT CAROUSEL -->
-            <div class="testimonial-carousel">
+            <div class="testimonial-carousel" data-aos="fade-left">
 
                 <?php
                 try {
-                    $rev = $conn->prepare("SELECT * FROM ep_review r JOIN ep_users u ON r.u_id = u.u_id");
+                    $rev = $conn->prepare("SELECT * FROM ep_review r JOIN ep_users u ON r.u_id = u.u_id WHERE rate >= 4");
                     $rev->execute();
                     $fetch_rev = $rev->fetchAll(PDO::FETCH_ASSOC);
                     $count = 0;

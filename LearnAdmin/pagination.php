@@ -50,13 +50,13 @@ if ($res->execute()) {
             <td><input type="checkbox" class="custom-checkbox row-checkbox"></td>
             <td>
                 <div class="d-flex justify-content-start align-items-center">
-                    <img src="./upload/<?= $p['image'] ?>" class="tbl-img" alt="img">
+                    <img src="./All_images_uploads/<?= $p['image'] ?>" class="tbl-img" alt="img">
                     <span class="ms-2"><?= $p['name'] ?></span>
                 </div>
             </td>
-            <!-- <td><img class="tbl-img"  src="upload/<?= $p['image'] ?>" alt=""></td> -->
+            <!-- <td><img class="tbl-img"  src="All_images_uploads/<?= $p['image'] ?>" alt=""></td> -->
             <td style="width: 1000px;word-wrap: break-word;white-space: normal;"><?= $p['description'] ?></td>
-            <td>₹<?= $p['price'] ?></td>
+            <td>$<?= $p['price'] ?></td>
             <td><?= $p['stock'] ?></td>
             <td>
                 <?= $p['category_name']  ?>

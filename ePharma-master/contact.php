@@ -8,7 +8,7 @@ if (isset($_POST['contact'])) {
   $subject = $_POST['subject'];
   $message = $_POST['message'];
 
-  if (empty($name) || empty($email) || empty($subject) || empty($message)) {
+  if (empty($name) || empty($email) || empty($subject) ) {
     $errors[] = "All Fields are Required!!!";
   }
   if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -37,7 +37,7 @@ require_once('header.php') ?>
 <!--================ End Header Menu Area =================-->
 
 <!-- ================ start banner area ================= -->
-<section class="blog-banner-area fade-up" id="contact">
+<section class="blog-banner-area" data-aos="fade-in" id="contact">
   <div class="container h-100">
     <div class="blog-banner">
       <div class="text-center">
@@ -68,7 +68,7 @@ require_once('header.php') ?>
       </div>
     <?php } ?>
 
-    <div class="row" style="background: aliceblue;padding: 35px;border-radius: 10px;font-size: medium;font-family: sans-serif;text-transform: capitalize;box-shadow: 0 0 5px #333;">
+    <div class="row" style="background: aliceblue;padding: 35px;border-radius: 10px;font-size: medium;font-family: sans-serif;text-transform: capitalize;box-shadow: 0 0 5px #333;" data-aos="fade-up">
       <div class="col-md-4 col-lg-3 mb-4 mb-md-0" style="border-right: 1px solid darkgray;line-height: 50px;">
         <div class="media contact-info">
           <span class="contact-info__icon"><i class="ti-home"></i></span>
@@ -84,8 +84,8 @@ require_once('header.php') ?>
           <span class="contact-info__icon"><i class="ti-mobile"></i></span>
           <div class="media-body">
             <h3><a href="tel:9876543210">+91 98765 43210</a></h3>
-            <p>Mon - Fri: 9am to 6pm <br>
-              sat - sun: 10am to 2pm</p>
+            <p>Mon - Fri: 9am to 9pm <br>
+              Sat - Sun: 9am to 2pm</p>
             <hr>
           </div>
         </div>
@@ -141,7 +141,32 @@ require_once('header.php') ?>
 </section>
 <!-- ================ contact section end ================= -->
 
+<?php require_once("features.php"); ?>
 
+<!-- ================ Subscribe section start ================= -->
+<section class="subscribe-position">
+  <div class="container">
+    <div class="subscribe text-center" data-aos="fade-up">
+      <h3 class="subscribe__title">Get Update From Anywhere</h3>
+      <p>Bearing Void gathering light light his eavening unto dont afraid</p>
+      <div id="mc_embed_signup">
+        <form target="_blank" action="https://spondonit.us12.list-manage.com/subscribe/post?u=1462626880ade1ac87bd9c93a&amp;id=92a4423d01" method="get" class="subscribe-form form-inline mt-5 pt-1">
+          <div class="form-group ml-sm-auto">
+            <input class="form-control mb-1" type="email" name="EMAIL" placeholder="Enter your email" onfocus="this.placeholder = ''" onblur="this.placeholder = 'Your Email Address '">
+            <div class="info"></div>
+          </div>
+          <button class="button button-subscribe mr-auto mb-1" type="submit">Subscribe Now</button>
+          <div style="position: absolute; left: -5000px;">
+            <input name="b_36c4fd991d266f23781ded980_aefe40901a" tabindex="-1" value="" type="text">
+          </div>
+
+        </form>
+      </div>
+
+    </div>
+  </div>
+</section>
+<!-- ================ Subscribe section end ================= -->
 
 <!--================ Start footer Area  =================-->
 <?php require_once('footer.php'); ?>

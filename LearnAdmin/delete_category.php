@@ -14,6 +14,7 @@ try {
         if (!$query) {
             echo "Query Fail";
         }
+        sweetAlert("Deleted!","Customer Delete Successfully!","success","customers.php");
         header("Location:customers.php");
     }
     if (isset($_REQUEST['c_id'])) {
@@ -25,6 +26,7 @@ try {
         if (!$query) {
             echo "Query Fail";
         }
+        sweetAlert("Deleted!","Category Delete Successfully!","success","category.php");
         header("Location:category.php");
     }
     if (isset($_REQUEST['o_id'])) {
@@ -43,6 +45,7 @@ try {
         if (!$query2) {
             echo "Query Fail";
         }
+        sweetAlert("Deleted!","Order Delete Successfully!","success","orders.php");
         header("Location:orders.php");
     }
 } catch (PDOException $e) {

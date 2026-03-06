@@ -23,10 +23,10 @@ $features = [
     ]
 ];
 ?>
-<section class="feature-section">
-    <div class="feature-container">
+<section class="feature-section" >
+    <div class="feature-container" data-aos="fade-up">
         <?php foreach($features as $feature): ?>
-            <div class="feature-card">
+            <div class="feature-card" >
                 <div class="feature-icon">
                     <i class="<?= $feature['icon']; ?>"></i>
                 </div>

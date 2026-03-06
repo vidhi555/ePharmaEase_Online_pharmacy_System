@@ -1,7 +1,7 @@
 <?php
 require_once("connection/db.php");
 // require_once('session.php');
-
+require_once("insert_cart_logic.php");
 ?>
 
 <!--================ Start Header Menu Area =================-->
@@ -14,61 +14,75 @@ require_once('header.php');  ?>
 
   <!-- Search start -->
   <section class="section-margin calc-60px">
-    <div class="container">
+    <div class="container" data-aos="zoom-in">
       <div class="">
-        <input type="text" id="livesearch" class="form-control" placeholder="Search Anything">
+         <h2><span class="section-intro__style">Trusted Pharmacy Search</span></h2>
+        <input type="text" id="livesearch" class="form-control mt-5" placeholder="Search Anything">
       </div>
-    </div>
-  </section>
-  <!-- Search End -->
-  <section class="section-margin calc-60px">
-    <div class="container">
-      <div class="section-intro pb-60px">
-        <h2><span class="section-intro__style">Search Medicines</span></h2>
-      </div>
-      <div class="row" id="result">
+      <div class="row mt-4" id="result">
         <!-- Display Products -->
       </div>
     </div>
   </section>
+  <!-- Search End -->
+  <!-- <section class="section-margin calc-60px">
+    <div class="container"> -->
+      <!-- <div class="section-intro pb-60px" > -->
+      <!-- <div class="row mt-4" id="result"> -->
+        <!-- Display Products -->
+      <!-- </div>
+      </div> -->
+    <!-- </div> -->
+  <!-- </section> -->
   <!-- ================ trending product section start ================= -->
   <section class="section-margin calc-60px">
     <div class="container">
-      <div class="section-intro pb-60px">
-        <p>Popular Item in the market</p>
-        <h2>Popular <span class="section-intro__style">Medicines</span></h2>
+      <div class="section-intro pb-60px text-center" data-aos="fade-up">
+        <img data-aos="fade-up" src="img/logo6.png" alt="logo" style="margin-bottom: -42px;width: 100px;height: 80px;">
+        <h2> <span class="section-intro__style">Our Top Rated Wellness Essentials</span></h2>
       </div>
       <div class="row">
         <?php
-        $result = $conn->prepare("SELECT * FROM ep_products p JOIN ep_category c ON c.c_id = p.c_id LIMIT 8");
+        $result = $conn->prepare("SELECT * FROM ep_products p JOIN ep_category c ON c.c_id = p.c_id LIMIT 4");
         $result->execute();
         $products = $result->fetchAll(PDO::FETCH_ASSOC);
         foreach ($products as $p) { ?>
-          <div class="col-md-6 col-lg-4 col-xl-3">
+         
+          <div class="col-md-6 col-lg-3 col-xl-3" data-aos="fade-up">
             <div class="card text-center card-product">
-              <div class="card-product__img">
-                <h6 class="card-product__price">₹<?= $p['price'] ?></h6>
-                <img class="card-img" src="../LearnAdmin/upload/<?= $p['image'] ?>" alt="">
-                <ul class="card-product__imgOverlay">
-                  <li><button><a href="single-product.php?p_id=<?= $p['p_id'] ?>"><i class="ti-search"></i></a></button></li>
-                  <li><button><a href="cart.php?p_id=<?= $p['p_id'] ?>"><i class="ti-shopping-cart"></i></a></button></li>
-                  <!-- <li><button><i class="ti-heart"></i></button></li> -->
-                </ul>
-              </div>
-              <div class="card-body">
-                <h6 class="rating"><?php
-                                    for ($i = 0; $i < 5; $i++) {
-                                      echo "<i class='fas fa-star rating-stars text-size-13'></i>";
-                                    }
+              <form action="" method="post">
+                <div class="card-product__img">
+                  <h6 class="card-product__price">$<?= $p['price'] ?></h6>
+                  <a href="single-product.php?p_id=<?= $p['p_id'] ?>"><img class="card-img" src="../LearnAdmin/All_images_uploads/<?= $p['image'] ?>" alt=""></a>
+                  <input type="hidden" name="product_id" value="<?= $p['p_id'] ?>">
+                  <input type="hidden" name="cart_id" value="<?= $p['p_id'] ?>">
+                  <ul class="card-product__imgOverlay">
+                    <!-- <li><button><a href="single-product.php?p_id=<?= $p['p_id'] ?>"><i class="ti-search"></i></a></button></li> -->
+                    <li><button name="cart"><i class="ti-shopping-cart"></i></button></li>
+                    <!-- <li><button><a href="cart.php?p_id=<?= $p['p_id'] ?>"><i class="ti-shopping-cart"></i></a></button></li> -->
+                    <!-- <li><button><i class="ti-heart"></i></button></li> -->
+                  </ul>
+                </div>
 
-                                    ?>
-                </h6>
-                <p><?= $p['category_name'] ?></p>
-                <h4 class="card-product__title"><a href="single-product.php?p_id=<?= $p['p_id'] ?>"><?= $p['name'] ?></a></h4>
-              </div>
+                <div class="card-body">
+                  <h4 class="card-product__title"><a href="single-product.php?p_id=<?= $p['p_id'] ?>"><?= $p['name'] ?></a></h4>
+
+                  <h6 class="rating"><?php
+                                      for ($i = 0; $i < 5; $i++) {
+                                        echo "<i class='fas fa-star rating-stars text-size-13'></i>";
+                                      }
+
+                                      ?>
+                  </h6>
+                  <p style="text-transform: capitalize;"><?= $p['category_name'] ?></p>
+                </div>
+              </form>
             </div>
           </div>
         <?php  } ?>
+        <div class="shop_btn">
+          <a class="button button--active mt-3 mt-xl-4" style="position: relative;" href="category.php">Shop Now</a>
+        </div>
       </div>
   </section>
   <!-- ================ trending product section end ================= -->

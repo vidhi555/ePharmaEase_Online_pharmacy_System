@@ -19,27 +19,10 @@ function counting_items($table)
 }
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Admin Dashboard</title>
-  <!-- Stylesheets -->
-  <link rel="shortcut icon" href="./assets/images/logo6.ico" type="image/x-icon">
-  <link href="./assets/css/bootstrap.min.css" rel="stylesheet">
-  <link href="./assets/icons/fontawesome/css/fontawesome.min.css" rel="stylesheet">
-  <link href="./assets/icons/fontawesome/css/brands.min.css" rel="stylesheet">
-  <link href="./assets/icons/fontawesome/css/solid.min.css" rel="stylesheet">
-  <script src="./js/bootstrap.bundle.js"></script>
-  <script src="./js/bootstrap.bundle.min.js"></script>
-  <link href="./assets/css/style4.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-
-
-</head>
+<?php 
+$page_title = "Admin Dashboard";
+require_once("header2.php"); 
+?>
 
 <body>
   <!-- Preloader -->
@@ -83,21 +66,21 @@ function counting_items($table)
                 <div class="col-12 col-md-6 col-lg-12 mb-4">
                   <a href="products.php">
                     <div class="stats-card">
-                    <div class="d-flex justify-content-between align-items-start">
-                      <div>
-                        <div class="stats-label">Total Products</div>
-                        <div class="stats-value">
-                          <?php
-                          $table = "ep_products";
-                          echo counting_items($table);
-                          ?>
+                      <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                          <div class="stats-label">Total Products</div>
+                          <div class="stats-value">
+                            <?php
+                            $table = "ep_products";
+                            echo counting_items($table);
+                            ?>
+                          </div>
+                        </div>
+                        <div class="icon-wrapper icon-purple">
+                          <i class="fas fa-pills"></i>
                         </div>
                       </div>
-                      <div class="icon-wrapper icon-purple">
-                        <i class="fas fa-pills"></i>
-                      </div>
                     </div>
-                  </div>
                   </a>
                 </div>
 
@@ -105,26 +88,26 @@ function counting_items($table)
                 <div class="col-12 col-md-6 col-lg-12 mb-4">
                   <a href="customers.php">
                     <div class="stats-card">
-                    <div class="d-flex justify-content-between align-items-start">
-                      <div>
-                        <div class="stats-label">Total Customers</div>
-                        <div class="stats-value">
-                          <?php
-                          $table = "ep_users";
-                          $res = $conn->query("SELECT COUNT(*) FROM $table WHERE role = 'customer'");
-                          $res->execute();
-                          $count = $res->fetchColumn();
-                          echo $count;
+                      <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                          <div class="stats-label">Total Customers</div>
+                          <div class="stats-value">
+                            <?php
+                            $table = "ep_users";
+                            $res = $conn->query("SELECT COUNT(*) FROM $table WHERE role = 'customer'");
+                            $res->execute();
+                            $count = $res->fetchColumn();
+                            echo $count;
 
-                          ?>
+                            ?>
+                          </div>
+
                         </div>
-
-                      </div>
-                      <div class="icon-wrapper icon-purple">
-                        <i class="fas fa-users"></i>
+                        <div class="icon-wrapper icon-purple">
+                          <i class="fas fa-users"></i>
+                        </div>
                       </div>
                     </div>
-                  </div>
                   </a>
                 </div>
 
@@ -132,25 +115,28 @@ function counting_items($table)
                 <div class="col-12 col-md-6 col-lg-12 mb-4">
                   <a href="category.php">
                     <div class="stats-card">
-                    <div class="d-flex justify-content-between align-items-start">
-                      <div>
-                        <div class="stats-label">Total Category</div>
-                        <div class="stats-value">
-                          <?php
-                          $table = "ep_category";
-                          echo counting_items($table);
+                      <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                          <div class="stats-label">Total Category</div>
+                          <div class="stats-value">
+                            <?php
+                            $table = "ep_category";
+                            echo counting_items($table);
 
-                          ?>
+                            ?>
+                          </div>
+
                         </div>
-
-                      </div>
-                      <div class="icon-wrapper icon-red">
-                        <i class="fas fa-th-large"></i>
+                        <div class="icon-wrapper icon-red">
+                          <i class="fas fa-th-large"></i>
+                        </div>
                       </div>
                     </div>
-                  </div>
                   </a>
                 </div>
+
+               
+
               </div>
             </div>
 
@@ -160,56 +146,87 @@ function counting_items($table)
                 <div class="col-12 col-md-6 col-lg-12 mb-4">
                   <a href="orders.php">
                     <div class="stats-card">
-                    <div class="d-flex justify-content-between align-items-start">
-                      <div>
-                        <div class="stats-label">Total Orders Revenue</div>
-                        <?php
-                        $table = "ep_orders_master";
-                        $res = $conn->query("SELECT * FROM $table WHERE order_status = 'delivered' AND payment_status = 'paid'");
-                        $res->execute();
-                        $orders = $res->fetchALL(PDO::FETCH_ASSOC);
-                        $total = 0;
-                        foreach ($orders as $o) {
-                          $total += $o['total_amount'];
-                        }
+                      <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                          <div class="stats-label">Total Orders Revenue</div>
+                          <?php
+                          $table = "ep_orders_master";
+                          $res = $conn->query("SELECT * FROM $table WHERE order_status = 'delivered' AND payment_status = 'paid'");
+                          $res->execute();
+                          $orders = $res->fetchALL(PDO::FETCH_ASSOC);
+                          $total = 0;
+                          foreach ($orders as $o) {
+                            $total += $o['total_amount'];
+                          }
 
-                        ?>
-                        <div class="stats-value">₹<?= $total ?></div>
-                        <!-- <div class="trend-wrapper">
-                          This month
-                          <span class="trend-up">
-                            <i class="fas fa-arrow-up"></i> 8.5%
-                          </span>
-                        </div> -->
-                      </div>
-                      <div class="icon-wrapper icon-green">
-                        <i class="fas fa-rupee-sign"></i>
+                          ?>
+                          <div class="stats-value">$<?= $total ?></div>
+                          <?php
+                          try {
+                            $table = "ep_orders_master";
+                            $res = $conn->query("SELECT * FROM $table WHERE order_status = 'delivered' AND payment_status = 'paid'");
+                            $res->execute();
+
+
+                            // Find month wise Average order increment
+                            $curr_month = $conn->prepare("SELECT COUNT(*) FROM `ep_orders_master` WHERE order_status = 'delivered' AND payment_status = 'paid' AND MONTH(oder_date) = MONTH(CURDATE()) AND YEAR(oder_date) = YEAR(CURDATE())");
+                            $curr_month->execute();
+
+                            $fetch_curr_month = $curr_month->fetchColumn();
+                            // last month Query
+                            $last_month = $conn->prepare("SELECT COUNT(*) FROM `ep_orders_master` WHERE order_status = 'delivered' AND payment_status = 'paid' AND MONTH(oder_date) = MONTH(CURDATE() - INTERVAL 1 MONTH) AND YEAR(oder_date) = YEAR(CURDATE() - INTERVAL 1 MONTH)");
+                            $last_month->execute();
+                            $fetch_last_month = $last_month->fetchColumn();
+
+
+                            if ($fetch_last_month > 0) {
+                              $growth_formula = (($fetch_curr_month - $fetch_last_month) / $fetch_last_month) * 100;
+                            } else {
+                              $growth_formula = $fetch_curr_month > 0 ? 100 : 0;
+                            }
+                          } catch (PDOException $e) {
+                            echo $e;
+                          }
+                          ?>
+                          <div class="trend-wrapper">
+                            This month
+                            <span class="trend-up">
+                              <?php if ($growth_formula > 0) { ?>
+                                <i class="fas fa-arrow-up"></i> <?= round($growth_formula, 1) ?>%
+                              <?php } else { ?>
+                                <i class="fas fa-arrow-down"></i> <?= round($growth_formula, 1) ?>%
+                              <?php } ?>
+                            </span>
+                          </div>
+                        </div>
+                        <div class="icon-wrapper icon-green">
+                          <i class="fas fa-rupee-sign"></i>
+                        </div>
                       </div>
                     </div>
-                  </div>
                   </a>
                 </div>
                 <!-- Total customers -->
                 <div class="col-12 col-md-6 col-lg-12 mb-4">
                   <a href="userreview.php">
                     <div class="stats-card">
-                    <div class="d-flex justify-content-between align-items-start">
-                      <div>
-                        <div class="stats-label">Total User Review</div>
-                        <div class="stats-value">
-                          <?php
-                          $table = "ep_review";
-                          echo counting_items($table);
+                      <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                          <div class="stats-label">Total User Review</div>
+                          <div class="stats-value">
+                            <?php
+                            $table = "ep_review";
+                            echo counting_items($table);
 
-                          ?>
+                            ?>
+                          </div>
+
                         </div>
-
-                      </div>
-                      <div class="icon-wrapper icon-purple">
-                        <i class="fas fa-list"></i>
+                        <div class="icon-wrapper icon-purple">
+                          <i class="fas fa-list"></i>
+                        </div>
                       </div>
                     </div>
-                  </div>
                   </a>
                 </div>
 
@@ -217,57 +234,29 @@ function counting_items($table)
                 <div class="col-12 col-md-6 col-lg-12 mb-4">
                   <a href="message_report.php">
                     <div class="stats-card">
-                    <div class="d-flex justify-content-between align-items-start">
-                      <div>
-                        <div class="stats-label">Total User Comments</div>
-                        <div class="stats-value">
-                          <?php
-                          $table = "ep_message";
-                          echo counting_items($table);
+                      <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                          <div class="stats-label">Total User Comments</div>
+                          <div class="stats-value">
+                            <?php
+                            $table = "ep_message";
+                            echo counting_items($table);
 
-                          ?>
+                            ?>
+                          </div>
+
                         </div>
-
-                      </div>
-                      <div class="icon-wrapper icon-red">
-                        <i class="fas fa-comment-dots"></i><!-- with dots -->
+                        <div class="icon-wrapper icon-red">
+                          <i class="fas fa-comment-dots"></i><!-- with dots -->
+                        </div>
                       </div>
                     </div>
-                  </div>
                   </a>
                 </div>
 
-                <!-- Overall Revenue Card -->
-                <!-- <div class="col-12 col-md-6 col-lg-12 mb-4">
-                  <div class="stats-card">
-                    <div class="d-flex justify-content-between align-items-start">
-                      <div>
-                        <div class="stats-label">Total Orders Revenue</div>
-                        <?php
-                        // $table = "ep_orders_master";
-                        // $res = $conn->query("SELECT * FROM $table");
-                        // $res->execute();
-                        // $orders = $res->fetchALL(PDO::FETCH_ASSOC);
-                        // $total = 0;
-                        // foreach ($orders as $o) {
-                        //   $total += $o['total_amount'];
-                        // }
+               
 
-                        ?>
-                        <div class="stats-value">₹<?= $total ?></div>
-                        <div class="trend-wrapper">
-                          This month
-                          <span class="trend-up">
-                            <i class="fas fa-arrow-up"></i> 8.5%
-                          </span>
-                        </div>
-                      </div>
-                      <div class="icon-wrapper icon-green">
-                        <i class="fas fa-rupee-sign"></i>
-                      </div>
-                    </div>
-                  </div>
-                </div> -->
+                
               </div>
             </div>
             <!-- <div class="col-lg-5 mb-4 mb-lg-0">
@@ -312,40 +301,43 @@ function counting_items($table)
             <div class="col-lg-4 mb-4 mb-lg-0">
               <div class="instructors-section card pb-1">
                 <div class="card-header bg-white d-flex justify-content-between align-items-center py-4">
-                  <h5 class="mb-0 text-color-2">User Review</h5>
+                  <h5 class="mb-0 text-color-2">Latest User Review</h5>
                   <a href="userreview.php" class="text-color-3">View All</a>
                 </div>
                 <div class="card-body p-0">
                   <ul class="list-group list-group-flush">
                     <?php
                     try {
-                      $reviewes = $conn->prepare("SELECT * FROM ep_review r JOIN ep_users u ON r.u_id = u.u_id ORDER BY rate DESC LIMIT 5");
+                      $reviewes = $conn->prepare("SELECT * FROM ep_review r JOIN ep_users u ON r.u_id = u.u_id ORDER BY review_id DESC LIMIT 5");
                       $reviewes->execute();
                       $fetch_review = $reviewes->fetchAll(PDO::FETCH_ASSOC);
+
                       foreach ($fetch_review as $a) {
                     ?>
-                        <li class="list-group-item d-flex align-items-center py-3">
-                          <div class="avatar rounded-circle bg-primary text-white me-3">
-                            <?php
-                            $user = ucfirst($a['name']);
-                            echo substr($user, 0, 1);
-                            ?></div>
-                          <div class="flex-grow-1">
-                            <h6 class="mb-0 text-color-2"><?= $a['name'] ?></h6>
-                            <small class="text-color-3"><?= $a['email'] ?></small>
-                          </div>
-                          <div class="text-end">
-                            <div class="rating-stars text-size-13">
+                        <a href="view_review.php?review_id=<?= $a['review_id'] ?>">
+                          <li class="list-group-item d-flex align-items-center py-3">
+                            <div class="avatar rounded-circle bg-primary text-white me-3">
                               <?php
-                              $count_start = $a['rate'];
-                              for ($i = 1; $i <= $count_start; $i++) {
-                                echo "<i class='fas fa-star'></i>";
-                              }
-                              ?>
+                              $user = ucfirst($a['name']);
+                              echo substr($user, 0, 1);
+                              ?></div>
+                            <div class="flex-grow-1">
+                              <h6 class="mb-0 text-color-2"><?= $a['name'] ?></h6>
+                              <small class="text-color-3">"<?= $a['title'] ?>"</small>
                             </div>
-                            <!-- <small class="d-block text-color-3">25 Reviews</small> -->
-                          </div>
-                        </li>
+                            <div class="text-end">
+                              <div class="rating-stars text-size-13">
+                                <?php
+                                $count_start = $a['rate'];
+                                for ($i = 1; $i <= $count_start; $i++) {
+                                  echo "<i class='fas fa-star'></i>";
+                                }
+                                ?>
+                              </div>
+                              <small class="d-block text-color-3"><?= date("d M Y", strtotime($a['review_at'])); ?></small>
+                            </div>
+                          </li>
+                        </a>
                     <?php
                       }
                     } catch (PDOException $e) {
@@ -445,7 +437,8 @@ function counting_items($table)
 
               <div class="instructors-section card">
                 <div class="card-header border-0 bg-white d-flex justify-content-between align-items-center py-3">
-                  <h5 class="mb-0 text-color-2">Conversions <script>
+                  <h5 class="mb-0 text-color-2">Conversions
+                    <script>
                       document.write(new Date().getFullYear());
                     </script>
                   </h5>
@@ -457,7 +450,7 @@ function counting_items($table)
                   </div> -->
                 </div>
                 <div class="card-body">
-                  <canvas id="barChart" class="mt-5" height="96"></canvas>
+                  <canvas id="barChart" class="mt-5" height="120"></canvas>
                 </div>
               </div>
               <?php
@@ -468,7 +461,7 @@ function counting_items($table)
 
                 //iterate for 12 months to check How much order is placed in a month
                 for ($i = 1; $i <= 12; $i++) {
-                  $query = $conn->prepare("SELECT COUNT(*) FROM `ep_orders_master` WHERE MONTH(oder_date) = $i  AND order_status = 'Placed' ");
+                  $query = $conn->prepare(" SELECT COUNT(*) FROM ep_orders_master WHERE MONTH(oder_date) = $i AND (order_status = 'Placed' OR order_status = 'confirmed') ");
                   $query->execute();
                   $pending[] = $query->fetchColumn();
                   // print_r($pending);
@@ -512,7 +505,7 @@ function counting_items($table)
                             echo substr($fletter, 0, 1);
 
                             // Count total products
-                            $query = $conn->prepare("SELECT COUNT(*) FROM ep_products p JOIN ep_category c ON p.c_id= c.c_id WHERE category_name = :cname ");
+                            $query = $conn->prepare("SELECT COUNT(*) FROM ep_products p JOIN ep_category c ON p.c_id= c.c_id WHERE category_name = :cname  ");
                             $query->execute(['cname' => $fletter]);
                             $count = $query->fetchColumn();
                             ?>
@@ -597,7 +590,7 @@ function counting_items($table)
                 },
                 ticks: {
                   display: true,
-                  stepSize: 1
+                  stepSize: 5
                 }
               }
             },

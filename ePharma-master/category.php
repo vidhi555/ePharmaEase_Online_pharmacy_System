@@ -12,13 +12,13 @@ require_once('header.php')
 <!--================ End Header Menu Area =================-->
 
 <!-- ================ start banner area ================= -->
-<section class="blog-banner-area fade-up" id="category">
+<section class="blog-banner-area" data-aos="fade-in" id="category">
   <div class="container h-100">
     <div class="blog-banner">
       <div class="text-center">
-        <h1>Shop</h1>
+        <h1 data-aos="fade-up">Shop</h1>
         <nav aria-label="breadcrumb" class="banner-breadcrumb">
-          <ol class="breadcrumb">
+          <ol class="breadcrumb" data-aos="fade-up">
             <li class="breadcrumb-item"><a href="index.php">Home</a></li>
             <li class="breadcrumb-item active" aria-current="page">Medicines Category</li>
           </ol>
@@ -31,11 +31,11 @@ require_once('header.php')
 
 
 <!-- ================ category section start ================= -->
-<section class="section-margin--small mb-5">
+<section class="section-margin--small mb-5" >
   <div class="container shadow-lg" style="background: #ffffff;padding: 15px 15px 0;border-radius: 15px;">
     <div class="row">
       <div class="col-xl-3 col-lg-4 col-md-5">
-        <div class="sidebar-categories">
+        <div class="sidebar-categories" >
           <div class="head">Browse Categories</div>
           <ul class="main-categories">
             <li class="common-filter">
@@ -101,10 +101,10 @@ require_once('header.php')
               <h4 class="filter-title">Filter By Price</h4>
 
               <div class="slidecontainer">
-                <input type="range" min="20" max="4000" step="5" value="2000" class="slider" id="priceRange">
+                <input type="range" min="0" max="1000" step="0.1" value="500" class="slider" id="priceRange">
               </div>
 
-              <div class="price-value">₹20 - ₹ <span id="priceValue">2500</span></div>
+              <div class="price-value">$0 - $ <span id="priceValue">1000</span></div>
 
               <button class="filter-btn" type="button" onclick="load_price()">Filter</button>
             </div>
@@ -118,20 +118,20 @@ require_once('header.php')
                 // load_price();
               });
 
-              function load_price() {
-                const f_price = slider.value;
-                $.ajax({
-                  url: "load_products_ajax.php",
-                  method: "POST",
-                  data: {
-                    max_Price: f_price
-                  },
+              // function load_price() {
+              //   const f_price = slider.value;
+              //   $.ajax({
+              //     url: "load_products_ajax.php",
+              //     method: "POST",
+              //     data: {
+              //       max_Price: f_price
+              //     },
 
-                  success: function(data) {
-                    $("#product-list").html(data);
-                  }
-                });
-              }
+              //     success: function(data) {
+              //       $("#product-list").html(data);
+              //     }
+              //   });
+              // }
             </script>
 
 
@@ -165,7 +165,7 @@ require_once('header.php')
             </select> -->
           </div>
           <div>
-            <div class="input-group filter-bar-search">
+            <div class="input-group filter-bar-search" data-aos="fade-left">
               <input type="text" id="live_search" placeholder="Search">
               <div class="input-group-append">
                 <button type="button"><i class="ti-search"></i></button>
@@ -210,7 +210,7 @@ require_once('header.php')
                 <div class="card text-center card-product">
                     <form action="" method="post">
                       <div class="card-product__img">
-                        <h6 class="card-product__price">₹<?= $p['price'] ?></h6>
+                        <h6 class="card-product__price">$<?= $p['price'] ?></h6>
 
                         <img class="card-img" src="../LearnAdmin/upload/<?= $p['image'] ?>" alt="product">
                         <input type="hidden" name="product_id" value="<?= $p['p_id'] ?>">
@@ -243,15 +243,19 @@ require_once('header.php')
                   <div class="card text-center card-product">
                     <form action="" method="post">
                       <div class="card-product__img">
-                        <h6 class="card-product__price">₹<?= $p['price'] ?></h6>
-                        <a href="single-product.php?p_id=<?= $p['p_id'] ?>"><img class="card-img" src="../LearnAdmin/upload/<?= $p['image'] ?>" alt=""></a>
+                        <h6 class="card-product__price">$<?= $p['price'] ?></h6>
+                        <a href="single-product.php?p_id=<?= $p['p_id'] ?>"><img class="card-img" src="../LearnAdmin/All_images_uploads/<?= $p['image'] ?>" alt=""></a>
                         <input type="hidden" name="product_id" value="<?= $p['p_id'] ?>">
                         <input type="hidden" name="cart_id" value="<?= $p['p_id'] ?>">
                         <ul class="card-product__imgOverlay">
-                          <!-- <li><button><a href="single-product.php?p_id=<?= $p['p_id'] ?>"><i class="ti-search"></i></a></button></li> -->
-                          <li><button name="cart"><i class="ti-shopping-cart"></i></button></li>
-                          <!-- <li><button><a href="cart.php?p_id=<?= $p['p_id'] ?>"><i class="ti-shopping-cart"></i></a></button></li> -->
-                          <!-- <li><button><i class="ti-heart"></i></button></li> -->
+                          <?php if($available_stock<5){
+                             $alert = "<i class='fas fa-exclamation-triangle'></i> Only few items left";
+                          }elseif($available_stock <= 0 ){
+                            $alert = "<i class='far fa-exclamation-triangle'></i> Out Of Stock";
+                          }else{
+                            $alert = "<i class='ti-shopping-cart'></i>";
+                          } ?>
+                          <li><button name="cart"><?= $alert ?></button></li>
                         </ul>
                       </div>
 
@@ -259,10 +263,9 @@ require_once('header.php')
                         <h4 class="card-product__title"><a href="single-product.php?p_id=<?= $p['p_id'] ?>"><?= $p['name'] ?></a></h4>
 
                         <h6 class="rating"><?php
-                                            for ($i = 0; $i < 5; $i++) {
+                                             for ($i = 0; $i < $fetch_avg['rating_avg']; $i++) {
                                               echo "<i class='fas fa-star rating-stars text-size-13'></i>";
                                             }
-
                                             ?>
                         </h6>
                         <p style="text-transform: capitalize;"><?= $p['category_name'] ?></p>
@@ -327,7 +330,7 @@ require_once("related_products.php"); ?>
 <!-- ================ Subscribe section start ================= -->
 <section class="subscribe-position">
   <div class="container">
-    <div class="subscribe text-center">
+    <div class="subscribe text-center" data-aos="fade-up">
       <h3 class="subscribe__title">Get Update From Anywhere</h3>
       <p>Bearing Void gathering light light his eavening unto dont afraid</p>
       <div id="mc_embed_signup">
@@ -353,5 +356,3 @@ require_once("related_products.php"); ?>
 <!--================ Start footer Area  =================-->
 <?php require_once("footer.php"); ?>
 <!--================ End footer Area  =================-->
-
-

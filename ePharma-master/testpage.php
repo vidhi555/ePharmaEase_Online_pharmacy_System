@@ -70,7 +70,7 @@ require_once('header.php');  ?>
           foreach ($fetch_category as $cat) {
       ?>
             <div class="hero-carousel__slide">
-              <img src="../LearnAdmin/category/<?= $cat['cat_image'] ?>" alt="" class="img-fluid">
+              <img src="../LearnAdmin/All_images_uploads/<?= $cat['cat_image'] ?>" alt="" class="img-fluid">
               <a href="category_wise_listing.php?c_id=<?= $cat['c_id'] ?>" class="hero-carousel__slideOverlay">
                 <h3><?= $cat['category_name'] ?></h3>
               </a>
@@ -149,8 +149,8 @@ require_once('header.php');  ?>
             <div class="card text-center card-product">
               <form action="" method="post">
                 <div class="card-product__img">
-                  <h6 class="card-product__price">₹<?= $p['price'] ?></h6>
-                  <a href="single-product.php?p_id=<?= $p['p_id'] ?>"><img class="card-img" src="../LearnAdmin/upload/<?= $p['image'] ?>" alt=""></a>
+                  <h6 class="card-product__price">$<?= $p['price'] ?></h6>
+                  <a href="single-product.php?p_id=<?= $p['p_id'] ?>"><img class="card-img" src="../LearnAdmin/All_images_uploads/<?= $p['image'] ?>" alt=""></a>
                   <input type="hidden" name="product_id" value="<?= $p['p_id'] ?>">
                   <input type="hidden" name="cart_id" value="<?= $p['p_id'] ?>">
                   <ul class="card-product__imgOverlay">
@@ -253,8 +253,8 @@ require_once('header.php');  ?>
             <div class="card text-center card-product">
               <form action="" method="post">
                 <div class="card-product__img">
-                  <h6 class="card-product__price">₹<?= $p['price'] ?></h6>
-                  <a href="single-product.php?p_id=<?= $p['p_id'] ?>"><img class="card-img" src="../LearnAdmin/upload/<?= $p['image'] ?>" alt=""></a>
+                  <h6 class="card-product__price">$<?= $p['price'] ?></h6>
+                  <a href="single-product.php?p_id=<?= $p['p_id'] ?>"><img class="card-img" src="../LearnAdmin/All_images_uploads/<?= $p['image'] ?>" alt=""></a>
                   <input type="hidden" name="product_id" value="<?= $p['p_id'] ?>">
                   <input type="hidden" name="cart_id" value="<?= $p['p_id'] ?>">
                   <ul class="card-product__imgOverlay">

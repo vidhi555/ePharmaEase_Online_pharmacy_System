@@ -1,6 +1,6 @@
 <?php
 require_once("db.php");
-
+require_once('sweetAlert.php');
 try {
     $get_token = $_GET['token'] ?? '';
     // echo $get_token;
@@ -13,7 +13,9 @@ try {
         $uid = $fetch_user_data['u_id'];
         // echo $uid;
     } else {
-        echo "user not found";
+        // echo "user not found";
+        sweetAlert("UnKnown!","User Not Found","warning","forgot-password.php");
+        header("Location:forgot-password.php");
     }
 
     if (!$verify_link) {
@@ -28,38 +30,24 @@ try {
             } else {
                 $hash_pwd = password_hash($pwd, PASSWORD_DEFAULT);
                 $reset_password  = $conn->prepare("UPDATE ep_users SET password = :password, token = NULL, expity_token = NULL WHERE u_id = :id");
-                $result = $reset_password->execute([
+                $reset_password->execute([
                     'password' => $hash_pwd,
                     'id' => $uid
                 ]);
-                if ($result) {
-                    header("Location:login.php");
-                } else {
-                    sweetAlert("Fail", "Something Went Wrong", "warning");
-                }
+            
+                sweetAlert("Reset Successful!","Password Set Successfully!","success","login.php");
+                header("Location:login.php");
+                
             }
         }
     }
 } catch (PDOException $e) {
     echo $e;
 }
+$page_title = "Reset Password";
+require_once('header2.php');
 ?>
-<!DOCTYPE html>
-<html lang="en">
 
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Reset Password</title>
-    <!-- Stylesheets -->
-    <link rel="shortcut icon" href="./assets/images/logo6.ico" type="image/x-icon">
-    <link href="./assets/css/bootstrap.min.css" rel="stylesheet">
-    <link href="./assets/icons/fontawesome/css/fontawesome.min.css" rel="stylesheet">
-    <link href="./assets/icons/fontawesome/css/brands.min.css" rel="stylesheet">
-    <link href="./assets/icons/fontawesome/css/solid.min.css" rel="stylesheet">
-    <link href="./assets/plugin/quill/quill.snow.css" rel="stylesheet">
-    <link href="./assets/css/style4.css" rel="stylesheet">
-</head>
 
 <body>
     <div class="container">
@@ -114,7 +102,7 @@ try {
     <script src="./assets/plugin/quill/quill.js"></script>
     <script src="./assets/js/chart.js"></script>
     <script src="./assets/js/main.js"></script>
-    <?php require_once("sweetAlert.php"); ?>
+    <?php require_once("footer.php"); ?>
 </body>
 
 </html>

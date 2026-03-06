@@ -11,7 +11,7 @@ if (isset($_POST['update'])) {
     $email = $_POST['email'];
     $mobile = $_POST['phone'];
     $address = $_POST['address'];
-    $dob = $_POST['dob'];
+
     $gender = $_POST['gender'];
 
     if (!empty($_FILES['photo']['name'])) {
@@ -35,13 +35,13 @@ if (isset($_POST['update'])) {
     if (!empty($errors)) {
         sweetAlert("Error", "Please Try Again!", "error");
     } else {
-        $query = "UPDATE ep_users SET `name`= :name,`email`= :email ,`mobile`= :mno,`dob`= :dob,`address`= :address ,`gender`= :gender,image=:photo WHERE u_id= :uid";
+        $query = "UPDATE ep_users SET `name`= :name,`email`= :email ,`mobile`= :mno,`address`= :address ,`gender`= :gender,image=:photo WHERE u_id= :uid";
         $update_user = $conn->prepare($query);
         $update_user->execute([
             'name' => $name,
             'email' => $email,
             'mno' => $mobile,
-            'dob' => $dob,
+
             'address' => $address,
             'gender' => $gender,
             'photo' => $img_name,
@@ -54,7 +54,7 @@ if (isset($_POST['update'])) {
 }
 
 //Dynamic title
-$page_title = "ePharmaEase - Forgot Password";
+$page_title = "ePharmaEase - Profile";
 require_once('header.php');
 
 
@@ -88,10 +88,10 @@ try {
             <div class="container py-5">
                 <div class="row g-4">
                     <!-- USER PROFILE -->
-                    <div class="col-lg-4 col-md-5 col-12">
+                    <div class="col-lg-6 col-md-6 col-12">
 
 
-                        
+
                         <?php if (!empty($_SESSION['success_msg'])) { ?>
                             <div class="alert alert-info" style="background-color: #e7f3fe;border-left: 6px solid #2196F3;">
                                 <?= $_SESSION['success_msg'] ?>
@@ -103,7 +103,7 @@ try {
                         <div class="profile-card shadow-sm border-0 rounded-4 text-center p-4">
 
                             <img src="uploads/<?= $fetch_user['image'] ?>"
-                                class="rounded-circle mx-auto mb-3"
+                                class="imguser rounded-circle mx-auto mb-3"
                                 width="140" height="140" style="border: 1px solid lightblue;"
                                 alt="User Image">
 
@@ -114,82 +114,215 @@ try {
                                 <p><strong>Email:</strong><?= $fetch_user['email'] ?></p>
                                 <p><strong>Mobile:</strong> <?= substr($fetch_user['mobile'], 0, 3) . " " . substr($fetch_user['mobile'], 3, 11) ?></p>
                                 <p><strong>Gender:</strong> <?= $fetch_user['gender'] ?></p>
-                                <p><strong>Birth Date:</strong> <?= date("d/m/Y", strtotime($fetch_user['dob'])) ?></p>
+
                                 <p><strong>Address:</strong> <?= $fetch_user['address'] ?></p>
                             </div>
                             <button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight">Modify Profile</button>
                         </div>
                     </div>
+                    <!-- Profile starts -->
+                     <div class="col-lg-6 col-md-6 col-12 mt-3">
+                            <div class="profile-card shadow-sm border-0 rounded-4 text-center p-4">
+                                 <?php 
+            $errors= [];
+try{
+    if(isset($_POST['update_password'])){
+        $old_pwd = $_POST['current_password'];
+        $new_password = $_POST['new_password'];
+        $confirm_password = $_POST['confirm_password'];
+        $hash_password = password_hash($new_password,PASSWORD_DEFAULT);
 
-                    <!-- ORDER HISTORY -->
-                    <div class="col-lg-8 col-md-7 col-12">
-                        <div class="order-card shadow-sm border-0 rounded-4 p-4 ">
-                            <a href="tracking-order.php"><img src="img/track-removebg-preview.png" id="order_tracking_icon" width="50px" height="50px" alt="track"></a>
-                            <h3 class="order-history fw-bold mb-4">Order History</h3>
+        if(empty($old_pass) || empty($new_password) || empty($confirm_password)){
+            $errors[] = "Fields Are Empty! Please Fill the password!";
+        }
+       
+        if($new_password !== $confirm_password){
+            $errors[] = "Password Not Matched With confirm Password!!!!";
+            // sweetAlert("Wrong","Password Not Matched With confirm Password!!!!","warning");
+        }
+        if(!preg_match('/^[a-zA-Z0-9]{6}$/',$new_password)){
+          $errors[] = "Password must be exactly 6 characters (letters & numbers only)";
+        }
+
+        $old_pass = $conn->prepare("SELECT * FROM ep_users WHERE u_id = :uid");
+        $old_pass->execute([
+            
+            'uid'=>$uid
+        ]);
+        
+        $fetch_user = $old_pass->fetch(PDO::FETCH_ASSOC);
+        
+         if($old_pwd !== $fetch_user['password']){
+            sweetAlert("Password Not Matched","","warning");
+         }
+        else{
+               if($new_password !== $confirm_password){
+                    sweetAlert("Wrong!","Password Not Matched With confirm Password!!!!","warning");
+               }else{
+                    $update_pwd = $conn->prepare("UPDATE ep_users SET password = :pwdd WHERE u_id = :id");
+                    $update_pwd->execute([
+                        'pwdd'=>$hash_password,
+                        'id'=>$uid
+                    ]);
+                    sweetAlert("Done","Password Update Successful...","success");
+               }
+               
+            
+
+        }
+
+    }
+}catch(PDOException $e){
+    echo $e;
+}
 
 
-                            <?php
-                            try {
-                                if ($fetch_user) {
-                                    $cuurent_user =  $fetch_user['u_id'];
-                                    $order_detail = $conn->prepare("SELECT * FROM ep_orders_items i  JOIN ep_orders_master m ON i.o_id = m.o_id JOIN ep_products p ON p.p_id = i.p_id WHERE m.u_id = :id");
-                                    $order_detail->execute(['id' => $cuurent_user]);
-                                    //fetch orders
-                                    $fetch_oredr = $order_detail->fetchAll(PDO::FETCH_ASSOC);
-                                    foreach ($fetch_oredr as $o) {
-                            ?>
-                                        <div class="btm order-item mb-3 p-3 rounded-3 bg-light">
-                                            <?php if ($o['order_status'] == 'delivered') { ?>
-                                                <div class="order-status">
-                                                    <span class="status-placed">✔ Package Delivered</span>
-                                                </div>
+            ?>
+  
+                                <h3 class="fw-bold mb-1">Change Password</h3>
+                                <img class="banner_img" src="img/image-removebg-preview.png" alt="" width="250px">
 
-                                            <?php   } ?>
-                                            <?php
-                                            if ($o['payment_status'] == 'pending') {
-                                                $class = 'status-cancelled';
-                                            } else {
-                                                $class = 'status-placed';
-                                            }
-                                            ?>
-                                            <div class="order-status">
-                                                <p class="<?= $class ?>">Payment: <?= $o['payment_status'] ?> (<?= ($o['payment_method'] == 'COD') ? 'Cash on Delivery' : 'Online Payment' ?>)</p>
-                                            </div>
-                                            <img class="img_order" src="../LearnAdmin/upload/<?= $o['image'] ?>" alt="">
-                                            <p class="mb-1"><strong>Product:</strong> <?= $o['name'] ?></p>
-                                            <p class="mb-1"><strong>Order ID:</strong> <?= $o['o_id'] ?></p>
-                                            <p class="mb-1"><strong>Quantity:</strong> <?= $o['qty'] ?></p>
+                                <form method="post" >
+                                        <div class="text-start small">
 
-                                            <p class="mb-1"><strong>Price:</strong> ₹<?= $o['price'] ?></p>
-                                            
-                                            
-                                            <?php
-
-                                            // cancel order button
-                                            // || $o['order_status'] == 'confirmed'
-                                            if ($o['order_status'] == 'Placed') { ?>
-
-                                                <a class="btn btn-danger" href="cancel_orders.php?o_id=<?= $o['o_id'] ?>">Cancel Order</a>
-
-                                            <?php }
-                                            ?>
-
+                                        <div class="mb-3">
+                                            <label class="form-label">Current Password</label>
+                                            <input type="password" name="current_password" class="form-control custom-input" placeholder="Enter current password" >
                                         </div>
 
+                                        <div class="mb-3">
+                                            <label class="form-label">New Password</label>
+                                            <input type="password" name="new_password" class="form-control custom-input" placeholder="Enter new password" >
+                                        </div>
 
-                            <?php    }
+                                        <div class="mb-3">
+                                            <label class="form-label">Confirm Password</label>
+                                            <input type="password" name="confirm_password" class="form-control custom-input" placeholder="Confirm new password" >
+                                        </div>
+
+                                    
+
+                                    </div>
+                                    <button class="btn btn-primary" name="update_password" type="submit">Update Password</button>
+                                </form>
+                            </div>
+                        </div>
+                     <!-- Prodile End -->
+
+                    <!-- ORDER HISTORY -->
+                    
+                    <div class="row">
+                        <div class="col-lg-12 col-md-12 col-12 mt-3">
+                        <div class="order-card shadow-sm border-0 rounded-4 p-4 ">
+                            <a href="tracking-order.php"><img src="img/track-removebg-preview.png" id="order_tracking_icon" width="50px" height="50px" alt="track"></a>
+                            <h3 class="fw-bold mb-4" style="color:#1f2937;">Order History</h3>
+                            <div class="row">
+
+                                <?php
+                                try {
+                                    if ($fetch_user) {
+                                        $cuurent_user =  $fetch_user['u_id'];
+                                        $order_detail = $conn->prepare("SELECT DISTINCT o.u_id , o.* ,o.*
+FROM ep_orders_master o
+JOIN ep_orders_items oi ON o.o_id = oi.o_id
+JOIN ep_products p ON p.p_id = oi.p_id
+WHERE o.u_id = :id
+
+ORDER BY o.o_id DESC");
+                                        $order_detail->execute(['id' => $cuurent_user]);
+                                        //fetch orders
+                                        $fetch_oredr = $order_detail->fetchAll(PDO::FETCH_ASSOC);
+
+                                        foreach ($fetch_oredr as $order) { ?>
+                                            <div class="col-lg-6 col-md-12 mt-4" id="colmd8">
+                                                <div class="order-card shadow-sm">
+
+                                                    <!-- Header -->
+                                                    <div class="order-header d-flex justify-content-between">
+                                                        <span class="order-date"><?= date('d-m-Y', strtotime($order['oder_date'])) ?></span>
+
+                                                        <span class="badge <?= $order['payment_status'] == 'paid' ? 'bg-success' : 'bg-danger' ?>">
+                                                           <?= $order['payment_method'] ?> (<?= ($order['payment_status'] == 'paid') ? '✅Payment Done' : 'Pending Payment' ?>)
+                                                        </span>
+                                                        <span>
+                                                            <a href="reorder.php?o_id=<?= $order['o_id'] ?>" onclick="return confirm('Are you sure to re-Order these Items???');"><img src="img/reorder-removebg-preview.ico" class="tooltip-box" alt="icon"></a>
+                                                        </span>
+                                                    </div>
+
+                                                    <!-- Products list inside order -->
+                                                    <?php
+                                                    $inside_loop = $conn->prepare("SELECT * FROM ep_orders_items oi 
+JOIN ep_products p ON p.p_id = oi.p_id
+WHERE oi.o_id = :id");
+                                                    $inside_loop->execute(['id' => $order['o_id']]);
+                                                    $fetch_inside = $inside_loop->fetchAll(PDO::FETCH_ASSOC);
+
+
+                                                    foreach ($fetch_inside as $p) { ?>
+                                                        <div class="product-row d-flex align-items-center">
+
+                                                            <img src="../LearnAdmin/All_images_uploads/<?= $p['image'] ?>" class="product-img">
+
+                                                            <div class="flex-grow-1 ms-3">
+                                                                <h6 class="mb-1"><?= $p['name'] ?></h6>
+                                                                <small>Qty: <?= $p['qty'] ?> • $<?= $p['price'] ?></small>
+                                                            </div>
+                                                        </div>
+                                                    <?php } ?>
+
+                                                    <!-- Footer -->
+                                                    <div class="order-footer d-flex justify-content-between">
+                                                        <span>Order #<?= $order['o_id'] ?></span>
+
+                                                        <span>Total: $<?= $order['total_amount'] ?></span>
+                                                        <!-- <span class="status-badge <?= $order['order_status'] ?>">
+                                                        <?= $order['order_status'] ?>
+                                                    </span> -->
+                                                    <?php if ($order['order_status'] == 'Placed') { ?>
+
+                                                <span><a class="btn btn-danger" href="cancel_orders.php?o_id=<?= $order['o_id'] ?>" onclick="return confirm('Are you sure to Cancel the Order???');">Cancel</a></span>
+
+                                            <?php }else{ ?>
+                                            <!-- <span>Order Status:<?= ucfirst($order['order_status']) ?></span> -->
+                                             <?php
+                                            $today = date('d/m/Y');
+
+                                            if($order['order_status']=='delivered'){
+                                                echo "<span style='color:green;'>Delivered</span>";
+                                            }
+                                           elseif($order['order_status']=='cancelled'){
+                                                echo "<span style='color:red;'>Cancelled</span>";
+                                            }
+                                             elseif($today > $order['expected_date']){
+                                                echo "<span style='color:red;'>Delivery Delayed</span>";
+                                            }
+                                            else{
+                                                echo "<span style='color:orange;'>On the way</span>";
+                                            }
+                                            ?>
+                                            <?php } ?>
+                                                    </div>
+
+                                                </div>
+                                            </div>
+                                        <?php } ?>
+
+
+
+
+
+                                <?php    }
                                     if ($order_detail->rowCount() == 0) {
                                         echo "<p style='color:darkred;'>No Orders Found.<br>
 You haven’t placed any orders yet.<br>
 Start browsing medicines and place your first order today</p>";
                                     }
+                                } catch (PDOException $e) {
+                                    echo $e;
                                 }
-                            } catch (PDOException $e) {
-                                echo $e;
-                            }
-                            ?>
-                            <!-- Order Item -->
-                            <!-- <div class="order-box mb-3 p-3 rounded-3 bg-light">
+                                ?>
+                                <!-- Order Item -->
+                                <!-- <div class="order-box mb-3 p-3 rounded-3 bg-light">
           <p class="mb-1"><strong>Product:</strong> Amoxicillin 500 mg</p>
           <p class="mb-1"><strong>Order ID:</strong> #ORD1025</p>
           <p class="mb-1"><strong>Quantity:</strong> 1</p>
@@ -203,19 +336,29 @@ Start browsing medicines and place your first order today</p>";
           <p class="mb-0 text-warning fw-semibold">Pending</p>
         </div> -->
 
-                            <!-- Empty State -->
-                            <!--
+                                <!-- Empty State -->
+                                <!--
         <div class="alert alert-info">
           No orders found.
         </div>
         -->
-
+                            </div>
                         </div>
                     </div>
 
+
+
+
+
+
+                        
+
+
+                    </div>
                 </div>
             </div>
 
+           
             <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasRight" aria-labelledby="offcanvasRightLabel">
                 <div class="offcanvas-header" style="margin-top: 100px;">
                     <h5 class="offcanvas-title" id="offcanvasRightLabel">Edit User Profile</h5>
@@ -248,9 +391,7 @@ Start browsing medicines and place your first order today</p>";
                                     <div class="col-lg-12 form-group">
                                         <input id="phone" type="tel" name="phone" style="width: 353px;<?= $class ?>" class="form-control" placeholder="Mobile No." placeholder="Mobile No." onfocus="this.placeholder = ''" onblur="this.placeholder = 'Mobile No.'" value="<?= $fetch_data['mobile'] ?>">
                                     </div>
-                                    <div class="col-md-12 form-group">
-                                        <input type="date" class="form-control" id="dob" name="dob" placeholder="Birth Date" onfocus="this.placeholder = ''" onblur="this.placeholder = 'Birth Date'" value="<?= $fetch_data['dob'] ?>">
-                                    </div>
+
                                     <div class="col-md-12 form-group">
                                         <textarea class="form-control" name="address" id="address" placeholder="Address" cols="30" rows="4" onfocus="this.placeholder = ''" onblur="this.placeholder = 'Address'"><?= $fetch_data['address'] ?></textarea>
                                     </div>
@@ -335,10 +476,10 @@ Start browsing medicines and place your first order today</p>";
     }
 
     /* ===== Profile Image ===== */
-    .profile-card img {
+    .profile-card .imguser {
         width: 140px;
         height: 140px;
-        object-fit: cover;
+        object-fit: contain;
         border-radius: 50%;
         border: 6px solid #eef4ff;
         background: #fff;
@@ -372,9 +513,19 @@ Start browsing medicines and place your first order today</p>";
         color: #111827;
     }
 
-    .badge-pending {
-        background: #edd4d4;
-        color: #fb2626;
+    .badge-date {
+        background: #d4dced;
+        color: #3b82f6;
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        width: fit-content;
+    }
+
+    .badge-cancel {
+        background: #edd8d4;
+        color: #dc3545;
         padding: 5px 10px;
         border-radius: 20px;
         font-size: 12px;
@@ -415,6 +566,7 @@ Start browsing medicines and place your first order today</p>";
         box-shadow: 0 10px 20px rgba(79, 70, 229, 0.35);
     }
 
+
     /* ===== Order History Section ===== */
     .order-history h2 {
         font-weight: 700;
@@ -422,64 +574,181 @@ Start browsing medicines and place your first order today</p>";
         margin-bottom: 25px;
     }
 
-    /* ===== Individual Order Box ===== */
-    .order-item {
-        background: #f9fafb;
+
+    /* ================= ORDER HISTORY MAIN CARD ================= */
+    .order-card {
+        background: #fff;
         border-radius: 16px;
-        padding: 22px 25px;
-        margin-bottom: 20px;
-        transition: all 0.3s ease;
-        border-left: 6px solid #3b82f6;
+        padding: 18px;
+        border: 1px solid #eef1f6;
+        transition: .35s ease;
+        position: relative;
+        overflow: hidden;
     }
 
-    .order-item:hover {
-        background: #eef5ff;
-        transform: translateY(-3px);
+    /* soft hover */
+    .order-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 14px 30px rgba(0, 0, 0, .07);
     }
 
-    /* ===== Order Text ===== */
-    .order-item p {
-        margin-bottom: 6px;
-        font-size: 14.5px;
-
+    /* subtle top gradient line */
+    .order-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: linear-gradient(90deg, #4f46e5, #06b6d4);
     }
 
-    .order-item strong {
-        color: #111827;
+    /* ================= HEADER ================= */
+    .order-header {
+        margin-bottom: 10px;
     }
 
-    /* ===== Status Badge ===== */
-    .order-status {
-        display: inline-block;
-        margin-top: 8px;
-        padding: 6px 14px;
-        border-radius: 999px;
+    .order-date {
+        font-size: 12px;
+        font-weight: 600;
+        background: #eef2ff;
+        color: #4f46e5;
+        padding: 5px 12px;
+        border-radius: 20px;
+    }
+
+    /* payment badge */
+    .badge.bg-success {
+        background: #dcfce7 !important;
+        color: #15803d;
+        font-weight: 600;
+        border-radius: 20px;
+        padding: 5px 12px;
+    }
+
+    .badge.bg-danger {
+        background: #fee2e2 !important;
+        color: #dc2626;
+        font-weight: 600;
+        border-radius: 20px;
+        padding: 5px 12px;
+    }
+
+    /* ================= PRODUCT ROW ================= */
+    .product-row {
+        padding: 10px 0;
+        border-bottom: 1px dashed #eee;
+        transition: .2s;
+    }
+
+    .product-row:hover {
+        background: #f8fbff;
+        border-radius: 8px;
+    }
+
+    .product-row:last-child {
+        border-bottom: none;
+    }
+
+    /* product image */
+    .product-img {
+        width: 50px;
+        height: 50px;
+        border-radius: 10px;
+        object-fit: cover;
+        border: 1px solid #edf0f6;
+    }
+
+    /* product name */
+    .product-row h6 {
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 2px;
+        color: #1f2937;
+    }
+
+    /* qty price text */
+    .product-row small {
+        color: #6b7280;
+        font-size: 12.5px;
+    }
+
+    /* ================= FOOTER ================= */
+    .order-footer {
+        margin-top: 10px;
+        padding-top: 8px;
+        border-top: 1px solid #f1f3f7;
         font-size: 13px;
         font-weight: 600;
+        color: #374151;
     }
 
-    /* Status Colors */
-    .status-placed {
+    /* status chip */
+    .status-badge {
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        text-transform: capitalize;
+    }
+
+    /* dynamic status colors */
+    .status-badge.confirmed {
         background: #dcfce7;
-        color: #166534;
+        color: #15803d;
     }
 
-    .status-pending {
+    .status-badge.placed {
+        background: #dbeafe;
+        color: #1d4ed8;
+    }
+
+    .status-badge.pending {
         background: #fff7ed;
-        color: #9a3412;
+        color: #c2410c;
     }
 
-    .status-cancelled {
+    .status-badge.cancelled {
         background: #fee2e2;
-        color: #991b1b;
+        color: #b91c1c;
     }
 
-    .img_order {
+    /* ================= TRACK ICON ================= */
+    #order_tracking_icon {
+        position: absolute;
+        right: 18px;
+        top: 18px;
+        opacity: .75;
+        transition: .25s;
+    }
+
+    #order_tracking_icon:hover {
+        transform: scale(1.12) rotate(6deg);
+        opacity: 1;
+    }
+
+    /* ================= MOBILE ================= */
+    @media(max-width:768px) {
+        .product-img {
+            width: 45px;
+            height: 45px;
+        }
+
+        .order-card {
+            padding: 15px;
+        }
+    }
+
+    /* ===== Individual Order Box ===== */
+
+
+    /* .img_order {
         float: right;
-        width: 150px;
-        height: 150px;
-    }
-
+    width: 217px;
+    height: 192px;
+    position: absolute;
+    right: 80px;
+    top: 125px;
+    } */
     /* ===== Responsive Tweaks ===== */
     @media (max-width: 768px) {
 
@@ -488,7 +757,7 @@ Start browsing medicines and place your first order today</p>";
             padding: 22px;
         }
 
-        .profile-card img {
+        .profile-card .imguser {
             width: 110px;
             height: 110px;
         }
@@ -496,5 +765,6 @@ Start browsing medicines and place your first order today</p>";
         .order-history h2 {
             font-size: 24px;
         }
+       
     }
 </style>

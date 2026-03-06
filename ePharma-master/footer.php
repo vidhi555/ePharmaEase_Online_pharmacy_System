@@ -8,7 +8,12 @@
 						<p>
 							At ePharmaEase, our mission is to combine technology and healthcare to deliver a seamless pharmacy experience.<br> We focus on quality, convenience, and trust to support healthier lives.
 						</p>
-
+					</div>
+					<div class="social-icons">
+						<a href="#"><i class="fab fa-instagram"></i></a>
+						<a href="#"><i class="fab fa-facebook-f"></i></a>
+						<a href="#"><i class="fab fa-linkedin-in"></i></a>
+						<a href="#"><i class="fab fa-x-twitter"></i></a>
 					</div>
 				</div>
 				<div class="offset-lg-1 col-lg-2 col-md-6 col-sm-6">
@@ -103,6 +108,8 @@
 
 <!-- this used for mobile numbers validations -->
 <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@18.1.1/build/js/utils.js"></script> 
+<!-- This used for animation on scroll -->
+<script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script> 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
@@ -117,8 +124,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 .then(data => callback(data.country_code))
                 .catch(() => callback("in")); // fallback India
         },
-
-        // onlyCountries: ["in", "us","uk"],  // Restrict to India + USA
         separateDialCode: false,
         utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@18.1.1/build/js/utils.js"
     });
@@ -146,9 +151,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 });
-</script>
 
-<script>
   $(document).ready(function() {
 
     function load_products(page = 1) {
@@ -202,6 +205,23 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
   });
+
+//Animatio on Scroll
+  AOS.init({
+    duration: 900,
+    once: true
+  });
+//   Used as: data-aos="fade-up" 
+// | Animation    | Effect                       |
+// | ------------ | ---------------------------- |
+// | `fade-up`    | very smooth card animation   |
+// | `fade-down`  | navbar / filter animation    |
+// | `zoom-in`    | banner & description         |
+// | `flip-left`  | premium card effect          |
+// | `fade-right` | section entry                |
+// | `fade-left`  | alternate layout             |
+
+
 </script>
 </body>
 

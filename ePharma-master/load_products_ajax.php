@@ -76,8 +76,8 @@ foreach ($products as $p) {
         <div class="card text-center card-product">
             <form action="" method="post">
                 <div class="card-product__img">
-                    <h6 class="card-product__price">₹<?= $p['price'] ?></h6>
-                    <a href="single-product.php?p_id=<?= $p['p_id'] ?>"><img class="card-img" src="../LearnAdmin/upload/<?= $p['image'] ?>" alt=""></a>
+                    <h6 class="card-product__price">$<?= $p['price'] ?></h6>
+                    <a href="single-product.php?p_id=<?= $p['p_id'] ?>"><img class="card-img" src="../LearnAdmin/All_images_uploads/<?= $p['image'] ?>" alt=""></a>
                     <input type="hidden" name="product_id" value="<?= $p['p_id'] ?>">
                     <input type="hidden" name="cart_id" value="<?= $p['p_id'] ?>">
                     <ul class="card-product__imgOverlay">
@@ -119,7 +119,7 @@ if ($category_id != '') {
 }
 
 if ($search != '') {
-    $count_stmt->bindValue(':search', "%$search%");
+    $count_stmt->bindValue(':search', "$search%");
 }
 
 if ($max_price != '') {
@@ -131,7 +131,6 @@ $total = $count_stmt->fetch(PDO::FETCH_ASSOC)['total'];
 
 $pages = ceil($total / $limit);
 
-// echo "<div class='pagination-wrapper'><ul class='ep-pagination'>";
 ?>
 <div class="col-xl-12 col-lg-8 col-md-7">
     <div class="pagination-wrapper">
@@ -142,7 +141,6 @@ $pages = ceil($total / $limit);
                 echo "<li><a href='#' class='page-link' data-page='$i'>$i</a></li>";
             }
 
-            // echo "</ul></div>";
             ?>
 
         </ul>

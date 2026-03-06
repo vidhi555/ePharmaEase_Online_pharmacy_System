@@ -1,7 +1,7 @@
 <?php
 require_once("connection/db.php");
 $pid = $_GET['p_id'] ?? '';
-$user_id = isset($_SESSION['user_id']) ?? NULL;
+$user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : NULL;
 $guest_id = $user_id ? NULL : session_id();
 
 // echo $user_id."/ ";
@@ -26,9 +26,14 @@ if ($user_id) {
         'gid' => $guest_id
     ]);
 }
+
+        
 require_once('insert_cart_logic.php');
 
+
 if (isset($_POST['update_cart'])) {
+
+
     if (empty($_POST['cart_id'])) {
         sweetAlert("Error", "Your Cart is Empty!!!  No item will Update!!", "error");
     } else {
@@ -55,8 +60,7 @@ if (isset($_POST['update_cart'])) {
                 }
                 
             }
-
-            
+  
             // $_SESSION['warning'] = "Cart updated successfully";
             sweetAlert("Success!", "Update Cart Successfully!", "success");
             header("Location: cart.php");
@@ -66,7 +70,44 @@ if (isset($_POST['update_cart'])) {
         }
     }
 }
+if(isset($_POST['empty_cart'])){
+    if(!empty($_POST['cart_id'])){
+        if($user_id){
+            $del= $conn->prepare("DELETE FROM ep_cart WHERE u_id = :uid ");
+            $del->execute(['uid'=>$user_id]);
+        }else{
+            $del = $conn->prepare("DELETE FROM ep_cart WHERE guest_id = :gid ");
+            $del->execute(['gid'=>$guest_id]);
+        }
+        sweetAlert("All Cart Items are Deleted!!!","","info");
+    }
+}
 
+// click checkout
+// if(isset($_POST['checkout'])){
+//     if ($user_id) {
+//         $check = $conn->prepare(
+//             "SELECT * FROM ep_cart where u_id = :uid"
+//         );
+//         $check->execute([
+            
+//             'uid' => $user_id
+//         ]);
+//     } else {
+//         $check = $conn->prepare(
+//             "SELECT * FROM ep_cart WHERE guest_id = :gid"
+//         );
+//         $check->execute([
+//             'gid' => $guest_id
+//         ]);
+        
+//     }
+//         if($check->rowCount()){
+//             header("Location:checkout.php");
+//         }else{
+//             sweetAlert("Alert!","Your Cart is Empty!!! Please Add the Products to the Cart!","warning");
+//         }
+// }
 
 ?>
 <script>
@@ -75,17 +116,17 @@ if (isset($_POST['update_cart'])) {
         let qtys = document.getElementsByClassName('qty');
         let totals = document.getElementsByClassName('total');
 
-        let grand = 0;
+        let grand = 0.00;
 
         for (let i = 0; i < prices.length; i++) {
             //class="price" = 4 , then it iterate 4 times
 
             let total = prices[i].value * qtys[i].value;
-            totals[i].innerText = "₹" + total;
+            totals[i].innerText = "$" + total;
             grand += total;
         }
 
-        document.getElementById('gTotal').innerText = "₹" + grand;
+        document.getElementById('gTotal').innerText = "$" + grand +".00";
     }
 </script>
 <!--================ Start Header Menu Area =================-->
@@ -96,7 +137,7 @@ require_once("header.php");
 <!--================ End Header Menu Area =================-->
 
 <!-- ================ start banner area ================= -->
-<section class="blog-banner-area fade-up" id="category">
+<section class="blog-banner-area" data-aos="fade-in" id="category">
     <div class="container h-100">
         <div class="blog-banner">
             <div class="text-center">
@@ -116,6 +157,7 @@ require_once("header.php");
 <!--================Cart Area =================-->
 <section class="cart_area">
     <div class="container">
+        
         <!-- ==============Show message to guest user =================== -->
         <?php if (!$user_id) { ?>
             <div class="alert alert-info">
@@ -128,7 +170,12 @@ require_once("header.php");
         <div class="cart_inner">
             <div class="table-responsive" style="border-radius: 20px;">
                 <form action="" method="post">
-                    <table class="table table-hover table-striped">
+                    <div class="title_crat text-center" data-aos="fade-up">
+                        <h3>Smart Care Cart</h3>
+                        <img src="img/image-removebg-preview.png" alt="">
+                    </div>
+                    <a href="javascript:history.back()" data-aos="fade-in">← Back</a>
+                    <table class="table table-hover table-striped" data-aos="fade-in">
                         <thead>
                             <tr>
                                 <th scope="col">Product</th>
@@ -147,26 +194,26 @@ require_once("header.php");
                             try {
                                 //display cart items
                                 if ($user_id) {
-                                    $cart = $conn->prepare("SELECT c.cart_id, c.qty, p.p_id, p.name, p.price, p.image
+                                    $cart = $conn->prepare("SELECT c.cart_id, c.qty, p.p_id, p.name, p.price, p.image,p.stock
                                             FROM ep_cart c
                                             JOIN ep_products p ON c.p_id = p.p_id
                                             WHERE c.u_id = :uid");
                                     $cart->execute(['uid' => $user_id]);
                                     // echo "user";
                                 } else {
-                                    $cart = $conn->prepare("SELECT c.cart_id, c.qty, p.p_id, p.name, p.price, p.image
+                                    $cart = $conn->prepare("SELECT c.cart_id, c.qty, p.p_id, p.name, p.price, p.image,p.stock
                                             FROM ep_cart c
                                             JOIN ep_products p ON c.p_id = p.p_id
                                             WHERE guest_id = :gid");
                                     $cart->execute(['gid' => $guest_id]);
                                     // echo "Guest";
                                 }
-
-
+                               
                                 // echo $user_id."/ ".$guest_id;
                                 // die();
                                 if ($cart->rowCount() > 0) {
                                     while ($p = $cart->fetch(PDO::FETCH_ASSOC)) {
+                                         $available_stock = $p['stock']??'';
 
                                         $item_total = $p['price'] * $p['qty'];  //calculate sub Total
                                         $grand_total += $item_total;    //calculate Grand Total
@@ -176,7 +223,7 @@ require_once("header.php");
                                                 <div class="media">
                                                     <div class="d-flex">
                                                         <a href="deletecart.php?cart_id=<?= $p['cart_id'] ?>" name="cart_delete" style="display: flex;align-items: center;justify-items: center;margin-right: 20px;text-decoration: none;"><i style="margin-left: 10px;font-size: 30px;color: #0a35f5;" class="ti-trash" aria-hidden="true"></i></a>
-                                                        <a href="single-product.php?p_id=<?= $p['p_id'] ?>"><img style="width:80px;height:80px;" src="../LearnAdmin/upload/<?= $p['image'] ?>" alt=""></a>
+                                                        <a href="single-product.php?p_id=<?= $p['p_id'] ?>"><img style="width:80px;height:80px;" src="../LearnAdmin/All_images_uploads/<?= $p['image'] ?>" alt=""></a>
                                                     </div>
                                                     <div class="media-body">
                                                         <p><?= $p['name'] ?></p>
@@ -184,7 +231,7 @@ require_once("header.php");
                                                 </div>
                                             </td>
                                             <td>
-                                                <h5>₹<?= $p['price'] ?></h5>
+                                                <h5>$<?= $p['price'] ?></h5>
                                                 <input type="hidden" class="price" value="<?= $p['price'] ?>">
 
                                             </td>
@@ -193,7 +240,7 @@ require_once("header.php");
                                                     <!-- Get cart ids -->
                                                     <input type="hidden" name="cart_id[]" value="<?= $p['cart_id'] ?>">
 
-                                                    <input type="number" name="qty[]" min="1" onchange="subTotal()" maxlength="12" value="<?= $p['qty'] ?>" title="Quantity:"
+                                                    <input type="number" name="qty[]" min="1" onchange="subTotal()" max="<?= $available_stock ?>" value="<?= $p['qty'] ?>" title="Quantity:"
                                                         class="input-text qty">
                                                     <!--<button onclick="var result = document.getElementById('sst'); var sst = result.value; if( !isNaN( sst )) result.value++;return false;"
                                                         class="increase items-count" type="button"><i class="lnr lnr-chevron-up"></i></button>
@@ -202,7 +249,7 @@ require_once("header.php");
                                                 </div>
                                             </td>
                                             <td>
-                                                <h5 class="total">₹<?= $item_total ?></h5>
+                                                <h5 class="total">$<?= number_format($item_total,2) ?></h5>
                                             </td>
 
                                         </tr>
@@ -219,25 +266,18 @@ require_once("header.php");
 
 
                             <tr class="bottom_button">
-                                <td>
+                                <td colspan="4">
                                     <button type="submit" name="update_cart" class="update-btn">
                                         Update Cart
                                     </button>
+                                     <button type="submit" name="empty_cart" class="update-btn">
+                                        Empty Cart
+                                    </button>
                                     <!-- <a class="button" type="submit" name="update_cart" href="update_cart.php?cart_id=<?= $p['cart_id'] ?>">Update Cart</a> -->
                                 </td>
-                                <td>
-
-                                </td>
-                                <td>
-
-                                </td>
-                                <td>
-                                    <!-- <div class="cupon_text d-flex align-items-center">
-                                        <input type="text" placeholder="Coupon Code">
-                                        <a class="primary-btn" href="#">Apply</a>
-                                        <a class="button" href="#">Have a Coupon?</a>
-                                    </div> -->
-                                </td>
+                                
+                                
+                                
                             </tr>
                             <tr>
                                 <td>
@@ -253,7 +293,7 @@ require_once("header.php");
                                     <?php
 
                                     ?>
-                                    <h5 id="gTotal">₹<?= $grand_total ?></h5>
+                                    <h5 id="gTotal">$<?= number_format($grand_total,2) ?></h5>
                                 </td>
                             </tr>
                             <!-- <tr class="shipping_area">
@@ -303,7 +343,11 @@ require_once("header.php");
                                 <td>
                                     <div class="checkout_btn_inner d-flex align-items-center">
                                         <!-- <a class="gray_btn" href="#">Continue Shopping</a> -->
+                                            
+                                                <a class="primary-btn ml-2" href="category.php">Continue Shop</a>
+                                        
                                         <a class="primary-btn ml-2" href="checkout.php">Proceed to checkout</a>
+                                        <!-- <button class="primary-btn ml-2" name="checkout"><a href="checkout.php">Proceed to checkout</a></button> -->
                                     </div>
                                 </td>
                             </tr>

@@ -77,23 +77,9 @@ Your trusted online pharmacy";
         }
     }
 }
+$page_title = "Forgot Password";
+require_once('header2.php');
 ?>
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Forgot Password</title>
-    <!-- Stylesheets -->
-    <link rel="shortcut icon" href="./assets/images/logo6.ico" type="image/x-icon">
-    <link href="./assets/css/bootstrap.min.css" rel="stylesheet">
-    <link href="./assets/icons/fontawesome/css/fontawesome.min.css" rel="stylesheet">
-    <link href="./assets/icons/fontawesome/css/brands.min.css" rel="stylesheet">
-    <link href="./assets/icons/fontawesome/css/solid.min.css" rel="stylesheet">
-    <link href="./assets/plugin/quill/quill.snow.css" rel="stylesheet">
-    <link href="./assets/css/style4.css" rel="stylesheet">
-</head>
 
 <body>
     <div class="container">

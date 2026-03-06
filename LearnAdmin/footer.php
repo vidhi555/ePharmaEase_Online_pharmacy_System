@@ -11,16 +11,11 @@
 <script src="./assets/js/bootstrap.bundle.min.js"></script>
 <script src="./assets/plugin/chart/chart.js"></script>
 <script src="./assets/plugin/quill/quill.js"></script>
-<!-- <script src="./assets/js/chart.js"></script> -->
 <script src="./assets/js/main.js"></script>
 <script src="./js/bootstrap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<script src="./assets/js/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="./assets/plugin/chart/chart.js"></script>
-<!-- <script src="./assets/js/chart.js"></script> -->
-<script src="./assets/js/main.js"></script>
+
 <?php require_once('sweetAlert.php'); ?>
 
 
@@ -28,50 +23,73 @@
 <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@18.1.1/build/js/intlTelInput.min.js"></script>
 
 <!-- this used for mobile numbers validations -->
-<script src="https://cdn.jsdelivr.net/npm/intl-tel-input@18.1.1/build/js/utils.js"></script> 
+<script src="https://cdn.jsdelivr.net/npm/intl-tel-input@18.1.1/build/js/utils.js"></script>
 <script>
-document.addEventListener("DOMContentLoaded", function () {
+    document.addEventListener("DOMContentLoaded", function() {
 
-    var input = document.querySelector("#phone");
+        var input = document.querySelector("#phone");
 
-    var iti = window.intlTelInput(input, {
+        var iti = window.intlTelInput(input, {
 
-        initialCountry: "auto",   // it will Auto detect country
-        geoIpLookup: function(callback) {
-            fetch("https://ipapi.co/json")
-                .then(res => res.json())
-                .then(data => callback(data.country_code))
-                .catch(() => callback("in")); // fallback India
-        },
+            initialCountry: "auto", // it will Auto detect country
+            geoIpLookup: function(callback) {
+                fetch("https://ipapi.co/json")
+                    .then(res => res.json())
+                    .then(data => callback(data.country_code))
+                    .catch(() => callback("in")); // fallback India
+            },
 
-        // onlyCountries: ["in", "us","uk"],  // Restrict to India + USA
-        separateDialCode: false,
-        utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@18.1.1/build/js/utils.js"
+            // onlyCountries: ["in", "us","uk"],  // Restrict to India + USA
+            separateDialCode: false,
+            utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@18.1.1/build/js/utils.js"
+        });
+
+        // Validate + Store Full Number
+        document.querySelector("#register_form").addEventListener("submit", function(e) {
+
+            // Check empty
+            // if (input.value.trim() === "") {
+            //     alert("Phone number is required");
+            //     e.preventDefault();
+            //     return;
+            // }
+
+            // Validate number length according to country
+            // if (!iti.isValidNumber()) {
+            //     alert("Please enter a valid phone number according to selected country");
+            //     e.preventDefault();
+            //     return;
+            // }
+
+            // Store full international number
+            input.value = iti.getNumber();
+        });
+
+
     });
+</script>
 
-    // Validate + Store Full Number
-   document.querySelector("#register_form").addEventListener("submit", function(e) {
 
-    // Check empty
-    if (input.value.trim() === "") {
-        alert("Phone number is required");
-        e.preventDefault();
-        return;
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    function confirmDelete(id , path) {
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "Do you really want to delete?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'OK',
+            cancelButtonText: 'Cancel',
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Redirect or AJAX call
+                // window.location.href = "delete_category.php?c_id=" + id;
+                window.location.href = path + id;
+            }
+        });
     }
-
-    // Validate number length according to country
-    if (!iti.isValidNumber()) {
-        alert("Please enter a valid phone number according to selected country");
-        e.preventDefault();
-        return;
-    }
-
-    // Store full international number
-    input.value = iti.getNumber();
-});
-
-
-});
 </script>
 
 </body>
