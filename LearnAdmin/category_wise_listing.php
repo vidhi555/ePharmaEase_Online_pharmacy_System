@@ -30,8 +30,8 @@ if (isset($_POST['page'])) {
     <tr>
       <td><img src="All_images_uploads/<?= $p['image'] ?>" alt="p_img" width="90px" height="90px">
         <?= $p['name'] ?></td>
-      <td><?= substr($p['description'], 0, 50) ?>...</td>
-      <td><?= $p['price'] ?></td>
+      <td style="width: 1000px;word-wrap: break-word;white-space: normal;"><?= substr($p['description'], 0, 50) ?>...</td>
+      <td>$<?= $p['price'] ?></td>
       <td><?= $p['stock'] ?></td>
       <td><?= $p['category_name'] ?></td>
       <td><?= date('d/m/Y', strtotime($p['expiry_date'])) ?></td>
@@ -158,7 +158,8 @@ try {
                   <nav>
                     <ol class="breadcrumb">
                       <li class="breadcrumb-item"><a href="index.php">Home</a></li>
-                      <li class="breadcrumb-item active">Category</li>
+                      <li class="breadcrumb-item"><a href="view_category_page.php?c_id=<?= $fetch_category['c_id'] ?>">Category</a></li>
+                      <li class="breadcrumb-item active"><?=  $cat_name ?></li>
                     </ol>
                   </nav>
 

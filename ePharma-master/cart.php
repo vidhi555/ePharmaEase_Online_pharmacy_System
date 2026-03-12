@@ -27,7 +27,7 @@ if ($user_id) {
     ]);
 }
 
-        
+
 require_once('insert_cart_logic.php');
 
 
@@ -44,7 +44,7 @@ if (isset($_POST['update_cart'])) {
             for ($i = 0; $i < count($cart_ids); $i++) {     //iterate for total cart_id in cart table
 
                 if ($user_id) {
-                $update = $conn->prepare("UPDATE ep_cart SET qty = :qty WHERE cart_id = :cart_id AND u_id = :uid");
+                    $update = $conn->prepare("UPDATE ep_cart SET qty = :qty WHERE cart_id = :cart_id AND u_id = :uid");
                     $update->execute([
                         'qty'     => $qtys[$i],
                         'cart_id' => $cart_ids[$i],
@@ -58,9 +58,8 @@ if (isset($_POST['update_cart'])) {
                         'gid'     => $guest_id
                     ]);
                 }
-                
             }
-  
+
             // $_SESSION['warning'] = "Cart updated successfully";
             sweetAlert("Success!", "Update Cart Successfully!", "success");
             header("Location: cart.php");
@@ -70,16 +69,16 @@ if (isset($_POST['update_cart'])) {
         }
     }
 }
-if(isset($_POST['empty_cart'])){
-    if(!empty($_POST['cart_id'])){
-        if($user_id){
-            $del= $conn->prepare("DELETE FROM ep_cart WHERE u_id = :uid ");
-            $del->execute(['uid'=>$user_id]);
-        }else{
+if (isset($_POST['empty_cart'])) {
+    if (!empty($_POST['cart_id'])) {
+        if ($user_id) {
+            $del = $conn->prepare("DELETE FROM ep_cart WHERE u_id = :uid ");
+            $del->execute(['uid' => $user_id]);
+        } else {
             $del = $conn->prepare("DELETE FROM ep_cart WHERE guest_id = :gid ");
-            $del->execute(['gid'=>$guest_id]);
+            $del->execute(['gid' => $guest_id]);
         }
-        sweetAlert("All Cart Items are Deleted!!!","","info");
+        sweetAlert("All Cart Items are Deleted!!!", "", "info");
     }
 }
 
@@ -90,7 +89,7 @@ if(isset($_POST['empty_cart'])){
 //             "SELECT * FROM ep_cart where u_id = :uid"
 //         );
 //         $check->execute([
-            
+
 //             'uid' => $user_id
 //         ]);
 //     } else {
@@ -100,7 +99,7 @@ if(isset($_POST['empty_cart'])){
 //         $check->execute([
 //             'gid' => $guest_id
 //         ]);
-        
+
 //     }
 //         if($check->rowCount()){
 //             header("Location:checkout.php");
@@ -122,11 +121,11 @@ if(isset($_POST['empty_cart'])){
             //class="price" = 4 , then it iterate 4 times
 
             let total = prices[i].value * qtys[i].value;
-            totals[i].innerText = "$" + total;
+            totals[i].innerText = "$" + total.toFixed(2);
             grand += total;
         }
 
-        document.getElementById('gTotal').innerText = "$" + grand +".00";
+        document.getElementById('gTotal').innerText = "$" + grand.toFixed(2) ;
     }
 </script>
 <!--================ Start Header Menu Area =================-->
@@ -157,7 +156,7 @@ require_once("header.php");
 <!--================Cart Area =================-->
 <section class="cart_area">
     <div class="container">
-        
+
         <!-- ==============Show message to guest user =================== -->
         <?php if (!$user_id) { ?>
             <div class="alert alert-info">
@@ -208,12 +207,12 @@ require_once("header.php");
                                     $cart->execute(['gid' => $guest_id]);
                                     // echo "Guest";
                                 }
-                               
+
                                 // echo $user_id."/ ".$guest_id;
                                 // die();
                                 if ($cart->rowCount() > 0) {
                                     while ($p = $cart->fetch(PDO::FETCH_ASSOC)) {
-                                         $available_stock = $p['stock']??'';
+                                        $available_stock = $p['stock'] ?? '';
 
                                         $item_total = $p['price'] * $p['qty'];  //calculate sub Total
                                         $grand_total += $item_total;    //calculate Grand Total
@@ -249,7 +248,7 @@ require_once("header.php");
                                                 </div>
                                             </td>
                                             <td>
-                                                <h5 class="total">$<?= number_format($item_total,2) ?></h5>
+                                                <h5 class="total">$<?= number_format($item_total, 2) ?></h5>
                                             </td>
 
                                         </tr>
@@ -270,14 +269,14 @@ require_once("header.php");
                                     <button type="submit" name="update_cart" class="update-btn">
                                         Update Cart
                                     </button>
-                                     <button type="submit" name="empty_cart" class="update-btn">
+                                    <button type="submit" name="empty_cart" class="update-btn">
                                         Empty Cart
                                     </button>
                                     <!-- <a class="button" type="submit" name="update_cart" href="update_cart.php?cart_id=<?= $p['cart_id'] ?>">Update Cart</a> -->
                                 </td>
-                                
-                                
-                                
+
+
+
                             </tr>
                             <tr>
                                 <td>
@@ -293,7 +292,7 @@ require_once("header.php");
                                     <?php
 
                                     ?>
-                                    <h5 id="gTotal">$<?= number_format($grand_total,2) ?></h5>
+                                    <h5 id="gTotal">$<?= number_format($grand_total, 2) ?></h5>
                                 </td>
                             </tr>
                             <!-- <tr class="shipping_area">
@@ -343,9 +342,9 @@ require_once("header.php");
                                 <td>
                                     <div class="checkout_btn_inner d-flex align-items-center">
                                         <!-- <a class="gray_btn" href="#">Continue Shopping</a> -->
-                                            
-                                                <a class="primary-btn ml-2" href="category.php">Continue Shop</a>
-                                        
+
+                                        <a class="primary-btn ml-2" href="category.php">Continue Shop</a>
+
                                         <a class="primary-btn ml-2" href="checkout.php">Proceed to checkout</a>
                                         <!-- <button class="primary-btn ml-2" name="checkout"><a href="checkout.php">Proceed to checkout</a></button> -->
                                     </div>

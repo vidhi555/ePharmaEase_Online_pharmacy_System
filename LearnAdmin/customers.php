@@ -17,9 +17,9 @@ if (isset($_POST['page'])) {
   $page = $_POST['page'];
   $offset = ($page - 1) * $limit;
 
-  $q = $conn->prepare("SELECT * FROM ep_users WHERE role = 'customer' AND name LIKE :search LIMIT $offset , $limit");
+  $q = $conn->prepare("SELECT * FROM ep_users WHERE role = 'customer' AND (name LIKE :search OR email LIKE :search OR address LIKE :search) LIMIT $offset , $limit");
   $q->execute([
-    'search' => $search . '%'
+    'search' => '%' . $search . '%'
   ]);
   $data = $q->fetchAll(PDO::FETCH_ASSOC);
   $id = $offset;
@@ -39,19 +39,39 @@ if (isset($_POST['page'])) {
       <td class="text-center">
         <!-- <a href="category.php?c_id=" data-bs-toggle="modal" data-bs-target="#courseEditModal" class="btn btn-sm btn-primary me-2"><i class="fa-regular fa-pen-to-square"></i></a> -->
 
-        <button class="btn btn-sm btn-danger" onclick="confirmDelete(<?= $p['u_id'] ?>,'delete_category.php?c_id=')"><i class="fa-solid fa-trash-can"></i></button>
+        <button class="btn btn-sm btn-danger" onclick="confirmDelete(<?= $p['u_id'] ?>,'delete_category.php?u_id=')"><i class="fa-solid fa-trash-can"></i></button>
       </td>
     </tr>
 <?php
 
   }
+  // Split pagination content
+  echo "###pagination###";
+
+  // Pagination
+  $count_stmt = $conn->prepare("SELECT * FROM ep_users WHERE role = 'customer' AND (name LIKE :search OR email LIKE :search OR address LIKE :search)");
+  $count_stmt->execute([
+    'search' => $search . '%'
+  ]);
+  $total =  $count_stmt->rowCount();
+  $pages = ceil($total / $limit);
+
+  if ($pages > 0) {
+    for ($i = 1; $i <= $pages; $i++) {
+      echo "<li class='page-item'>
+              <a href='#' class='page-link' data-page='$i'>$i</a>
+              </li>";
+    }
+  }
   exit;
 }
+
+
+
+$page_title = "Customer page";
+require_once("header2.php");
 ?>
 
-  
-
-</head>
 
 <body>
   <!-- Preloader -->
@@ -69,7 +89,6 @@ if (isset($_POST['page'])) {
       <!-- Header -->
       <div class="header d-flex align-items-center justify-content-between">
         <?php
-        $page_title = "Customer page";
         include_once('header.php');
         ?>
       </div>
@@ -148,57 +167,11 @@ if (isset($_POST['page'])) {
               </div>
               <div class="pb-3 ps-3 mt-3 d-flex justify-content-center justify-content-md-between justify-content-lg-between flex-wrap flex-md-nowrap">
                 <nav aria-label="Page navigation" class="mb-3 mb-md-0 mb-lg-0">
-                  <ul class="pagination">
-                    <?php
-                    $s = $_POST['search'] ?? '';
-                    createPagination("ep_users", "name", $s, 5);
-                    ?>
+                  <ul class="pagination" id="pagination">
+
                   </ul>
                 </nav>
-                <!-- <div class="d-flex justify-content-end">
-                  <div class="page-selector">
-                    <span>PAGE</span>
-                    <select class="form-select" aria-label="Select page">
-                      <option value="1" selected>1</option>
-                      <option value="2">2</option>
-                      <option value="3">3</option>
-                      <option value="4">4</option>
-                      <option value="5">5</option>
-                    </select>
-                    <span>OF 102</span>
-                  </div>
-                </div> -->
               </div>
-              <!-- <div class="pb-3 ps-3 mt-3 d-flex justify-content-center justify-content-md-between justify-content-lg-between flex-wrap flex-md-nowrap">
-                <nav aria-label="Page navigation" class="mb-3 mb-md-0 mb-lg-0">
-                  <ul class="pagination">
-                    <li class="page-item">
-                      <a class="page-link" href="#" aria-label="Previous"><i class="fa-solid fa-chevron-left text-size-12"></i></a>
-                    </li>
-                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                    <li class="page-item"><a class="page-link" href="#">2</a></li>
-                    <li class="page-item"><a class="page-link" href="#"><i class="fas fa-ellipsis-h"></i></a></li>
-                    <li class="page-item"><a class="page-link" href="#">6</a></li>
-                    <li class="page-item"><a class="page-link" href="#">7</a></li>
-                    <li class="page-item">
-                      <a class="page-link" href="#" aria-label="Next"><i class="fa-solid fa-chevron-right text-size-12"></i></a>
-                    </li>
-                  </ul>
-                </nav>
-                <div class="d-flex justify-content-end">
-                  <div class="page-selector">
-                    <span>PAGE</span>
-                    <select class="form-select" aria-label="Select page">
-                      <option value="1" selected>1</option>
-                      <option value="2">2</option>
-                      <option value="3">3</option>
-                      <option value="4">4</option>
-                      <option value="5">5</option>
-                    </select>
-                    <span>OF 100</span>
-                  </div>
-                </div>
-              </div> -->
             </div>
           </div>
         </div>

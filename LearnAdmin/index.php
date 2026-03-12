@@ -75,6 +75,25 @@ require_once("header2.php");
                             echo counting_items($table);
                             ?>
                           </div>
+                          <?php
+                          try{
+                            $find_stock = $conn->prepare("SELECT * FROM ep_products WHERE stock <= 1 AND expiry_date < NOW()");
+                            $find_stock->execute();
+                            $fetch_stock = $find_stock->fetchAll(PDO::FETCH_ASSOC);
+                            if($fetch_stock){
+                              $count_rows = $find_stock->rowCount();
+                              ?>
+                              <div class="alert alert-warning " role="alert">
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                                <strong>Warning!</strong> 
+                                <p><?= $count_rows ?> products are currently out of stock.</p>
+                                </div>
+                              <?php
+                            }
+                          }catch(PDOException $er){
+                            echo "Error:$er";
+                          }
+                          ?>
                         </div>
                         <div class="icon-wrapper icon-purple">
                           <i class="fas fa-pills"></i>
@@ -590,7 +609,7 @@ require_once("header2.php");
                 },
                 ticks: {
                   display: true,
-                  stepSize: 5
+                  stepSize: 1
                 }
               }
             },

@@ -45,19 +45,8 @@ require_once('header2.php');
   /* HOVER EFFECT */
   .single-prd-item:hover {
     transform: translateY(-4px);
-    border-color: #2563eb;
+    /* border-color: #2563eb; */
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
-  }
-
-  .single-prd-item:hover img {
-    transform: scale(1.08);
-  }
-
-  /* IF MANY IMAGES → SCROLL */
-  .product-left {
-    /* max-height: 270px; */
-    overflow-y: auto;
-    padding-right: 5px;
   }
 
   /* SCROLLBAR DESIGN */
@@ -68,6 +57,159 @@ require_once('header2.php');
   .product-left::-webkit-scrollbar-thumb {
     background: #c7d8ff;
     border-radius: 10px;
+  }
+
+  .product-detail-card {
+    display: flex;
+    gap: 40px;
+    background: #ffffff;
+    padding: 35px;
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+    align-items: flex-start;
+  }
+
+  /* LEFT IMAGE AREA */
+
+  .product-left {
+    width: 22%;
+    display: flex;
+    flex-direction: row;
+    gap: 15px;
+    max-height: 450px;
+    overflow-y: auto;
+    padding-right: 10px;
+    border-right: 1px solid #eee;
+  }
+
+  .single-prd-item {
+    background: #f8f9fa;
+    padding: 10px;
+    border-radius: 8px;
+    text-align: center;
+  }
+
+  .single-prd-item img {
+    max-width: 100%;
+    border-radius: 6px;
+    transition: 0.3s;
+  }
+
+  .single-prd-item img:hover {
+    transform: scale(1.05);
+  }
+
+  /* RIGHT SIDE */
+
+  .product-right {
+    width: 65%;
+  }
+
+  /* HEADER */
+
+  .product-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+
+  .product-header h3 {
+    font-size: 26px;
+    font-weight: 600;
+    color: #3a57e8;
+    margin: 0;
+  }
+
+  /* ACTION BUTTONS */
+
+  .action-buttons {
+    display: flex;
+    gap: 10px;
+  }
+
+  .icon-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: none;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  .icon-btn.edit {
+    background: #3a57e8;
+  }
+
+  .icon-btn.delete {
+    background: #dc3545;
+  }
+
+  /* DESCRIPTION */
+
+  .product-desc {
+    color: #555;
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+
+  /* PRODUCT INFO */
+
+  .product-info {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+  }
+
+  @media (max-width: 576px) {
+    .product-info {
+      grid-template-columns: repeat(1, 1fr);
+    }
+
+    .product-left {
+      width: 100%;
+    }
+
+    .product-right {
+      width: 100%;
+    }
+  }
+
+  .product-info li {
+    background: #f8f9fa;
+    padding: 12px 15px;
+    border-radius: 6px;
+    font-size: 15px;
+  }
+
+   .product-info li:hover{
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.08);
+    
+   }
+  /* PRICE STYLE */
+
+  .product-price {
+    color: #28a745;
+    font-size: 18px;
+    font-weight: 600;
+  }
+
+  /* ALERT */
+
+  .expiry-alert {
+    margin-top: 15px;
+    background: #fff3f3;
+    color: #dc3545;
+    padding: 10px 15px;
+    border-radius: 6px;
+    font-size: 14px;
+    border-left: 4px solid #dc3545;
   }
 </style>
 
@@ -134,7 +276,14 @@ require_once('header2.php');
                     foreach ($fetch_iamge as $a) {
                   ?>
                       <div class="single-prd-item">
-                        <img class="img-fluid" src="../LearnAdmin/All_images_uploads/<?= $a['image_name'] ?>" alt="p_image" style="width: auto;">
+                        <button
+                          data-bs-toggle="modal"
+                          data-bs-target="#imgModal"
+
+                          data-id="<?= $a['p_id'] ?>"
+                          data-img="<?= $a['image_name'] ?>">
+                          <img class="img-fluid" src="../LearnAdmin/All_images_uploads/<?= $a['image_name'] ?>" alt="p_image" style="width: auto;">
+                        </button>
                       </div>
                   <?php
                     }
@@ -167,14 +316,6 @@ require_once('header2.php');
                       </button>
                       <button class="icon-btn delete" onclick="confirmDelete(<?= $fetch_product['p_id'] ?>,'delete_product.php?p_id=')"><i class="fas fa-trash"></i></button>
 
-                      <!-- <a href="edit_product.php?p_id=<?= $fetch_product['p_id'] ?>" class="icon-btn edit">
-                    <i class="fas fa-edit"></i>
-                </a>
-                <a href="delete_product.php?p_id=<?= $fetch_product['p_id'] ?>" 
-                   class="icon-btn delete"
-                   onclick="return confirm('Are you sure you want to delete this product?')">
-                    <i class="fas fa-trash"></i>
-                </a> -->
                     </div>
                   </div>
 
@@ -185,19 +326,38 @@ require_once('header2.php');
                   <ul class="product-info">
                     <li><strong>Category:</strong> <?= $fetch_product['category_name'] ?></li>
                     <li><strong>Price:</strong> $<?= $fetch_product['price'] ?></li>
-                    <li><strong>Stock:</strong> <?= $fetch_product['stock'] ?></li>
-                    <li><strong>Expiry Date: </strong><?= date("d/m/Y", strtotime($fetch_product['expiry_date'])) ?></li>
+                    <li><strong>Stock:</strong> <?= $fetch_product['stock'] ?>
+                      <?php if ($fetch_product['stock'] <= 0) { ?>
+                        <span class="badge bg-danger">Out of Stock.</span>
+                      <?php } elseif ($fetch_product['stock'] <= 5) { ?>
+                        <span class="badge bg-danger">Only <?= $fetch_product['stock'] ?> items left. Restock soon.</span>
+                      <?php } ?>
+
+                      <?php if ($fetch_product['status'] == 'In-Active') { ?>
+                        <span class="badge bg-warning"><?= $fetch_product['name'] ?> is currently Disabled.</span>
+                      <?php } ?>
+                    </li>
                     <li><strong>Status: </strong><?= $fetch_product['status'] ?></li>
+                    <?php
+                    try {
+                      $e_query = $conn->prepare("SELECT * FROM `ep_products` WHERE expiry_date < NOW()");
+                      $e_query->execute();
+                      $count_rows = $e_query->rowCount();
+                    } catch (PDOException $e) {
+                      echo $e;
+                    }
+                    ?>
+                    <li><strong>Expiry Date: </strong><?= date("d/m/Y", strtotime($fetch_product['expiry_date'])) ?>
+                      <?php
+                      if ($count_rows > 0) {
+                        echo "<p class='text-danger'><i class='fa-regular fa-ban'></i> This product has expired. Please remove or update the stock.</p>";
+                      }
+                      ?>
+                    </li>
+
                   </ul>
-                  <?php if ($fetch_product['stock'] <= 5) { ?>
-                    <span class="badge bg-danger">Only <?= $fetch_product['stock'] ?> items left. Restock soon.</span>
-                  <?php }
-                  if ($fetch_product['stock'] == 0) { ?>
-                    <span class="badge bg-danger">Out of Stock.</span>
-                  <?php }
-                  if ($fetch_product['status'] == 'In-Active') { ?>
-                    <span class="badge bg-warning"><?= $fetch_product['name'] ?> is currently Disabled.</span>
-                  <?php } ?>
+
+
                 </div>
               </div>
 
@@ -238,7 +398,7 @@ require_once('header2.php');
               </div>
               <div class="col-6">
                 <label for="price" class="form-label text-color-2 text-normal">Price</label>
-                <input type="number" name="price" class="form-control" id="edit_price" placeholder="Enter Price">
+                <input type="number" name="price" min="0.00" step="0.01" class="form-control" id="edit_price" placeholder="Enter Price">
               </div>
               <div class="col-6">
                 <label for="stock" class="form-label text-color-2 text-normal">Stock</label>
@@ -285,8 +445,8 @@ require_once('header2.php');
                 <label class="form-label text-color-2 text-normal">Product Image</label>
                 <img src="" alt="product" id="edit_img_prev" style="height: 100px;width: 100px;border: 1px solid lightblue;">
                 <input type="file" name="pimg[]" multiple class="form-control">
-
               </div>
+              <!-- <input type="text" name="" id="img_prev1"> -->
 
               <div class="col-12 mt-5">
                 <button type="submit" name="edit" class="btn bg-white bg-primary text-white d-flex align-items-center px-4 py-2 rounded-2 text-normal fw-bolder letter-spacing-26">Update Product</button>
@@ -324,5 +484,37 @@ require_once('header2.php');
 
     // set image
     document.getElementById('edit_img_prev').src = "All_images_uploads/" + old_img;
+  });
+</script>
+
+<!--Edit  Modal -->
+<div class="modal fade" id="imgModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable">
+    <div class="modal-content rounded-0">
+
+      <div class="modal-body p-4 position-relative">
+        <button type="button" class="btn position-absolute end-1" data-bs-dismiss="modal" aria-label="Close"><i class="fas fa-times"></i></button>
+        <h2 class="h5 text-color-2 py-2">Image</h2>
+        <form action="" method="POST" enctype="multipart/form-data">
+          <div class="text-center">
+            <input type="hidden" name="p_id" id="p_id">
+            <img src="" id="img_prev" alt="img" srcset="" width="500px" height="500px" style="border: 1px solid #333;border-radius: 26px;box-shadow: 0 6px 16px rgba(0, 0, 0, 0.8);">
+          </div>
+        </form>
+
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  document.getElementById('imgModal').addEventListener('show.bs.modal', function(event) {
+
+    let btn = event.relatedTarget;
+    let img = btn.getAttribute('data-img');
+
+    document.getElementById('p_id').value = btn.getAttribute('data-id');
+    // set image
+    // document.getElementById('img_prev1').value = btn.getAttribute('data-img');
+    document.getElementById('img_prev').src = "./All_images_uploads/" + img;
   });
 </script>

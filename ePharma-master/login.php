@@ -74,8 +74,8 @@ require_once('header.php') ?>
 				<nav aria-label="breadcrumb" class="banner-breadcrumb">
 					<ol class="breadcrumb">
 						<li class="breadcrumb-item"><a href="index.php">Home</a></li>
-						<li class="breadcrumb-item active" aria-current="page">Login/Register</li>
-						<li class="breadcrumb-item"><a href="logout.php">Log-Out</a></li>
+						<li class="breadcrumb-item active" aria-current="page">Login</li>
+						
 					</ol>
 				</nav>
 			</div>
@@ -88,7 +88,7 @@ require_once('header.php') ?>
 <!-- <section "> -->
 <section class="login_box_area section-margin">
 	<div class="container">
-		<div class="row">
+		<div class="row" style="box-shadow: 0 0 6px rgba(0, 0, 0, 0.8);">
 			<div class="col-lg-6">
 				<div class="login_box_img">
 					<div class="hover">
@@ -125,12 +125,13 @@ require_once('header.php') ?>
                             <?php unset( $_SESSION['success_msg']); ?>
                         <?php } ?>
 					<h3>Log in to enter</h3>
+					<img src="img/image-removebg-preview.png" alt="">
 					<form class="row login_form" action="" id="contactForm" method="post">
 						<div class="col-md-12 form-group">
-							<input type="text" class="form-control" id="username" name="username" placeholder="Username" onfocus="this.placeholder = ''" onblur="this.placeholder = 'Username'">
+							<input type="text" class="form-control" id="username" name="username" placeholder="Username" onfocus="this.placeholder = ''" onblur="this.placeholder = 'Username'" value="<?= !empty($_COOKIE['name']) ? $_COOKIE['name'] : '' ?>">
 						</div>
 						<div class="col-md-12 form-group">
-							<input type="password" class="form-control" id="password" name="password" placeholder="Password" onfocus="this.placeholder = ''" onblur="this.placeholder = 'Password'">
+							<input type="password" class="form-control" id="password" name="password" placeholder="Password" onfocus="this.placeholder = ''" onblur="this.placeholder = 'Password'" value="<?= !empty($_COOKIE['password']) ? $_COOKIE['password'] : '' ?>">
 						</div>
 						<div class="col-md-12 form-group text-muted">
 							<div class="creat_account">

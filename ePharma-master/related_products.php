@@ -1,12 +1,12 @@
-<section class="related-product-area section-margin--small mt-0">
+<!-- ================ recommanded products ================= -->
+<section class="section-margin calc-60px" style="background: linear-gradient(135deg, #c9f0f6, #d2e9f9);margin-top:10px;">
 	<div class="container">
 		<div class="section-intro pb-60px text-center">
 			<img data-aos="fade-up" src="img/logo6.png" alt="logo" style="width: 100px;height: 80px;">
 			<p>Recommended Health Product</p>
 			<h2 style="margin-top: 5px;"><span class="section-intro__style">Explore Similar Products</span></h2>
 		</div>
-		<div class="row ">
-
+		<div class="owl-carousel owl-theme" id="bestSellerCarousel">
 			<?php
 			try {
 				$query = $conn->prepare("SELECT * FROM ep_products p JOIN ep_category c ON c.c_id = p.c_id WHERE p_id = $pid");
@@ -15,111 +15,64 @@
 				if ($product) {
 					$fetchcid = $product['c_id'];
 
-					$query = $conn->prepare("SELECT * FROM ep_products WHERE c_id = :cid ORDER BY price DESC LIMIT 8");
+					$query = $conn->prepare("SELECT * FROM ep_products p JOIN ep_category c ON p.c_id = c.c_id WHERE c.c_id = :cid ORDER BY price DESC LIMIT 8");
 					$query->execute(['cid' => $fetchcid]);
 
-					$fetch_products = $query->fetchAll(PDO::FETCH_ASSOC);
-					foreach ($fetch_products as $p) { ?>
-						<div class="col-md-6 col-lg-3 col-xl-3 mt-4" data-aos="fade-up">
-							<div class="single-search-product-wrapper">
-								<div class="single-search-product d-flex">
-									<a href="single-product.php?p_id=<?= $p['p_id'] ?>"><img src="../LearnAdmin/All_images_uploads/<?= $p['image'] ?>" alt=""></a>
-									<div class="desc">
-										<h6 class="rating"><?php
-															for ($i = 0; $i < 5; $i++) {
-																echo "<i class='fas fa-star rating-stars text-size-13'></i>";
-															}
+					$result = $query->fetchAll(PDO::FETCH_ASSOC);
+					foreach ($result as $p) {
+						// rate average
+						$rate_avg = $conn->prepare("SELECT AVG(rate) as rating_avg FROM ep_review WHERE p_id = :pid");
+						$rate_avg->execute(['pid' => $p['p_id']]);
+						$fetch_avg = $rate_avg->fetch(PDO::FETCH_ASSOC);
 
-															?>
-										</h6>
-										<a href="single-product.php?p_id=<?= $p['p_id'] ?>" class="title"><?= $p['name'] ?></a>
-										<div class="price">$<?= $p['price'] ?></div>
-									</div>
+						$available_stock = $p['stock'];
+			?>
+						<div class="card text-center card-product">
+							<form action="" method="post">
+								<div class="card-product__img">
+									<h6 class="card-product__price">$<?= $p['price'] ?></h6>
+									<a href="single-product.php?p_id=<?= $p['p_id'] ?>"><img class="card-img" src="../LearnAdmin/All_images_uploads/<?= $p['image'] ?>" alt=""></a>
+									<input type="hidden" name="product_id" value="<?= $p['p_id'] ?>">
+									<input type="hidden" name="cart_id" value="<?= $p['p_id'] ?>">
+									<ul class="card-product__imgOverlay">
+										<?php if ($available_stock < 5) {
+											$alert = "<i class='fas fa-exclamation-triangle'></i> Only few items left";
+										} elseif ($available_stock <= 0) {
+											$alert = "<i class='far fa-exclamation-triangle'></i> Out Of Stock";
+										} else {
+											$alert = "<i class='ti-shopping-cart'></i>";
+										} ?>
+										<li><button name="cart"><?= $alert ?></button></li>
+									</ul>
 								</div>
-							</div>
+
+								<div class="card-body">
+									<h4 class="card-product__title"><a href="single-product.php?p_id=<?= $p['p_id'] ?>"><?= $p['name'] ?></a></h4>
+
+									<h6 class="rating"><?php
+														for ($i = 0; $i < $fetch_avg['rating_avg']; $i++) {
+															echo "<i class='fas fa-star rating-stars text-size-13'></i>";
+														}
+
+														?>
+									</h6>
+									<p style="text-transform: capitalize;"><?= $p['category_name'] ?></p>
+								</div>
+							</form>
 						</div>
-			<?php	}
+
+			<?php
+					}
+				} else {
+					echo "No Products Available!";
 				}
-			} catch (PDOException $e) {
-				echo "Error:$e";
+			} catch (PDOException $ex) {
+				echo "Error: $ex";
 			}
 			?>
 
 
-			<!-- <div class="col-sm-6 col-xl-3 mb-4 mb-xl-0">
-				<div class="single-search-product-wrapper">
-					<?php
-					// try {
-					// 	$query = $conn->prepare("SELECT * FROM ep_products WHERE c_id=2");
-					// 	$query->execute();
-					// 	$fetch_products = $query->fetchAll(PDO::FETCH_ASSOC);
-					// 	foreach ($fetch_products as $p) { 
-					?>
-							<div class="single-search-product d-flex">
-								<a href="#"><img src="../LearnAdmin/upload/<?= $p['image'] ?>" alt=""></a>
-								<div class="desc">
-									<a href="#" class="title"><?= $p['name'] ?></a>
-									<div class="price">Rs.<?= $p['price'] ?></div>
-								</div>
-							</div>
-					<?php
-					// }
-					// } catch (PDOException $e) {
-					// 	echo "Error:$e";
-					// }
-					?>
-				</div>
-			</div>
 
-			<div class="col-sm-6 col-xl-3 mb-4 mb-xl-0">
-				<div class="single-search-product-wrapper">
-					<?php
-					// try {
-					// 	$query = $conn->prepare("SELECT * FROM ep_products WHERE c_id = 3");
-					// 	$query->execute();
-					// 	$fetch_products = $query->fetchAll(PDO::FETCH_ASSOC);
-					// 	foreach ($fetch_products as $p) { 
-					?>
-							<div class="single-search-product d-flex">
-								<a href="#"><img src="../LearnAdmin/upload/<?= $p['image'] ?>" alt=""></a>
-								<div class="desc">
-									<a href="#" class="title"><?= $p['name'] ?></a>
-									<div class="price">Rs.<?= $p['price'] ?></div>
-								</div>
-							</div>
-					<?php
-					// 	}
-					// } catch (PDOException $e) {
-					// 	echo "Error:$e";
-					// }
-					?>
-				</div>
-			</div>
-
-			<div class="col-sm-6 col-xl-3 mb-4 mb-xl-0">
-				<div class="single-search-product-wrapper">
-					<?php
-					// try {
-					// 	$query = $conn->prepare("SELECT * FROM ep_products WHERE c_id = 4");
-					// 	$query->execute();
-					// 	$fetch_products = $query->fetchAll(PDO::FETCH_ASSOC);
-					// 	foreach ($fetch_products as $p) { 
-					?>
-							<div class="single-search-product d-flex">
-								<a href="#"><img src="../LearnAdmin/upload/<?= $p['image'] ?>" alt=""></a>
-								<div class="desc">
-									<a href="#" class="title"><?= $p['name'] ?></a>
-									<div class="price">Rs.<?= $p['price'] ?></div>
-								</div>
-							</div>
-					<?php
-					// 	}
-					// } catch (PDOException $e) {
-					// 	echo "Error:$e";
-					// }
-					?>
-				</div>
-			</div> -->
 		</div>
-	</div>
 </section>
+<!-- ================ recommanded products ================= -->

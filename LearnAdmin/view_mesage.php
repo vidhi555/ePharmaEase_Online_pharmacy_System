@@ -13,6 +13,7 @@ $mid = $_GET['msg_id'];
 $page_title = "Message Detail";
 require_once('header2.php');
 ?>
+
 <body>
     <!-- Preloader -->
     <div id="preloader">
@@ -41,12 +42,12 @@ require_once('header2.php');
                     <div class="col-12">
                         <div class="d-flex align-items-lg-center  flex-column flex-md-row flex-lg-row mt-3">
                             <div class="flex-grow-1">
-                            <nav>
-                                <ol class="breadcrumb">
-                                    <li class="breadcrumb-item"><a href="index.php">Home</a></li>
-                                    <li class="breadcrumb-item"><a href="message_report.php">Message</a></li>
-                                    <li class="breadcrumb-item active">Message Details</li>
-                                </ol>
+                                <nav>
+                                    <ol class="breadcrumb">
+                                        <li class="breadcrumb-item"><a href="index.php">Home</a></li>
+                                        <li class="breadcrumb-item"><a href="message_report.php">Message</a></li>
+                                        <li class="breadcrumb-item active">Message Details</li>
+                                    </ol>
                                 </nav>
                             </div>
 
@@ -66,12 +67,23 @@ require_once('header2.php');
                         <div class="mt-4">
 
                             <!-- Main content -->
-                            <div class="product-detail-card">
+
+                            
 
 
-                                <div class="product-right">
-                                    <div class="product-header">
-                                        <h3>From: <?= $fetch_msg['name'] ?></h3>
+                                <div class="message-card">
+
+                                    <div class="message-header">
+                                        <div class="user-info">
+                                            <div class="avatar">
+                                                <?= substr($fetch_msg['name'],0,1) ?>
+                                            </div>
+
+                                            <div>
+                                                <h4 class="name"><?= $fetch_msg['name'] ?></h4>
+                                                <p class="email"><?= $fetch_msg['email'] ?></p>
+                                            </div>
+                                        </div>
 
                                         <div class="action-buttons">
                                             <button data-bs-toggle="modal"
@@ -82,81 +94,68 @@ require_once('header2.php');
                                         </div>
                                     </div>
 
-                                    <hr>
-                                    <p class="product-desc"><strong>Email:</strong> <?= $fetch_msg['email'] ?></p>
-                                    <p class="product-desc"><strong>Subject:</strong> <?= $fetch_msg['subject'] ?></p>
-                                    <p class="product-desc"><strong>Message:</strong>
-                                        "<?= $fetch_msg['message'] ?? 'No description available.' ?>"
-                                    </p>
-                                    <p class="product-desc"><strong>Date: </strong><?= date('d/m/Y',strtotime($fetch_msg['message_at'])) ?></p>
-                                    <p class="text-muted">
-                                        <strong>Status:</strong>
-                                        <?php if ($fetch_msg['status'] == 'New') { ?>
-                                            <span class="badge bg-primary">New</span>
-                                        <?php } elseif ($fetch_msg['status'] == 'replied') { ?>
-                                            <span class="badge bg-success">Replied</span>
-                                        <?php }  ?>
-                                    </p>
-                                    <!-- <table >
-                                   <tr>
-                                    <td>Email: </td>
-                                    <td><?= $fetch_msg['email'] ?></td>
-                                   </tr>
-                                   <tr>
-                                    <td>Subject: </td>
-                                    <td><?= $fetch_msg['subject'] ?></td>
-                                   </tr>
-                                   <tr>
-                                    <td>Message: </td>
-                                    <td><?= $fetch_msg['message'] ?></td>
-                                   </tr>
-                                   <tr>
-                                    <td>Status: </td>
-                                    <td> <?php if ($fetch_msg['status'] == 'New') { ?>
-                                        <span class="badge bg-primary">New</span>
-                                    <?php } elseif ($fetch_msg['status'] == 'replied') { ?>
-                                        <span class="badge bg-success">Replied</span>
-                                    <?php }  ?></td>
-                                   </tr>
-                                   </table> -->
+                                    <div class="message-body">
+
+                                        <div class="info-row">
+                                            <span class="label">Subject:</span>
+                                            <span><?= $fetch_msg['subject'] ?></span>
+                                        </div>
+
+                                        <div class="info-row">
+                                            <span class="label">Date:</span>
+                                            <span><?= date('d/m/Y', strtotime($fetch_msg['message_at'])) ?> • <?= date('h:i A', strtotime($fetch_msg['message_at'])) ?></span>
+                                        </div>
+
+                                        <div class="info-row">
+                                            <span class="label">Status:</span>
+                                            <?php if ($fetch_msg['status'] == 'New') { ?>
+                                                <span class="badge-new">New</span>
+                                            <?php } elseif ($fetch_msg['status'] == 'replied') { ?>
+                                                <span class="badge-replied"><i class="fas fa-success fa-check"></i> Replied</span>
+                                                
+                                            <?php }  ?>
+                                        </div>
+
+                                        <div class="message-text">
+                                            <?= empty($fetch_msg['message']) ? 'No description available.':'<i class="fa-solid fa-quote-left"></i>'.$fetch_msg['message'].'<i class="fas fa-small fa-quote-right"></i>' ?>
+                                        </div>
+
+                                    </div>
 
                                 </div>
-                            </div>
 
-
+                            
+                            <!-- Footer -->
+                            <?php include('footer.php'); ?>
                         </div>
-            </div>
-            <!-- Footer -->
-            <?php include('footer.php'); ?>
-        </div>
 
 
 
-        <!--Edit  Modal -->
-        <div class="modal fade" id="categoryEditModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-scrollable">
-                <div class="modal-content rounded-0">
-                    <div class="modal-body p-4 position-relative">
-                        <button type="button" class="btn position-absolute end-1" data-bs-dismiss="modal" aria-label="Close"><i class="fas fa-times"></i></button>
-                        <h2 class="h5 text-color-2 py-2">Send Response</h2>
-                        <form class="row g-3" method="post" enctype="multipart/form-data">
+                        <!--Edit  Modal -->
+                        <div class="modal fade" id="categoryEditModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-scrollable">
+                                <div class="modal-content rounded-0">
+                                    <div class="modal-body p-4 position-relative">
+                                        <button type="button" class="btn position-absolute end-1" data-bs-dismiss="modal" aria-label="Close"><i class="fas fa-times"></i></button>
+                                        <h2 class="h5 text-color-2 py-2">Send Response</h2>
+                                        <form class="row g-3" method="post" enctype="multipart/form-data">
 
 
-                            <div class="col-12">
-                                <label for="reply" class="form-label text-color-2 text-normal">Response: </label>
-                                <textarea class="form-control" name="reply" id="reply"></textarea>
+                                            <div class="col-12">
+                                                <label for="reply" class="form-label text-color-2 text-normal">Response: </label>
+                                                <textarea class="form-control" name="reply" id="reply"></textarea>
+                                            </div>
+
+
+                                            <div class="col-12 mt-5">
+                                                <button type="submit" name="send" class="btn bg-white bg-primary text-white d-flex align-items-center px-4 py-2 rounded-2 text-normal fw-bolder letter-spacing-26">Send</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
                             </div>
-
-
-                            <div class="col-12 mt-5">
-                                <button type="submit" name="send" class="btn bg-white bg-primary text-white d-flex align-items-center px-4 py-2 rounded-2 text-normal fw-bolder letter-spacing-26">Send</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-<?php
+                        </div>
+                <?php
                     }
                 } catch (PDOException $ex) {
                     echo $ex;
@@ -203,4 +202,4 @@ require_once('header2.php');
                 }
 
                 require_once("sweetAlert.php");
-?>
+                ?>

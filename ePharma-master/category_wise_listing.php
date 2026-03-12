@@ -32,35 +32,36 @@ if (isset($_POST['filter_data']) && isset($_POST['search_data'])) {
     foreach ($fetch_Prods as $p) {
 ?>
       <div class="col-md-6 col-lg-4">
-        <div class="card text-center card-product">
-          <form action="" method="post">
-            <div class="card-product__img">
-              <h6 class="card-product__price">$<?= $p['price'] ?></h6>
-              <a href="single-product.php?p_id=<?= $p['p_id'] ?>"><img class="card-img" src="../LearnAdmin/All_images_uploads/<?= $p['image'] ?>" alt="product"></a>
-              <input type="hidden" name="product_id" value="<?= $p['p_id'] ?>">
-              <input type="hidden" name="cart_id" value="<?= $p['p_id'] ?>">
-              <ul class="card-product__imgOverlay">
-                <li><button><a href="single-product.php?p_id=<?= $p['p_id'] ?>"><i class="ti-search"></i></a></button></li>
-                <li><button name="cart"><i class="ti-shopping-cart"></i></button></li>
-                <!-- <li><button name="cart"><a href="cart.php?p_id=<?= $p['p_id'] ?>"><i class="ti-shopping-cart"></i></a></button></li> -->
-                <!-- <li><button name="add_to_cart"><i class="ti-shopping-cart"></i></button></li> -->
-                <!-- <li><button><i class="ti-heart"></i></button></li>  -->
-              </ul>
-            </div>
-            <div class="card-body">
-              <h6 class="rating"><?php
-                                  for ($i = 0; $i < 5; $i++) {
-                                    echo "<i class='fas fa-star rating-stars text-size-13'></i>";
-                                  }
+                  <div class="card text-center card-product">
+                    <form action="" method="post">
+                      <div class="card-product__img">
+                        <h6 class="card-product__price">$<?= $p['price'] ?></h6>
+                        <a href="single-product.php?p_id=<?= $p['p_id'] ?>"><img class="card-img" src="../LearnAdmin/All_images_uploads/<?= $p['image'] ?>" alt=""></a>
+                        <input type="hidden" name="product_id" value="<?= $p['p_id'] ?>">
+                        <input type="hidden" name="cart_id" value="<?= $p['p_id'] ?>">
+                        <ul class="card-product__imgOverlay">
+                          <?php if ($available_stock > 1) { ?>
+                            <li><button name="cart"><i class="ti-shopping-cart"></i></button></li>
+                        <?php } else { ?>
+                            <li><button disabled>Currently Unavailable</button></li>
+                        <?php } ?>
+                        </ul>
+                      </div>
 
-                                  ?>
-              </h6>
-              <p><?= $p['category_name'] ?></p>
-              <h4 class="card-product__title"><a href="single-product.php?p_id=<?= $p['p_id'] ?>"><?= $p['name'] ?></a></h4>
-            </div>
-          </form>
-        </div>
-      </div>
+                      <div class="card-body">
+                        <h4 class="card-product__title"><a href="single-product.php?p_id=<?= $p['p_id'] ?>"><?= $p['name'] ?></a></h4>
+
+                        <h6 class="rating"><?php
+                                            for ($i = 0; $i < $fetch_avg['rating_avg']; $i++) {
+                                              echo "<i class='fas fa-star rating-stars text-size-13'></i>";
+                                            }
+                                            ?>
+                        </h6>
+                        <p style="text-transform: capitalize;"><?= $p['category_name'] ?></p>
+                      </div>
+                    </form>
+                  </div>
+                </div>
     <?php
 
     }
@@ -117,8 +118,8 @@ try {
       <section class="section-margin--small-ct mb-5">
         <div class="container shadow-lg" style="background: #ffffff;padding: 15px 15px 0;border-radius: 15px;">
           <div class="row ">
-            
-            
+
+
             <div class="col-xl-12 col-lg-8 col-md-7" id="css_media_category">
               <!-- Start Filter Bar -->
               <div class="filter-bar d-flex flex-wrap align-items-center shadow-sm">
@@ -273,31 +274,6 @@ try {
       ?>
       <!--================ end related Product area =================-->
 
-      <!-- ================ Subscribe section start ================= -->
-      <section class="subscribe-position">
-        <div class="container">
-          <div class="subscribe text-center">
-            <h3 class="subscribe__title">Get Update From Anywhere</h3>
-            <p>Bearing Void gathering light light his eavening unto dont afraid</p>
-            <div id="mc_embed_signup">
-              <form target="_blank" action="https://spondonit.us12.list-manage.com/subscribe/post?u=1462626880ade1ac87bd9c93a&amp;id=92a4423d01" method="get" class="subscribe-form form-inline mt-5 pt-1">
-                <div class="form-group ml-sm-auto">
-                  <input class="form-control mb-1" type="email" name="EMAIL" placeholder="Enter your email" onfocus="this.placeholder = ''" onblur="this.placeholder = 'Your Email Address '">
-                  <div class="info"></div>
-                </div>
-                <button class="button button-subscribe mr-auto mb-1" type="submit">Subscribe Now</button>
-                <div style="position: absolute; left: -5000px;">
-                  <input name="b_36c4fd991d266f23781ded980_aefe40901a" tabindex="-1" value="" type="text">
-                </div>
-
-              </form>
-            </div>
-
-          </div>
-        </div>
-      </section>
-      <!-- ================ Subscribe section end ================= -->
-
 
       <!--================ Start footer Area  =================-->
       <?php require_once("footer.php"); ?>
@@ -361,49 +337,48 @@ try {
 </script>
 <style>
   /* ================= GLOBAL ================= */
-body{
-    background: linear-gradient(135deg,#f3f8ff,#eef7ff);
+  body {
+    background: linear-gradient(135deg, #f3f8ff, #eef7ff);
     font-family: 'Poppins', sans-serif;
-}
+  }
 
-/* container card */
-.section-margin--small-ct .container{
-    background:#fff;
-    border-radius:18px;
-    padding:20px;
-    box-shadow:0 10px 30px rgba(0,0,0,.06);
-}
+  /* container card */
+  .section-margin--small-ct .container {
+    background: #fff;
+    border-radius: 18px;
+    padding: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .06);
+  }
 
 
-/* ================= CATEGORY DESCRIPTION ================= */
-.description{
-    background:linear-gradient(135deg,#e8f2ff,#f5faff);
-    padding:25px;
-    border-radius:14px;
-    margin-bottom:25px;
-    text-align:center;
-}
+  /* ================= CATEGORY DESCRIPTION ================= */
+  .description {
+    background: linear-gradient(135deg, #e8f2ff, #f5faff);
+    padding: 25px;
+    border-radius: 14px;
+    margin-bottom: 25px;
+    text-align: center;
+  }
 
-.description h2{
-    font-weight:700;
-    letter-spacing:.5px;
-    margin-bottom:10px;
-}
+  .description h2 {
+    font-weight: 700;
+    letter-spacing: .5px;
+    margin-bottom: 10px;
+  }
 
-.description p{
-    color:#6c7a92;
-    max-width:750px;
-    margin:auto;
+  .description p {
+    color: #6c7a92;
+    max-width: 750px;
+    margin: auto;
     text-align: justify;
-}
+  }
 
 
 
-/* ================= RESPONSIVE ================= */
-@media(max-width:768px){
-    .filter-bar-search input{
-        width:150px;
+  /* ================= RESPONSIVE ================= */
+  @media(max-width:768px) {
+    .filter-bar-search input {
+      width: 150px;
     }
-}
-
+  }
 </style>

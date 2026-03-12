@@ -31,16 +31,20 @@ require_once('header.php')
 
 
 <!-- ================ category section start ================= -->
-<section class="section-margin--small mb-5" >
+<section class="section-margin--small mb-5">
   <div class="container shadow-lg" style="background: #ffffff;padding: 15px 15px 0;border-radius: 15px;">
     <div class="row">
       <div class="col-xl-3 col-lg-4 col-md-5">
-        <div class="sidebar-categories" >
+        <div class="sidebar-categories">
           <div class="head">Browse Categories</div>
           <ul class="main-categories">
             <li class="common-filter">
               <form action="" method="get">
                 <ul>
+                  <li class="filter-list">
+                      <input type="radio" class="pixel-radio" name="category" id="all" value="">
+                      <label for="all">All</label>
+                    </li>
                   <?php
                   $query = $conn->prepare("SELECT * FROM ep_category WHERE 1 ORDER BY category_name");
                   $query->execute();
@@ -248,14 +252,11 @@ require_once('header.php')
                         <input type="hidden" name="product_id" value="<?= $p['p_id'] ?>">
                         <input type="hidden" name="cart_id" value="<?= $p['p_id'] ?>">
                         <ul class="card-product__imgOverlay">
-                          <?php if($available_stock<5){
-                             $alert = "<i class='fas fa-exclamation-triangle'></i> Only few items left";
-                          }elseif($available_stock <= 0 ){
-                            $alert = "<i class='far fa-exclamation-triangle'></i> Out Of Stock";
-                          }else{
-                            $alert = "<i class='ti-shopping-cart'></i>";
-                          } ?>
-                          <li><button name="cart"><?= $alert ?></button></li>
+                          <?php if ($available_stock > 1) { ?>
+                            <li><button name="cart"><i class="ti-shopping-cart"></i></button></li>
+                        <?php } else { ?>
+                            <li><button disabled>Currently Unavailable</button></li>
+                        <?php } ?>
                         </ul>
                       </div>
 
@@ -263,7 +264,7 @@ require_once('header.php')
                         <h4 class="card-product__title"><a href="single-product.php?p_id=<?= $p['p_id'] ?>"><?= $p['name'] ?></a></h4>
 
                         <h6 class="rating"><?php
-                                             for ($i = 0; $i < $fetch_avg['rating_avg']; $i++) {
+                                            for ($i = 0; $i < $fetch_avg['rating_avg']; $i++) {
                                               echo "<i class='fas fa-star rating-stars text-size-13'></i>";
                                             }
                                             ?>
@@ -324,35 +325,15 @@ require_once('header.php')
 <!--================ Start related Product area =================-->
 
 <?php $pid = 24;
-require_once("related_products.php"); ?>
+require_once("related_products.php");
+require_once("features.php");
+?>
 <!--================ end related Product area =================-->
 
-<!-- ================ Subscribe section start ================= -->
-<section class="subscribe-position">
-  <div class="container">
-    <div class="subscribe text-center" data-aos="fade-up">
-      <h3 class="subscribe__title">Get Update From Anywhere</h3>
-      <p>Bearing Void gathering light light his eavening unto dont afraid</p>
-      <div id="mc_embed_signup">
-        <form target="_blank" action="https://spondonit.us12.list-manage.com/subscribe/post?u=1462626880ade1ac87bd9c93a&amp;id=92a4423d01" method="get" class="subscribe-form form-inline mt-5 pt-1">
-          <div class="form-group ml-sm-auto">
-            <input class="form-control mb-1" type="email" name="EMAIL" placeholder="Enter your email" onfocus="this.placeholder = ''" onblur="this.placeholder = 'Your Email Address '">
-            <div class="info"></div>
-          </div>
-          <button class="button button-subscribe mr-auto mb-1" type="submit">Subscribe Now</button>
-          <div style="position: absolute; left: -5000px;">
-            <input name="b_36c4fd991d266f23781ded980_aefe40901a" tabindex="-1" value="" type="text">
-          </div>
 
-        </form>
-      </div>
-
-    </div>
-  </div>
-</section>
-<!-- ================ Subscribe section end ================= -->
 
 
 <!--================ Start footer Area  =================-->
 <?php require_once("footer.php"); ?>
 <!--================ End footer Area  =================-->
+<script src="all_prod_filter.js"></script>

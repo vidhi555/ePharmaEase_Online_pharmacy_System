@@ -10,22 +10,16 @@ function loadData(page = 1){
           search:search
         },
         success: function(data){
-            $("#result").html(data);
-        }
-    });
-}
+            let parts = data.split("###pagination###");
 
-function loadPagination(){
-    $.ajax({
-        url: "pagination_category.php",
-        success: function(data){
-            $("#pagination").html(data);
+            $("#result").html(parts[0]);
+            $("#pagination").html(parts[1]);
         }
     });
 }
 
 // click pagination
-$(document).on("click",".page-btn",function(e){
+$(document).on("click",".page-link",function(e){
     e.preventDefault();
     var page = $(this).data("page");
     loadData(page);
@@ -35,11 +29,9 @@ $(document).ready(function(){
     var a = $(this).val();
     // alert(a);
     loadData(1);
-    loadPagination();
   })
 })
 
 // first load
-loadData();
-loadPagination();
+loadData(1);
 

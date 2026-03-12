@@ -2,7 +2,21 @@
 require_once('connection/db.php');
 // require_once('session.php');
 
-$oid = $_SESSION['last_order_id'];
+$oid = $_GET['o_id'] ?? '';
+
+if (!isset($_SESSION['user_id'])) {
+  // check cookie is set or not
+  if (isset($_COOKIE['userid_session'])) {
+    $user_session = $_COOKIE['userid_session'];
+    $_SESSION['user_id'] = $user_session;
+    // echo $_SESSION['user_id'];
+    // die();
+    // clear cookie
+    setcookie("userid_session", "", time() - 3600);
+  } else {
+    echo "Cookie not set";
+  }
+}
 // echo $_SESSION['last_order_id'];
 // die();
 ?>
@@ -39,197 +53,222 @@ try {
   //check session
   // if (!empty($user_id)) {
 
-    //display order details of specific order id and logged user
-    // $oid = $conn->lastInsertId();
-    $user_id = $_SESSION['user_id'] ?? '';
+  //display order details of specific order id and logged user
+  // $oid = $conn->lastInsertId();
+  $user_id = $_SESSION['user_id'] ?? '';
+
+  // echo $user_id;
+  // die();
+
+  if (isset($_SESSION['user_id'])) {
+    $user_id = $_SESSION['user_id'];
+    // echo 's'.$user_id;
+    // die();
+  } else {
+    $my_query = $conn->prepare("SELECT * FROM ep_orders_master WHERE o_id = :oid");
+    $my_query->execute(['oid' => $oid]);
+    $fetch_uid = $my_query->fetch(PDO::FETCH_ASSOC);
+
+
+    $user_id = $fetch_uid['u_id'];
     // echo $user_id;
     // die();
-    $query = $conn->prepare("SELECT * FROM ep_orders_items i 
+  }
+  $query = $conn->prepare("SELECT * FROM ep_orders_items i 
 JOIN ep_orders_master m ON i.o_id = m.o_id 
 JOIN ep_products p ON p.p_id = i.p_id 
 WHERE i.u_id = :uid and i.o_id = :oid");
-    $res = $query->execute([
-      'uid' => $user_id,
-      'oid' => $oid
-    ]);
-    $fetch_orders = $query->fetch(PDO::FETCH_ASSOC);
-    if ($fetch_orders) { ?>
+  $res = $query->execute([
+    'uid' => $user_id,
+    'oid' => $oid
+  ]);
+  $fetch_orders = $query->fetch(PDO::FETCH_ASSOC);
+  if ($fetch_orders) { ?>
 
 
-      <!--================Order Details Area =================-->
-      <section class="order_details section-margin--small">
-        <div class="container">
-          <h1 class="text-center billing-alert">Thank you. Your order has been received.</h1>
-          <div class="row mb-5">
-            <div class="col-md-6 col-xl-4 mb-4 mb-xl-0">
-              <div class="confirmation-card">
-                <h3 class="billing-title">Order Information</h3>
-                <table class="order-rable">
-                  <tr>
-                    <td>Order ID</td>
-                    <td>: <?= $fetch_orders['o_id'] ?></td>
-                  </tr>
-                  <tr>
-                    <td>Date</td>
-                    <td>: <?= $fetch_orders['oder_date'] ?></td>
-                  </tr>
-                  <tr>
-                    <td>Total</td>
-                    <td>: $<?= $fetch_orders['total_amount'] ?></td>
-                  </tr>
-                  <tr>
-                    <td>Payment method</td>
-                    <td>: <?= $fetch_orders['payment_method'] == 'COD' ? "Cash on Delivery" : "Online Payment" ?></td>
-                  </tr>
-                </table>
-              </div>
-            </div>
-            <div class="col-md-6 col-xl-4 mb-4 mb-xl-0">
-              <div class="confirmation-card">
-                <h3 class="billing-title">Billing Address</h3>
-                <table class="order-rable">
-                  <tr>
-                    <td>Address</td>
-                    <td>: <?= $fetch_orders['address'] ?></td>
-                  </tr>
-                  <tr>
-                    <td>City</td>
-                    <td>: <?= $fetch_orders['city'] ?></td>
-                  </tr>
-                  <tr>
-                    <td>Country</td>
-                    <td>: <?= $fetch_orders['country'] ?></td>
-                  </tr>
-                  <tr>
-                    <td>Postcode</td>
-                    <td>: <?= $fetch_orders['zip'] ?></td>
-                  </tr>
-                </table>
-              </div>
-            </div>
-            <div class="col-md-6 col-xl-4 mb-4 mb-xl-0">
-              <div class="confirmation-card">
-                <h3 class="billing-title">Shipping Address</h3>
-                <table class="order-rable">
-                  <tr>
-                    <td>Street</td>
-                    <td>: <?= $fetch_orders['address'] ?></td>
-                  </tr>
-                  <tr>
-                    <td>City</td>
-                    <td>: <?= $fetch_orders['city'] ?></td>
-                  </tr>
-                  <tr>
-                    <td>Country</td>
-                    <td>: <?= $fetch_orders['country'] ?></td>
-                  </tr>
-                  <tr>
-                    <td>Postcode</td>
-                    <td>: <?= $fetch_orders['zip'] ?></td>
-                  </tr>
-                </table>
-              </div>
+    <!--================Order Details Area =================-->
+    <section class="order_details section-margin--small">
+      <div class="container">
+        <div class="text-center">
+          <!-- <i class="fa-solid fa-circle-check text-primary"></i> -->
+          <img src="img/Order confirmed icon with checkmarks.png" alt="" style="width: 500px;height: 500px;">
+          <!-- <h1 class="billing-alert">Thank you. Your order has been received.</h1> -->
+        </div>
+        <div class="row mb-5">
+          <div class="col-md-6 col-xl-4 mb-4 mb-xl-0">
+            <div class="confirmation-card">
+              <h3 class="billing-title">Order Information</h3>
+              <table class="order-rable">
+                <tr>
+                  <td>Order ID</td>
+                  <td>: #<?= $fetch_orders['o_id'] ?></td>
+                </tr>
+                <tr>
+                  <td>Date</td>
+                  <td>: <?= $fetch_orders['oder_date'] ?></td>
+                </tr>
+                <tr>
+                  <td>Total</td>
+                  <td>: $<?= $fetch_orders['total_amount'] ?></td>
+                </tr>
+                <tr>
+                  <td>Payment method</td>
+                  <td>: <?= $fetch_orders['payment_method'] == 'COD' ? "Cash on Delivery" : "Online Payment" ?></td>
+                </tr>
+              </table>
             </div>
           </div>
-
-          <div class="order_details_table">
-            <h2>Order Details</h2>
-            <div class="table-responsive">
-              <table class="table">
-                <thead>
-                  <tr>
-                    <th scope="col">Product</th>
-                    <th scope="col">Quantity</th>
-                    <th scope="col">Total</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <?php
-                  if (!empty($user_id)) {
-                    //display order details of specific order id and logged user
-                    //  $oid = $_SESSION['last_order_id'];
-                    // $query = $conn->prepare("SELECT name,i_id, o_id, i.p_id, u_id, i.qty, i.price FROM ep_orders_items i JOIN ep_products p ON i.p_id = p.p_id WHERE u_id = :uid  AND o_id = :oid");
-                    // $res = $query->execute([
-                    //   'uid'=>$user_id,
-                    //   'oid'=>$oid
-                    // ]);
-                    $query = $conn->prepare("SELECT * FROM ep_orders_items i JOIN ep_orders_master m ON i.o_id = m.o_id JOIN ep_products p ON p.p_id = i.p_id WHERE i.u_id = :uid and i.o_id = :oid");
-                    $res = $query->execute([
-                      'uid' => $user_id,
-                      'oid' => $oid
-                    ]);
-                    $fetch_orders = $query->fetchAll(PDO::FETCH_ASSOC);
-                    $grand = 0;
-                    foreach ($fetch_orders as $f) {
-                      $total = $f['price'] * $f['qty'];
-                      $grand += $total;
-                  ?>
-                      <tr>
-                        <td>
-                          <p><?= $f['name'] ?></p>
-                        </td>
-                        <td>
-                          <h5>x <?= $f['qty'] ?></h5>
-                        </td>
-                        <td>
-                          <p>$<?= $f['price'] ?></p>
-                        </td>
-                      </tr>
-                    <?php } ?>
-                    <tr>
-                      <td>
-                        <h4>Subtotal</h4>
-                      </td>
-                      <td>
-                        <h5></h5>
-                      </td>
-                      <td>
-                        <p>$<?= number_format($grand,2) ?></p>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <h4>Shipping</h4>
-                      </td>
-                      <td>
-                        <h5></h5>
-                      </td>
-                      <td>
-                        <p>Flat rate: <?= $grand < 10 ? '$1.20' : 'free' ?></p>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <h4><b>Total</b></h4>
-                      </td>
-                      <td>
-                        <h5></h5>
-                      </td>
-                      <td>
-                        <h4><b>$<?= number_format($f['total_amount'],2) ?></b></h4>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td colspan="5"><p>✔ Your order has been placed successfully.  
-A confirmation email with order details has been sent to your email.
-</p></td>
-                    </tr>
-                  <?php } ?>
-                </tbody>
+          <div class="col-md-6 col-xl-4 mb-4 mb-xl-0">
+            <div class="confirmation-card">
+              <h3 class="billing-title">Billing Address</h3>
+              <table class="order-rable">
+                <tr>
+                  <td>Address</td>
+                  <td>: <?= $fetch_orders['address'] ?></td>
+                </tr>
+                <tr>
+                  <td>City</td>
+                  <td>: <?= $fetch_orders['city'] ?></td>
+                </tr>
+                <tr>
+                  <td>Country</td>
+                  <td>: <?= $fetch_orders['country'] ?></td>
+                </tr>
+                <tr>
+                  <td>Postcode</td>
+                  <td>: <?= $fetch_orders['zip'] ?></td>
+                </tr>
+              </table>
+            </div>
+          </div>
+          <div class="col-md-6 col-xl-4 mb-4 mb-xl-0">
+            <div class="confirmation-card">
+              <h3 class="billing-title">Shipping Address</h3>
+              <table class="order-rable">
+                <tr>
+                  <td>Street</td>
+                  <td>: <?= $fetch_orders['address'] ?></td>
+                </tr>
+                <tr>
+                  <td>City</td>
+                  <td>: <?= $fetch_orders['city'] ?></td>
+                </tr>
+                <tr>
+                  <td>Country</td>
+                  <td>: <?= $fetch_orders['country'] ?></td>
+                </tr>
+                <tr>
+                  <td>Postcode</td>
+                  <td>: <?= $fetch_orders['zip'] ?></td>
+                </tr>
               </table>
             </div>
           </div>
         </div>
-      </section>
-      <!--================End Order Details Area =================-->
+
+        <div class="order_details_table">
+          <div class="text-center">
+            <h2>Order Details</h2>
+            <img src="img/image-removebg-preview.png" alt="img">
+          </div>
+          <div class="table-responsive">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th scope="col">Product</th>
+                  <th scope="col">Quantity</th>
+                  <th scope="col">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <?php
+                if (!empty($user_id)) {
+                  //display order details of specific order id and logged user
+                  //  $oid = $_SESSION['last_order_id'];
+                  // $query = $conn->prepare("SELECT name,i_id, o_id, i.p_id, u_id, i.qty, i.price FROM ep_orders_items i JOIN ep_products p ON i.p_id = p.p_id WHERE u_id = :uid  AND o_id = :oid");
+                  // $res = $query->execute([
+                  //   'uid'=>$user_id,
+                  //   'oid'=>$oid
+                  // ]);
+                  $query = $conn->prepare("SELECT * FROM ep_orders_items i JOIN ep_orders_master m ON i.o_id = m.o_id JOIN ep_products p ON p.p_id = i.p_id WHERE i.u_id = :uid and i.o_id = :oid");
+                  $res = $query->execute([
+                    'uid' => $user_id,
+                    'oid' => $oid
+                  ]);
+                  $fetch_orders = $query->fetchAll(PDO::FETCH_ASSOC);
+                  $grand = 0;
+                  foreach ($fetch_orders as $f) {
+                    $total = $f['price'] * $f['qty'];
+                    $grand += $total;
+                ?>
+                    <tr>
+                      <td>
+                        <p><?= $f['name'] ?></p>
+                      </td>
+                      <td>
+                        <h5>x <?= $f['qty'] ?></h5>
+                      </td>
+                      <td>
+                        <p>$<?= $f['qty'] * $f['price'] ?></p>
+                      </td>
+                    </tr>
+                  <?php } ?>
+                  <tr>
+                    <td>
+                      <h4>Subtotal</h4>
+                    </td>
+                    <td>
+                      <h5></h5>
+                    </td>
+                    <td>
+                      <p>$<?= number_format($grand, 2) ?></p>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <h4>Shipping</h4>
+                    </td>
+                    <td>
+                      <h5></h5>
+                    </td>
+                    <td>
+                      <p>Flat rate: <?= $grand < 10 ? '$1.20' : 'free' ?></p>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <h4><b>Total</b></h4>
+                    </td>
+                    <td>
+                      <h5></h5>
+                    </td>
+                    <td>
+                      <h4><b>$<?= number_format($f['total_amount'], 2) ?></b></h4>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colspan="5">
+                      <p>✔ Your order has been placed successfully.
+                        A confirmation email with order details has been sent to your email.
+                      </p>
+                    </td>
+                  </tr>
+                <?php } ?>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!--================End Order Details Area =================-->
 
 
-      <!--================ Start footer Area  =================-->
-      <?php require_once("footer.php"); ?>
-      <!--================ End footer Area  =================-->
+    <!--================ Start footer Area  =================-->
+    <?php require_once("footer.php"); ?>
+    <!--================ End footer Area  =================-->
 
 
-<?php   
+<?php
   }
 } catch (PDOException $e) {
   echo $e;

@@ -1,36 +1,49 @@
-
 <?php
 require_once("db.php");
 
 if (isset($_POST['page'])) {
+  $search = $_POST['search'] ?? '';
 
+  $limit = 5;
+  $page = $_POST['page'];
+  $offset = ($page - 1) * $limit;
 
-    $search = $_POST['search'] ?? '';
+  $q = $conn->prepare("SELECT * FROM ep_category WHERE category_name LIKE :search LIMIT $offset , $limit");
+  $q->execute([
+    'search' => $search . '%'
+  ]);
+  $data = $q->fetchAll(PDO::FETCH_ASSOC);
 
-    $limit = 5;
-    $page = $_POST['page'];
-    $offset = ($page - 1) * $limit;
-
-    $q = $conn->prepare("SELECT * FROM ep_category WHERE category_name LIKE :search LIMIT $offset , $limit");
-    $q->execute([
-      'search'=>$search.'%'
-    ]);
-    $data = $q->fetchAll(PDO::FETCH_ASSOC);
-
-    foreach ($data as $p) {
+  foreach ($data as $p) {
 ?>
-        <tr>
-            <td><?= $p['c_id'] ?></td>
-            <td><?= $p['category_name'] ?></td>
-            <td><?= substr($p['description'],0,50) ?>...</td>
-            <td>
-                <button class="btn btn-danger btn-sm">Delete</button>
-            </td>
-        </tr>
+    <tr>
+      <td><?= $p['c_id'] ?></td>
+      <td><?= $p['category_name'] ?></td>
+      <td><?= substr($p['description'], 0, 50) ?>...</td>
+      <td><button class="btn btn-danger btn-sm">Delete</button></td>
+    </tr>
 <?php
-    }
+  }
 
-    exit;
+  echo "###pagination###";
+
+  $count_stmt = $conn->prepare("SELECT * FROM ep_category WHERE category_name LIKE :search");
+
+  $count_stmt->execute(['search' => '%' . $search . '%']);
+  $total =  $count_stmt->rowCount();
+  $pages = ceil($total / $limit);
+
+  if ($pages > 0) {
+    for ($i = 1; $i <= $pages; $i++) {
+      echo "<li class='page-item'>
+              <a href='#' class='page-link' data-page='$i'>$i</a>
+              </li>";
+    }
+  } else {
+    echo "<li>No records</li>";
+  }
+
+  exit;
 }
 require_once('header2.php');
 
@@ -94,8 +107,8 @@ require_once('header2.php');
                   <thead>
                     <tr>
                       <!-- <th><input type="checkbox" id="select-all" class="custom-checkbox"></th> -->
-                       <th>ID</th>
-                      
+                      <th>ID</th>
+
                       <th>Category Name</th>
                       <th>Description</th>
 
@@ -103,7 +116,7 @@ require_once('header2.php');
                     </tr>
                   </thead>
                   <tbody id="result">
-                    
+
                   </tbody>
                 </table>
               </div>
@@ -111,13 +124,12 @@ require_once('header2.php');
               <div class="pb-3 ps-3 mt-3 d-flex justify-content-center justify-content-md-between justify-content-lg-between flex-wrap flex-md-nowrap">
                 <nav aria-label="Page navigation" class="mb-3 mb-md-0 mb-lg-0">
                   <!-- <ul class="pagination" id="pagination"></ul> -->
-                  
-                  <ul class="pagination">
-                    <?php $search = $_POST['search'] ?? ''; ?>
-                     <?= createPagination('ep_category', 'category_name', $search, 5); ?>
+
+                  <ul class="pagination" id="pagination">
+
                   </ul>
                 </nav>
-            
+
               </div>
             </div>
           </div>
@@ -130,80 +142,38 @@ require_once('header2.php');
     </div>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-<script>
-// function loadData(page = 1){
-//     $.ajax({
-//         url: window.location.href,
-//         type: "POST",
-//         data: {page: page},
-//         success: function(data){
-//             $("#result").html(data);
-//         }
-//     });
-// }
+    <script>
+      function loadData(page = 1) {
 
-// function loadPagination(){
-//     $.ajax({
-//         url: "pagination_category.php",
-//         success: function(data){
-//             $("#pagination").html(data);
-//         }
-//     });
-// }
+        let search = $("#livesearch").val();
 
-// // click pagination
-// $(document).on("click",".page-btn",function(e){
-//     e.preventDefault();
-//     var page = $(this).data("page");
-//     loadData(page);
-// });
+        $.ajax({
+          url: window.location.href,
+          type: "POST",
+          data: {
+            page: page,
+            search: search
+          },
+          success: function(data) {
 
-// // first load
-// loadData();
-// loadPagination();
+            let parts = data.split("###pagination###");
 
+            $("#result").html(parts[0]);
+            $("#pagination").html(parts[1]);
 
-function loadData(page = 1){
-  let search = document.getElementById("livesearch").value;
-  
-    $.ajax({
-        url: window.location.href,
-        type: "POST",
-        data: {page: page,
-          search:search
-        },
-        success: function(data){
-            $("#result").html(data);
-        }
-    });
-}
+          }
+        });
+      }
 
-function loadPagination(){
-    $.ajax({
-        url: "pagination_category.php",
-        success: function(data){
-            $("#pagination").html(data);
-        }
-    });
-}
+      $(document).on("click", ".page-link", function(e) {
+        e.preventDefault();
+        var page = $(this).data("page");
+        loadData(page);
+      });
 
-// click pagination
-$(document).on("click",".page-btn",function(e){
-    e.preventDefault();
-    var page = $(this).data("page");
-    loadData(page);
-});
-$(document).ready(function(){
-  $(document).on("keyup","#livesearch",function(){
-    var a = $(this).val();
-    // alert(a);
-    loadData(1);
-    loadPagination();
-  })
-})
+      $(document).on("keyup", "#livesearch", function() {
+        loadData(1);
+      });
 
-// first load
-loadData();
-loadPagination();
-
-</script>
+      loadData(1);
+    </script>

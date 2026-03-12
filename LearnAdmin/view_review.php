@@ -62,56 +62,61 @@ require_once('header2.php');
         ?>
 
             <div class="mt-4">
-
               <!-- Main content -->
-              <div class="product-detail-card">
-                <div class="review-left">
-                  <div class="flip-box">
-                    <div class="flip-inner">
+              <div class="review-card">
 
-                      <!-- Front Side (Image) -->
-                      <div class="flip-front">
-                        <img src="./All_images_uploads/<?= $fetch_review['image'] ?>" alt="review Image">
-                      </div>
+    <!-- Left Image -->
+    <div class="review-image">
+        <img src="./All_images_uploads/<?= $fetch_review['image'] ?>" alt="Product Image">
+    </div>
 
-                      <!-- Back Side (User Info) -->
-                      <div class="flip-back">
-                        <h6 class="revired_back_header">Reviewed-By:</h6>
-                        <img src="../ePharma-master/uploads/<?= $fetch_review['user_img'] ?>" alt="user_image" style="width: 100px;">
-                        <h6 style="text-transform: capitalize;"><?= $fetch_review['name'] ?></h6>
-                        <p class="small"><?= $fetch_review['email'] ?></p>
-                        <!-- <p class="small">
-                          <?= date("d M Y", strtotime($fetch_review['created_at'])) ?>
-                        </p> -->
-                        <!-- <span class="badge bg-success">Verified</span> -->
-                      </div>
+    <!-- Review Content -->
+    <div class="review-content">
 
-                     
-                    </div>
-                  </div>
-                </div>
+        <!-- Header -->
+        <div class="review-header">
+            <h4 class="product-name"><?= $fetch_review['pname'] ?></h4>
 
-                <div class="product-right">
-                  <div class="product-header">
-                    <h3><?= $fetch_review['pname'] ?></h3>
-                    <button class="icon-btn delete" onclick="confirmDelete(<?= $fetch_review['review_id'] ?>,'delete_review.php?review_id=')"><i class="fas fa-trash"></i></button>
+            <button class="delete-btn"
+                onclick="confirmDelete(<?= $fetch_review['review_id'] ?>,'delete_review.php?review_id=')">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
 
-                  </div>
+        <!-- Rating -->
+        <div class="review-rating">
+            <?php 
+            for ($i = 1; $i <= $fetch_review['rate']; $i++) {
+                echo "<i class='fas fa-star'></i>";
+            }
+            ?>
+        </div>
 
-                  <p><?php for ($i = 1; $i <= $fetch_review['rate']; $i++) {
-                        echo "<i class='fas fa-star rating-stars text-size-18'></i>";
-                      } ?></p>
-                  <p class="product-desc"><strong>Title:</strong> <?= $fetch_review['title'] ?></p>
-                  <p class="product-desc">
-                    "<?= $fetch_review['description'] ?? 'No description available.' ?>"
-                  </p>
-                </div>
-              </div>
+        <!-- Title -->
+        <p class="review-title">
+            <strong><?= $fetch_review['title'] ?></strong>
+        </p>
 
+        <!-- Description -->
+        <p class="review-description">
+            <?= $fetch_review['description'] ?? 'No description available.' ?>
+        </p>
 
+        <!-- Reviewer -->
+        <div class="review-user">
+            <img src="../ePharma-master/uploads/<?= $fetch_review['user_img'] ?>" alt="user">
+
+            <div>
+                <h6><?= $fetch_review['name'] ?></h6>
+                <span><?= $fetch_review['email'] ?></span>
+            </div>
+        </div>
+
+    </div>
+
+</div>
             </div>
       </div>
-
 
 
       <!-- Footer -->

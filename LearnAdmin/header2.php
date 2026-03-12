@@ -12,7 +12,7 @@
   <link href="./assets/icons/fontawesome/css/solid.min.css" rel="stylesheet">
   <script src="./js/bootstrap.bundle.min.js"></script>
   <link href="./assets/plugin/quill/quill.snow.css" rel="stylesheet">
-  <link href="./assets/css/style6.css" rel="stylesheet">  
+  <link href="./assets/css/style7.css" rel="stylesheet">  
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 
     <!-- Mobile no. with country code -->

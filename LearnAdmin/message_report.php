@@ -10,37 +10,91 @@ if (!isset($_SESSION['user'])) {
 
 // pagination
 if (isset($_POST['page'])) {
+
+  $filter_statuses = $_POST['filter_status'];
+  $searches = $_POST['search'];
+
   $page = $_POST['page'];
+
   $limit = 5;
   $offset = ($page - 1) * $limit;
-
-  $query = $conn->prepare("SELECT * FROM ep_message LIMIT $offset,$limit");
+  $where = "WHERE 1";
+  if ($searches != '') {
+    $where .= " AND (name LIKE :s OR email LIKE :s OR subject LIKE :s) ";
+  }
+  if ($filter_statuses != '') {
+    $where .= " AND (status = :sts)";
+  }
+  // Query
+  $query = $conn->prepare("SELECT * FROM ep_message $where LIMIT $offset,$limit");
+  if ($searches != '') {
+    $query->bindValue(':s', '%' . $searches . '%');
+  }
+  if ($filter_statuses != '') {
+    $query->bindValue(':sts', $filter_statuses);
+  }
   $query->execute();
   $fetch_msg = $query->fetchAll(PDO::FETCH_ASSOC);
   $id = $offset;
-  foreach ($fetch_msg as $msg) {
-    $id++;
+  if ($fetch_msg) {
+    foreach ($fetch_msg as $msg) {
+      $id++;
 
 ?>
-    <tr>
-      <!-- <td><input type="checkbox" class="custom-checkbox row-checkbox"></td> -->
+      <tr>
+        <!-- <td><input type="checkbox" class="custom-checkbox row-checkbox"></td> -->
+        <td><?php if ($msg['status'] == 'New') { ?>
+            <span class="new-dot"></span>
+          <?php } ?>
+          <?= $id ?>
+        </td>
 
-      <td><?= $id ?></td>
-      <td><?= $msg['name'] ?></td>
-      <td><?= $msg['email'] ?></td>
-      <td style="text-wrap: wordwrap;"><?= $msg['subject'] ?></td>
+        <td><?= $msg['name'] ?></td>
+        <td><?= $msg['email'] ?></td>
+        <td style="text-wrap: wordwrap;"><?= $msg['subject'] ?></td>
+        <td><?= date('d/m/Y', strtotime($msg['message_at'])) ?></td>
+        <td><?= date('h:i A', strtotime($msg['message_at'])) ?></td>
 
-      <!-- <td><span class="badge bg-success">Active</span></td> -->
-      <td class="text-center">
-        <!-- <a href="#" data-bs-toggle="modal" data-bs-target="#EditModal" class="btn btn-sm btn-primary mb-2"><i class="fa-regular fa-pen-to-square"></i></a> -->
-        <a class="btn btn-sm btn-warning mb-2 mb-lg-0 me-0 me-lg-2" href="view_mesage.php?msg_id=<?= $msg['msg_id'] ?>"><i class="fa-regular fa-eye view-icon"></i></a>
+        <!-- <td><span class="badge bg-success">Active</span></td> -->
+        <td class="text-center">
+          <!-- <a href="#" data-bs-toggle="modal" data-bs-target="#EditModal" class="btn btn-sm btn-primary mb-2"><i class="fa-regular fa-pen-to-square"></i></a> -->
+          <a class="btn btn-sm btn-warning mb-2 mb-lg-0 me-0 me-lg-2" href="view_mesage.php?msg_id=<?= $msg['msg_id'] ?>"><i class="fa-regular fa-eye view-icon"></i></a>
 
-        <button class="btn btn-sm btn-danger" onclick="confirmDelete(<?= $msg['msg_id'] ?>,'delete_message.php?msg_id=')"><i class="fa-solid fa-trash-can"></i></button>
+          <button class="btn btn-sm btn-danger" onclick="confirmDelete(<?= $msg['msg_id'] ?>,'delete_message.php?msg_id=')"><i class="fa-solid fa-trash-can"></i></button>
 
-      </td>
-    </tr>
+        </td>
+      </tr>
 
 <?php
+    }
+  } else {
+    echo "<tr><td colspan = '5'><p class='text-center'>No Records Found!😥</p></td></tr>";
+  }
+  // Pagination split
+  echo "###pagination###";
+  $where = "WHERE 1";
+  if ($searches != '') {
+    $where .= " AND (name LIKE :s OR email LIKE :s OR subject LIKE :s) ";
+  }
+  if ($filter_statuses != '') {
+    $where .= " AND (status = :sts)";
+  }
+  $query = $conn->prepare("SELECT * FROM ep_message $where ");
+  if ($searches != '') {
+    $query->bindValue(':s', '%' . $searches . '%');
+  }
+  if ($filter_statuses != '') {
+    $query->bindValue(':sts', $filter_statuses);
+  }
+  $query->execute();
+  $total = $query->rowCount();
+  $pages = ceil($total / $limit);
+  if ($pages > 0) {
+    for ($i = 1; $i <= $pages; $i++) {
+      echo "<li class='page-item'>
+              <a href='#' class='page-link' data-page='$i'>$i</a>
+              </li>";
+    }
   }
   exit();
 }
@@ -85,15 +139,27 @@ require_once('header2.php');
               <div class="mt-3 mt-lg-0">
                 <div class="d-flex align-items-center">
                   <!-- Date Range Button -->
-                  <!-- <div class="cursor-pointer bg-white d-flex align-items-center text-color-1 px-3 py-2 rounded-2 text-normal fw-bolder letter-spacing-26 dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="fa-solid fa-filter me-3"></i>
-                    Filter by
-                    <i class="fa-solid fa-chevron-right ms-3 text-size-sm"></i>
-                    <ul class="dropdown-menu">
-                      <li><a class="dropdown-item" href="#">Active</a></li>
-                      <li><a class="dropdown-item" href="#">Inactive</a></li>
-                    </ul>
-                  </div> -->
+                  <div class="search-wrapper cursor-pointer bg-white d-flex align-items-center text-color-1 px-3 py-2 rounded-2 text-normal fw-bolder letter-spacing-26" data-bs-toggle="dropdown" aria-expanded="false">
+                    <div class="input-group flex-nowrap">
+                      <span style="border:none;" class="input-group-text bg-white " id="addon-wrapping"><i class="fa-solid search-icon fa-magnifying-glass text-color-1"></i></span>
+                      <input style="border:none;" type="text" id="livesearch" name="search" class="form-control search-input border-l-none ps-0" placeholder="Search By Anything" aria-label="Username" aria-describedby="addon-wrapping">
+                    </div>
+                  </div>
+                  <div class="cursor-pointer bg-white d-flex align-items-center text-color-1 px-3 py-2 rounded-2 text-normal fw-bolder letter-spacing-26 dropdown-toggle">
+                    <i class="fa-solid fa-filter"></i>
+                    <select id="filterbystatus" class="form-select text-size-sm" style="border: none;">
+                      <option value="" selected="selected" disabled>Filter By Status</option>
+                      <option value="">All Messages</option>
+                      <option value="New">New Messages</option>
+                      <option value="replied">Replied Message</option>
+                      <!-- <option value="unread">Unread Messages</option> -->
+                    </select>
+                  </div>
+                  <p data-bs-toggle="tooltip" title="Clear Filter">
+                    <button id="remove_filter" class="clear-filter-btn">
+                      <i class="fa-solid fa-ban"></i>
+                    </button>
+                  </p>
                   <!-- Reports Button -->
                   <!-- <a href="#" data-bs-toggle="modal" data-bs-target="#CreateModal" class="cursor-pointer ms-4 bg-white bg-primary text-white d-flex align-items-center px-3 py-2 rounded-2 text-normal fw-bolder letter-spacing-26">
                                       <i class="fa-solid fa-plus me-3"></i>
@@ -114,10 +180,12 @@ require_once('header2.php');
                     <tr>
                       <!-- <th><input type="checkbox" id="select-all" class="custom-checkbox"></th> -->
                       <th>ID</th>
-                      <th>User Name</th>
-                      <th>User Email</th>
-                      <th>Title</th>
 
+                      <th>User Name</th>
+                      <th>Email</th>
+                      <th>Title</th>
+                      <th>Date</th>
+                      <th>Timing</th>
 
                       <!-- <th>Status</th> -->
                       <th class="text-center">Action</th>
@@ -133,9 +201,8 @@ require_once('header2.php');
               </div>
               <div class="pb-3 ps-3 mt-3 d-flex justify-content-center justify-content-md-between justify-content-lg-between flex-wrap flex-md-nowrap">
                 <nav aria-label="Page navigation" class="mb-3 mb-md-0 mb-lg-0">
-                  <ul class="pagination">
-                    <?php $search = $_POST['search'] ?? ''; ?>
-                    <?= createPagination('ep_message', '', $search, 5); ?>
+                  <ul class="pagination" id="pagination">
+
                   </ul>
                 </nav>
                 <!-- <div class="d-flex justify-content-end">
@@ -160,37 +227,12 @@ require_once('header2.php');
       <?php include('footer.php'); ?>
     </div>
   </div>
+  <script src="pagin_search_filter.js"></script>
   <script>
-    function loadData(page = 1) {
-      $.ajax({
-        url: window.location.href,
-        type: "POST",
-        data: {
-          page: page
-        },
-        success: function(data) {
-          $("#result").html(data);
-        }
-      });
-    }
-
-    function loadPagination() {
-      $.ajax({
-        url: "pagination_category.php",
-        success: function(data) {
-          $("#pagination").html(data);
-        }
-      });
-    }
-
-    // click pagination
-    $(document).on("click", ".page-btn", function(e) {
-      e.preventDefault();
-      var page = $(this).data("page");
-      loadData(page);
-    });
-
-    // first load
-    loadData();
-    loadPagination();
+   
+    $(document).on("click", "#remove_filter", function () {
+    let search = $("#livesearch").val('');
+    var filter_status = $("#filterbystatus").val('');
+    loadData(1);
+});
   </script>

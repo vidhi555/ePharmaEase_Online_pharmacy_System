@@ -67,6 +67,7 @@ try {
 ?>
 
 
+
             <!-- ================ start banner area ================= -->
             <section class="blog-banner-area fade-up" id="category">
                 <div class="container h-100">
@@ -112,7 +113,7 @@ try {
 
                             <div class="text-start small">
                                 <p><strong>Email:</strong><?= $fetch_user['email'] ?></p>
-                                <p><strong>Mobile:</strong> <?= substr($fetch_user['mobile'], 0, 3) . " " . substr($fetch_user['mobile'], 3, 11) ?></p>
+                                <p><strong>Mobile:</strong> <?= $fetch_user['mobile'] ?></p>
                                 <p><strong>Gender:</strong> <?= $fetch_user['gender'] ?></p>
 
                                 <p><strong>Address:</strong> <?= $fetch_user['address'] ?></p>
@@ -121,208 +122,208 @@ try {
                         </div>
                     </div>
                     <!-- Profile starts -->
-                     <div class="col-lg-6 col-md-6 col-12 mt-3">
-                            <div class="profile-card shadow-sm border-0 rounded-4 text-center p-4">
-                                 <?php 
-            $errors= [];
-try{
-    if(isset($_POST['update_password'])){
-        $old_pwd = $_POST['current_password'];
-        $new_password = $_POST['new_password'];
-        $confirm_password = $_POST['confirm_password'];
-        $hash_password = password_hash($new_password,PASSWORD_DEFAULT);
+                    <div class="col-lg-6 col-md-6 col-12 mt-3">
+                        <div class="profile-card shadow-sm border-0 rounded-4 text-center p-4">
+                            <?php
+                            $errors = [];
+                            try {
+                                if (isset($_POST['update_password'])) {
+                                    $old_pwd = $_POST['current_password'];
+                                    $new_password = $_POST['new_password'];
+                                    $confirm_password = $_POST['confirm_password'];
+                                    $hash_password = password_hash($new_password, PASSWORD_DEFAULT);
 
-        if(empty($old_pass) || empty($new_password) || empty($confirm_password)){
-            $errors[] = "Fields Are Empty! Please Fill the password!";
-        }
-       
-        if($new_password !== $confirm_password){
-            $errors[] = "Password Not Matched With confirm Password!!!!";
-            // sweetAlert("Wrong","Password Not Matched With confirm Password!!!!","warning");
-        }
-        if(!preg_match('/^[a-zA-Z0-9]{6}$/',$new_password)){
-          $errors[] = "Password must be exactly 6 characters (letters & numbers only)";
-        }
+                                    if (empty($old_pass) || empty($new_password) || empty($confirm_password)) {
+                                        $errors[] = "Fields Are Empty! Please Fill the password!";
+                                    }
 
-        $old_pass = $conn->prepare("SELECT * FROM ep_users WHERE u_id = :uid");
-        $old_pass->execute([
-            
-            'uid'=>$uid
-        ]);
-        
-        $fetch_user = $old_pass->fetch(PDO::FETCH_ASSOC);
-        
-         if($old_pwd !== $fetch_user['password']){
-            sweetAlert("Password Not Matched","","warning");
-         }
-        else{
-               if($new_password !== $confirm_password){
-                    sweetAlert("Wrong!","Password Not Matched With confirm Password!!!!","warning");
-               }else{
-                    $update_pwd = $conn->prepare("UPDATE ep_users SET password = :pwdd WHERE u_id = :id");
-                    $update_pwd->execute([
-                        'pwdd'=>$hash_password,
-                        'id'=>$uid
-                    ]);
-                    sweetAlert("Done","Password Update Successful...","success");
-               }
-               
-            
+                                    if ($new_password !== $confirm_password) {
+                                        $errors[] = "Password Not Matched With confirm Password!!!!";
+                                        // sweetAlert("Wrong","Password Not Matched With confirm Password!!!!","warning");
+                                    }
+                                    if (!preg_match('/^[a-zA-Z0-9]{6}$/', $new_password)) {
+                                        $errors[] = "Password must be exactly 6 characters (letters & numbers only)";
+                                    }
 
-        }
+                                    $old_pass = $conn->prepare("SELECT * FROM ep_users WHERE u_id = :uid");
+                                    $old_pass->execute([
 
-    }
-}catch(PDOException $e){
-    echo $e;
-}
+                                        'uid' => $uid
+                                    ]);
+
+                                    $fetch_user = $old_pass->fetch(PDO::FETCH_ASSOC);
+
+                                    if ($old_pwd !== $fetch_user['password']) {
+                                        sweetAlert("Password Not Matched", "", "warning");
+                                    } else {
+                                        if ($new_password !== $confirm_password) {
+                                            sweetAlert("Wrong!", "Password Not Matched With confirm Password!!!!", "warning");
+                                        } else {
+                                            $update_pwd = $conn->prepare("UPDATE ep_users SET password = :pwdd WHERE u_id = :id");
+                                            $update_pwd->execute([
+                                                'pwdd' => $hash_password,
+                                                'id' => $uid
+                                            ]);
+                                            sweetAlert("Done", "Password Update Successful...", "success");
+                                        }
+                                    }
+                                }
+                            } catch (PDOException $e) {
+                                echo $e;
+                            }
 
 
-            ?>
-  
-                                <h3 class="fw-bold mb-1">Change Password</h3>
-                                <img class="banner_img" src="img/image-removebg-preview.png" alt="" width="250px">
+                            if (!empty($errors)) { ?>
+                                <div class="alert alert-danger">
+                                    <ul>
+                                        <?php foreach ($errors as $r) { ?>
+                                            <li><?= $r ?></li>
+                                        <?php } ?>
+                                    </ul>
+                                </div>
+                            <?php } ?>
 
-                                <form method="post" >
-                                        <div class="text-start small">
+                            <h3 class="fw-bold mb-1">Change Password</h3>
+                            <img class="banner_img" src="img/image-removebg-preview.png" alt="" width="250px">
 
-                                        <div class="mb-3">
-                                            <label class="form-label">Current Password</label>
-                                            <input type="password" name="current_password" class="form-control custom-input" placeholder="Enter current password" >
-                                        </div>
+                            <form method="post">
+                                <div class="text-start small">
 
-                                        <div class="mb-3">
-                                            <label class="form-label">New Password</label>
-                                            <input type="password" name="new_password" class="form-control custom-input" placeholder="Enter new password" >
-                                        </div>
-
-                                        <div class="mb-3">
-                                            <label class="form-label">Confirm Password</label>
-                                            <input type="password" name="confirm_password" class="form-control custom-input" placeholder="Confirm new password" >
-                                        </div>
-
-                                    
-
+                                    <div class="mb-3">
+                                        <label class="form-label">Current Password</label><span style="color: darkred;font-size: 22px;">*</span>
+                                        <input type="password" name="current_password" class="form-control custom-input" placeholder="Enter current password">
                                     </div>
-                                    <button class="btn btn-primary" name="update_password" type="submit">Update Password</button>
-                                </form>
-                            </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label">New Password</label><span style="color: darkred;font-size: 22px;">*</span>
+                                        <input type="password" name="new_password" class="form-control custom-input" placeholder="Enter new password">
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label">Confirm Password</label><span style="color: darkred;font-size: 22px;">*</span>
+                                        <input type="password" name="confirm_password" class="form-control custom-input" placeholder="Confirm new password">
+                                    </div>
+
+
+
+                                </div>
+                                <button class="btn btn-primary" name="update_password" type="submit">Update Password</button>
+                            </form>
                         </div>
-                     <!-- Prodile End -->
+                    </div>
+                    <!-- Prodile End -->
 
                     <!-- ORDER HISTORY -->
-                    
+
                     <div class="row">
                         <div class="col-lg-12 col-md-12 col-12 mt-3">
-                        <div class="order-card shadow-sm border-0 rounded-4 p-4 ">
-                            <a href="tracking-order.php"><img src="img/track-removebg-preview.png" id="order_tracking_icon" width="50px" height="50px" alt="track"></a>
-                            <h3 class="fw-bold mb-4" style="color:#1f2937;">Order History</h3>
-                            <div class="row">
+                            <div class="order-card shadow-sm border-0 rounded-4 p-4 ">
+                                <a href="tracking-order.php" data-bs-toggle="tooltip" title="Track Order"><img src="img/track-removebg-preview.png" id="order_tracking_icon" width="50px" height="50px" alt="track"></a>
+                                <h3 class="fw-bold mb-4" style="color:#1f2937;">Order History</h3>
+                                <div class="row">
 
-                                <?php
-                                try {
-                                    if ($fetch_user) {
-                                        $cuurent_user =  $fetch_user['u_id'];
-                                        $order_detail = $conn->prepare("SELECT DISTINCT o.u_id , o.* ,o.*
+                                    <?php
+                                    try {
+                                        if ($fetch_user) {
+                                            $cuurent_user =  $fetch_user['u_id'];
+                                            $order_detail = $conn->prepare("SELECT DISTINCT o.u_id , o.* ,o.*
 FROM ep_orders_master o
 JOIN ep_orders_items oi ON o.o_id = oi.o_id
 JOIN ep_products p ON p.p_id = oi.p_id
 WHERE o.u_id = :id
 
 ORDER BY o.o_id DESC");
-                                        $order_detail->execute(['id' => $cuurent_user]);
-                                        //fetch orders
-                                        $fetch_oredr = $order_detail->fetchAll(PDO::FETCH_ASSOC);
+                                            $order_detail->execute(['id' => $cuurent_user]);
+                                            //fetch orders
+                                            $fetch_oredr = $order_detail->fetchAll(PDO::FETCH_ASSOC);
 
-                                        foreach ($fetch_oredr as $order) { ?>
-                                            <div class="col-lg-6 col-md-12 mt-4" id="colmd8">
-                                                <div class="order-card shadow-sm">
+                                            foreach ($fetch_oredr as $order) { ?>
+                                                <div class="col-lg-6 col-md-12 mt-4" id="colmd8">
+                                                    <div class="order-card shadow-sm">
 
-                                                    <!-- Header -->
-                                                    <div class="order-header d-flex justify-content-between">
-                                                        <span class="order-date"><?= date('d-m-Y', strtotime($order['oder_date'])) ?></span>
+                                                        <!-- Header -->
+                                                        <div class="order-header d-flex justify-content-between">
+                                                            <span class="order-date"><?= date('d-m-Y', strtotime($order['oder_date'])) ?></span>
 
-                                                        <span class="badge <?= $order['payment_status'] == 'paid' ? 'bg-success' : 'bg-danger' ?>">
-                                                           <?= $order['payment_method'] ?> (<?= ($order['payment_status'] == 'paid') ? '✅Payment Done' : 'Pending Payment' ?>)
-                                                        </span>
-                                                        <span>
-                                                            <a href="reorder.php?o_id=<?= $order['o_id'] ?>" onclick="return confirm('Are you sure to re-Order these Items???');"><img src="img/reorder-removebg-preview.ico" class="tooltip-box" alt="icon"></a>
-                                                        </span>
-                                                    </div>
+                                                            <span class="badge <?= $order['payment_status'] == 'paid' ? 'bg-success' : 'bg-danger' ?>">
+                                                                <?= $order['payment_method'] ?> (<?= ($order['payment_status'] == 'paid') ? '✅Payment Done' : 'Pending Payment' ?>)
+                                                            </span>
+                                                            <span>
+                                                                <a href="reorder.php?o_id=<?= $order['o_id'] ?>" onclick="return confirm('Are you sure to re-Order these Items???');"><img src="img/reorder-removebg-preview.ico" class="tooltip-box" alt="icon"></a>
+                                                            </span>
+                                                        </div>
 
-                                                    <!-- Products list inside order -->
-                                                    <?php
-                                                    $inside_loop = $conn->prepare("SELECT * FROM ep_orders_items oi 
+                                                        <!-- Products list inside order -->
+                                                        <?php
+                                                        $inside_loop = $conn->prepare("SELECT * FROM ep_orders_items oi 
 JOIN ep_products p ON p.p_id = oi.p_id
 WHERE oi.o_id = :id");
-                                                    $inside_loop->execute(['id' => $order['o_id']]);
-                                                    $fetch_inside = $inside_loop->fetchAll(PDO::FETCH_ASSOC);
+                                                        $inside_loop->execute(['id' => $order['o_id']]);
+                                                        $fetch_inside = $inside_loop->fetchAll(PDO::FETCH_ASSOC);
 
 
-                                                    foreach ($fetch_inside as $p) { ?>
-                                                        <div class="product-row d-flex align-items-center">
+                                                        foreach ($fetch_inside as $p) { ?>
+                                                            <div class="product-row d-flex align-items-center">
 
-                                                            <img src="../LearnAdmin/All_images_uploads/<?= $p['image'] ?>" class="product-img">
+                                                                <img src="../LearnAdmin/All_images_uploads/<?= $p['image'] ?>" class="product-img">
 
-                                                            <div class="flex-grow-1 ms-3">
-                                                                <h6 class="mb-1"><?= $p['name'] ?></h6>
-                                                                <small>Qty: <?= $p['qty'] ?> • $<?= $p['price'] ?></small>
+                                                                <div class="flex-grow-1 ms-3">
+                                                                    <h6 class="mb-1"><?= $p['name'] ?></h6>
+                                                                    <small>Qty: <?= $p['qty'] ?> • $<?= $p['price'] ?></small>
+                                                                </div>
                                                             </div>
-                                                        </div>
-                                                    <?php } ?>
+                                                        <?php } ?>
 
-                                                    <!-- Footer -->
-                                                    <div class="order-footer d-flex justify-content-between">
-                                                        <span>Order #<?= $order['o_id'] ?></span>
+                                                        <!-- Footer -->
+                                                        <div class="order-footer d-flex justify-content-between">
+                                                            <span>Order #<?= $order['o_id'] ?></span>
 
-                                                        <span>Total: $<?= $order['total_amount'] ?></span>
-                                                        <!-- <span class="status-badge <?= $order['order_status'] ?>">
+                                                            <span>Total: $<?= $order['total_amount'] ?></span>
+                                                            <!-- <span class="status-badge <?= $order['order_status'] ?>">
                                                         <?= $order['order_status'] ?>
                                                     </span> -->
-                                                    <?php if ($order['order_status'] == 'Placed') { ?>
+                                                            <?php if ($order['order_status'] == 'Placed') { ?>
 
-                                                <span><a class="btn btn-danger" href="cancel_orders.php?o_id=<?= $order['o_id'] ?>" onclick="return confirm('Are you sure to Cancel the Order???');">Cancel</a></span>
+                                                                <span><a class="btn btn-danger" href="cancel_orders.php?o_id=<?= $order['o_id'] ?>" onclick="return confirm('Are you sure to Cancel the Order???');">Cancel</a></span>
 
-                                            <?php }else{ ?>
-                                            <!-- <span>Order Status:<?= ucfirst($order['order_status']) ?></span> -->
-                                             <?php
-                                            $today = date('d/m/Y');
+                                                            <?php } else { ?>
+                                                                <!-- <span>Order Status:<?= ucfirst($order['order_status']) ?></span> -->
+                                                                <?php
+                                                                $today = date('d/m/Y');
 
-                                            if($order['order_status']=='delivered'){
-                                                echo "<span style='color:green;'>Delivered</span>";
-                                            }
-                                           elseif($order['order_status']=='cancelled'){
-                                                echo "<span style='color:red;'>Cancelled</span>";
-                                            }
-                                             elseif($today > $order['expected_date']){
-                                                echo "<span style='color:red;'>Delivery Delayed</span>";
-                                            }
-                                            else{
-                                                echo "<span style='color:orange;'>On the way</span>";
-                                            }
-                                            ?>
-                                            <?php } ?>
+                                                                if ($order['order_status'] == 'delivered') {
+                                                                    echo "<span style='color:green;'>Delivered</span>";
+                                                                } elseif ($order['order_status'] == 'cancelled') {
+                                                                    echo "<span style='color:red;'>Cancelled</span>";
+                                                                } elseif ($today > $order['expected_date']) {
+                                                                    echo "<span style='color:red;'>Delivery Delayed</span>";
+                                                                } else {
+                                                                    echo "<span style='color:orange;'>On the way</span>";
+                                                                }
+                                                                ?>
+                                                            <?php } ?>
+                                                        </div>
+
                                                     </div>
-
                                                 </div>
-                                            </div>
-                                        <?php } ?>
+                                            <?php } ?>
 
 
 
 
 
-                                <?php    }
-                                    if ($order_detail->rowCount() == 0) {
-                                        echo "<p style='color:darkred;'>No Orders Found.<br>
+                                    <?php    }
+                                        if ($order_detail->rowCount() == 0) {
+                                            echo "<p style='color:darkred;'>No Orders Found.<br>
 You haven’t placed any orders yet.<br>
 Start browsing medicines and place your first order today</p>";
+                                        }
+                                    } catch (PDOException $e) {
+                                        echo $e;
                                     }
-                                } catch (PDOException $e) {
-                                    echo $e;
-                                }
-                                ?>
-                                <!-- Order Item -->
-                                <!-- <div class="order-box mb-3 p-3 rounded-3 bg-light">
+                                    ?>
+                                    <!-- Order Item -->
+                                    <!-- <div class="order-box mb-3 p-3 rounded-3 bg-light">
           <p class="mb-1"><strong>Product:</strong> Amoxicillin 500 mg</p>
           <p class="mb-1"><strong>Order ID:</strong> #ORD1025</p>
           <p class="mb-1"><strong>Quantity:</strong> 1</p>
@@ -336,29 +337,29 @@ Start browsing medicines and place your first order today</p>";
           <p class="mb-0 text-warning fw-semibold">Pending</p>
         </div> -->
 
-                                <!-- Empty State -->
-                                <!--
+                                    <!-- Empty State -->
+                                    <!--
         <div class="alert alert-info">
           No orders found.
         </div>
         -->
+                                </div>
                             </div>
                         </div>
-                    </div>
 
 
 
 
 
 
-                        
+
 
 
                     </div>
                 </div>
             </div>
 
-           
+
             <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasRight" aria-labelledby="offcanvasRightLabel">
                 <div class="offcanvas-header" style="margin-top: 100px;">
                     <h5 class="offcanvas-title" id="offcanvasRightLabel">Edit User Profile</h5>
@@ -389,7 +390,8 @@ Start browsing medicines and place your first order today</p>";
                                         <input type="number" class="form-control" id="mobile" name="mobile" placeholder="Mobile No." onfocus="this.placeholder = ''" onblur="this.placeholder = 'Mobile No.'" value="<?= $fetch_data['phone'] ?>">
                                     </div> -->
                                     <div class="col-lg-12 form-group">
-                                        <input id="phone" type="tel" name="phone" style="width: 353px;<?= $class ?>" class="form-control" placeholder="Mobile No." placeholder="Mobile No." onfocus="this.placeholder = ''" onblur="this.placeholder = 'Mobile No.'" value="<?= $fetch_data['mobile'] ?>">
+                                        <input type="tel" name="phone" id="phone" style="width: 353px;<?= $class ?>" class="form-control" maxlength="10" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+                                        <!-- <input id="phone" type="tel" name="phone" style="width: 353px;<?= $class ?>" class="form-control" onfocus="this.placeholder = ''" onblur="this.placeholder = 'Mobile No.'" value="<?= $fetch_data['mobile'] ?>"> -->
                                     </div>
 
                                     <div class="col-md-12 form-group">
@@ -765,6 +767,6 @@ Start browsing medicines and place your first order today</p>";
         .order-history h2 {
             font-size: 24px;
         }
-       
+
     }
 </style>

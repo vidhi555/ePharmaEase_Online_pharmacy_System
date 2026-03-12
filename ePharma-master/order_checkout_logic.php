@@ -41,8 +41,8 @@ try {
         if (!empty($user_id)  || !empty($guest_id)) {
 
             $conn->beginTransaction();      //if both query will be run , then only store in DB otherwise Not 
-            
-            
+
+
             //User is logged in
             $fname = htmlspecialchars($_POST['fname']);
             $lname = htmlspecialchars($_POST['lname']);
@@ -80,13 +80,16 @@ try {
                 // sweetAlert("Not Valid", "Invalid Email Format!", "warning");
                 $errors[] = "Invalid Email Format!";
             }
-            if (strlen($mobile) != 10) {
-                $errors[] = "Mobile Number must be 10 digits!!";
-                // sweetAlert("Not Valid", "Mobile Number must be 10 digits!!", "warning");
+            // if (strlen($mobile) != 10) {
+            //     $errors[] = "Mobile Number must be 10 digits!!";
+            //     // sweetAlert("Not Valid", "Mobile Number must be 10 digits!!", "warning");
+            // }
+            if (!preg_match("/^\+?[0-9]{10,15}$/", $mobile)) {
+                $errors[] = "Invalid Mobile number Length!";
             }
-            if (strlen($zip) != 6) {
+            if (!preg_match("/^[0-9]{5,6}$/", $zip)) {
                 // sweetAlert("Not Valid", "Wrong Pincode!!", "warning");
-                $errors[] = "Wrong Pincode!!!";
+                $errors[] = "Invalid Pincode!!!";
             }
             if (strlen($fname) < 2 && strlen($lname) < 2) {
                 // sweetAlert("Not Valid", "Please Enter your Name Properly!", "warning");
@@ -154,12 +157,13 @@ try {
                     'total_amt' => $grand_total,
                     'pay_method' => $payment,
                     'address' => $address,
-                    'order_notes'=>$ship_message,
-                    'edate'=> date('d/m/Y', strtotime("+1 day"))
+                    'order_notes' => $ship_message,
+                    // 'edate' => date('Y-m-d', strtotime("+1 day"))
+                    // 'edate'=> DATE_ADD(CURRENT_DATE(), INTERVAL 1 DAY)
+                    'edate' => date('Y-m-d', strtotime('+1 day'))
                 ]);
 
                 $order_id = $conn->lastInsertId();
-
                 if (!$order_id) {
                     echo "Order ID is not generated!";
                 }
@@ -168,6 +172,9 @@ try {
                 //  echo "Inserted USer:".$uid;
                 // echo "Guest:".$guest_id;
                 // echo "User:".$user_id;
+                // die();
+
+                // echo $_SESSION['last_order_id'];
                 // die();
 
 
@@ -188,12 +195,12 @@ try {
                         'uid' => $f['u_id'],
                         'qty' => $f['qty'],
                         'price' => $f['price'],
-                        
+
 
                     ]);
                 }
                 // $_SESSION['user_id'] = $uid
-                
+
 
 
                 //Mail
@@ -246,11 +253,11 @@ try {
                     } catch (Exception $ex) {
                         echo $ex;
                     }
-                    if($fetch_data['payment_method'] == 'COD'){
+                    if ($fetch_data['payment_method'] == 'COD') {
                         // remove products from cart
                         $clear_cart = $conn->prepare("DELETE FROM ep_cart WHERE u_id = :uid");
                         $clear_cart->execute(['uid' => $uid]);
-                        
+
                         //Reduce stocks from products
                         $query_Stock = $conn->prepare("SELECT * FROM ep_orders_items WHERE o_id = :oid ");
                         $query_Stock->execute(['oid' => $order_id]);
@@ -281,21 +288,21 @@ try {
                         'p_status' => 'pending',
 
                     ]);
-
-                    
                 } else {
                     $errors[] = "Please check the create account checkbox!";
                 }
                 // set Session 
                 $_SESSION['user_id'] = $uid;
-                
+                // Store user in cookie
+                setcookie("userid_session" , $_SESSION['user_id'] , time() + 3600 );
+
                 $conn->commit();
                 if ($_POST['payment'] == 'paypal') {
-                    header("Location:PayPal_payment_gateway/paypal_payment.php?o_id=$order_id");
+                    header("Location:PayPal_payment_gateway/paypal_payment.php?o_id=".$order_id);
                 }
 
                 if ($_POST['payment'] == 'COD') {
-                    header("Location:confirmation.php");
+                    header("Location:confirmation.php?o_id=".$order_id);
                 }
             }
 

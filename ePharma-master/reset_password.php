@@ -21,8 +21,12 @@ try {
         if (isset($_POST['reset'])) {
             $pwd = $_POST['password'];
             $cpwd = $_POST['confirm_password'];
-
-            if ($pwd !== $cpwd) {
+            $style = '';
+            if(empty($pwd) || empty($cpwd)){
+                $style = "border-bottom:1px solid red";
+                sweetAlert("Required!","Please Fill the required Fields!","warning");
+            }
+            elseif ($pwd !== $cpwd) {
                 sweetAlert("Password not Matched", "", "warning");
             } else {
                 $hash_pwd = password_hash($pwd, PASSWORD_DEFAULT);
@@ -84,26 +88,29 @@ if (isset($_SESSION['success_msg'])) {
 <!--================Forgot Password Box Area =================-->
 <section class="login_box_area section-margin">
     <div class="container">
-        <div class="row">
-            <!-- <div class="col-lg-6">
+        <div class="row" style="box-shadow: 0 0 6px rgba(0, 0, 0, 0.8);">
+            <div class="col-lg-6">
 					<div class="login_box_img">
 						<div class="hover">
-							<h4>Recover your account?</h4>
-							<p>Enter your email and we’ll help you reset your password.</p>
-							<a class="button button-account" href="register.php">Create an Account</a>
+							<h4>Reset Your Password</h4>
+							<p>Create a new password for your account.
+Your new password must be different from the previous one and should be secure.</p>
+
+							<a class="button button-account" href="login.php">Back to Login</a>
 						</div>
 					</div>
-				</div> -->
+				</div>
 
             <div class="col-lg-6">
                 <div class="fp_form_inner">
-                    <h3>Reset Your Password</h3>
+                    <h3 style="text-transform: uppercase;">Reset Password</h3>
+                    <img src="img/image-removebg-preview.png" alt="">
                     <form class="row fp_form" action="#/" id="contactForm" method="post">
                         <div class="col-md-12 form-group">
-                            <input type="password" class="form-control" id="password" name="password" placeholder="Enter New Password" onfocus="this.placeholder = ''" onblur="this.placeholder = 'Enter New Password'">
+                            <input type="password" style="<?= $style ?>" class="form-control" id="password" name="password" placeholder="Enter New Password" onfocus="this.placeholder = ''" onblur="this.placeholder = 'Enter New Password'">
                         </div>
                         <div class="col-md-12 form-group">
-                            <input type="password" class="form-control" id="cpassword" name="confirm_password" placeholder="Enter Confirm Password" onfocus="this.placeholder = ''" onblur="this.placeholder = 'Enter Confirm Password'">
+                            <input type="password" style="<?= $style ?>" class="form-control" id="cpassword" name="confirm_password" placeholder="Enter Confirm Password" onfocus="this.placeholder = ''" onblur="this.placeholder = 'Enter Confirm Password'">
                         </div>
 
                         <div class="col-md-12 form-group">

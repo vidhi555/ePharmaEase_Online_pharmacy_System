@@ -7,10 +7,10 @@ require_once("connection/db.php");
 //     $user_id = "";
 //     header("Location:login.php");
 // }
-        $user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : NULL;
-        $guest_id = $user_id ? NULL : session_id();
+$user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : NULL;
+$guest_id = $user_id ? NULL : session_id();
 
-        require_once('order_checkout_logic.php');
+require_once('order_checkout_logic.php');
 
 
 ?>
@@ -77,105 +77,118 @@ require_once('header.php');
             <a class="button button-coupon" href="#">Apply Coupon</a>
         </div> -->
 
-        
 
-        <?php if(!empty($errors)){ 
+
+        <?php if (!empty($errors)) {
             $er_fname = "First Name is required!";
             $class = "box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);border:1px solid #f44336;";
-            ?>
-        
-        <div class="alert alert-danger mt-3" style=" background-color: #ffdddd;border-left: 6px solid #f44336;padding-left: 20px;">
-            <ul>
-                <?php foreach($errors as $er){ ?>
-                <li><?= $er ?></li>
-                <?php } ?>
-            </ul>
-        </div>
+        ?>
+
+            <div class="alert alert-danger mt-3" style=" background-color: #ffdddd;border-left: 6px solid #f44336;padding-left: 20px;">
+                <ul>
+                    <?php foreach ($errors as $er) { ?>
+                        <li><?= $er ?></li>
+                    <?php } ?>
+                </ul>
+            </div>
         <?php } ?>
         <div class="billing_details shadow-lg mt-3" style="border-radius: 20px;">
             <div class="row">
                 <div class="col-lg-8" style="padding: 50px;">
                     <h3>Billing Details</h3>
-                    <form class="row contact_form" action="" method="post" novalidate="novalidate">
+                    <form class="row contact_form" action="" id="register_form" method="post" novalidate="novalidate">
 
-                    
+
                         <div class="col-md-6 form-group p_star">
-                            <input type="text" class="form-control" id="first" name="fname" placeholder="First Name" style="<?= $class ?>" value="<?= !empty($_POST['fname']) ? $_POST['fname'] :'' ?>">
-                            <?= empty($errors)?'':"<span class='reuired_field'><i class='fas fa-exclamation-circle'></i>".$er_fname.'</span>' ?>
+                            <input type="text" class="form-control" id="first" name="fname" placeholder="First Name" style="<?= $class ?>" value="<?= !empty($_POST['fname']) ? $_POST['fname'] : '' ?>">
+                            <?= empty($errors) ? '' : "<span class='reuired_field'><i class='fas fa-exclamation-circle'></i>" . $er_fname . '</span>' ?>
                             <!-- <span class="placeholder" data-placeholder="First name"></span> -->
                         </div>
                         <div class="col-md-6 form-group p_star">
-                            <input type="text" class="form-control" id="last" name="lname" placeholder="Last Name" style="<?= $class ?>" value="<?= !empty($_POST['lname']) ? $_POST['lname'] :'' ?>">
-                            <?= empty($errors)?'':"<span class='reuired_field'><i class='fas fa-exclamation-circle'></i>".'last name is required!</span>' ?>
+                            <input type="text" class="form-control" id="last" name="lname" placeholder="Last Name" style="<?= $class ?>" value="<?= !empty($_POST['lname']) ? $_POST['lname'] : '' ?>">
+                            <?= empty($errors) ? '' : "<span class='reuired_field'><i class='fas fa-exclamation-circle'></i>" . 'last name is required!</span>' ?>
                             <!-- <span class="placeholder" data-placeholder="Last name"></span> -->
                         </div>
                         <div class="col-md-12 form-group">
                             <input type="text" class="form-control" id="company" name="company" placeholder="Company name(Optional)">
                         </div>
                         <div class="col-md-6 form-group">
-                            <input id="phone" type="tel" style="width:390px; <?= $class ?>" name="phone" class="form-control" placeholder="Mobile No."  value="<?= isset($_POST['phone']) ? $_POST['phone'] : '' ?>">
-                            <!-- <input type="number" class="form-control" id="mno" name="mno" placeholder="Phone Number" style="<?= $class ?>" value="<?= !empty($_POST['mno']) ? $_POST['mno'] :'' ?>"> -->
-                            <?= empty($errors)?'':"<span class='reuired_field'><i class='fas fa-exclamation-circle'></i>".'Mobile is required!</span>' ?>
+                            <input type="tel" name="phone" id="phone" style="width: 353px;<?= $class ?>" class="form-control" maxlength="10" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+                            <!-- <input id="phone" type="tel" style="width:390px; <?= $class ?>" name="phone" class="form-control" value="<?= isset($_POST['phone']) ? $_POST['phone'] : '' ?>"> -->
+                            <!-- <input type="number" class="form-control" id="mno" name="mno" placeholder="Phone Number" style="<?= $class ?>" value="<?= !empty($_POST['mno']) ? $_POST['mno'] : '' ?>"> -->
+                            <?= empty($errors) ? '' : "<span class='reuired_field'><i class='fas fa-exclamation-circle'></i>" . 'Mobile is required!</span>' ?>
                             <!-- <span class="placeholder" data-placeholder="Phone number"></span> -->
                         </div>
                         <div class="col-md-6 form-group p_star">
-                            <input type="text" class="form-control" id="email" name="email" placeholder="Email Address" style="<?= $class ?>" value="<?= !empty($_POST['email']) ? $_POST['email'] :'' ?>">
-                            <?= empty($errors)?'':"<span class='reuired_field'><i class='fas fa-exclamation-circle'></i>".'email is required!</span>' ?>
+                            <input type="text" class="form-control" id="email" name="email" placeholder="Email Address" style="<?= $class ?>" value="<?= !empty($_POST['email']) ? $_POST['email'] : '' ?>">
+                            <?= empty($errors) ? '' : "<span class='reuired_field'><i class='fas fa-exclamation-circle'></i>" . 'email is required!</span>' ?>
                             <!-- <span class="placeholder" data-placeholder="Email Address"></span> -->
                         </div>
                         <div class="col-md-12 form-group p_star">
-                            <select class="country_select" name="country" style="<?= $class ?>" value="<?= !empty($_POST['country']) ? $_POST['country'] :'' ?>">
-                                <option selected="selected" value="">Select Country</option>
-                                <option value="India">India</option>
-                                <option value="Iran">Iran</option>
-                                <option value="US">US</option>
-                                <option value="UK">UK</option>
+                            <select class="country_select" name="country" style="<?= $class ?>" >
+             
+                            <option selected="selected" value="">Select Country</option>
+                                <option value="India" <?= (!empty($_POST['country']) && $_POST['country'] == 'India') ? 'selected' : '' ?> >India</option>
+                                <option value="Afganistan" <?= (!empty($_POST['country']) && $_POST['country'] == 'Afganistan') ? 'selected' : '' ?>>Afganistan</option>
+                                <option value="Australia" <?= (!empty($_POST['country']) && $_POST['country'] == 'Australia') ? 'selected' : '' ?>>Australia</option>
+                                <option value="Brazil" <?= (!empty($_POST['country']) && $_POST['country'] == 'Brazil') ? 'selected' : '' ?>>Brazil</option>
+                                <option value="Canada" <?= (!empty($_POST['country']) && $_POST['country'] == 'Canada') ? 'selected' : '' ?>>Canada</option>
+                                <option value="China" <?= (!empty($_POST['country']) && $_POST['country'] == 'China') ? 'selected' : '' ?>>China</option>
+                                <option value="Germany" <?= (!empty($_POST['country']) && $_POST['country'] == 'Germany') ? 'selected' : '' ?>>Germany</option>
+                                <option value="Iran" <?= (!empty($_POST['country']) && $_POST['country'] == 'Iran') ? 'selected' : '' ?>>Iran</option>
+                                <option value="Israel" <?= (!empty($_POST['country']) && $_POST['country'] == 'Israel') ? 'selected' : '' ?>>Israel</option>
+                                <option value="Kuwait" <?= (!empty($_POST['country']) && $_POST['country'] == 'Kuwait') ? 'selected' : '' ?>>Kuwait</option>
+                                <option value="Madagascar" <?= (!empty($_POST['country']) && $_POST['country'] == 'Madagascar') ? 'selected' : '' ?>>Madagascar</option>
+                                <option value="Nepal" <?= (!empty($_POST['country']) && $_POST['country'] == 'Nepal') ? 'selected' : '' ?>>Nepal</option>
+                                <option value="Qatar" <?= (!empty($_POST['country']) && $_POST['country'] == 'Qatar') ? 'selected' : '' ?>>Qatar</option>
+                                <option value="US" <?= (!empty($_POST['country']) && $_POST['country'] == 'US') ? 'selected' : '' ?>>US</option>
+                                <option value="UK" <?= (!empty($_POST['country']) && $_POST['country'] == 'UK') ? 'selected' : '' ?>>UK</option>
                             </select>
-                            <?= empty($errors)?'':"<span class='reuired_field'><i class='fas fa-exclamation-circle'></i>".'country is required!</span>' ?>
+                            <?= empty($errors) ? '' : "<span class='reuired_field'><i class='fas fa-exclamation-circle'></i>" . 'country is required!</span>' ?>
                         </div>
                         <div class="col-md-12 form-group p_star">
-                            <input type="text" class="form-control" id="add1" name="address" placeholder="Address line 01" style="<?= $class ?>" value="<?= !empty($_POST['address']) ? $_POST['address'] :'' ?>">
-                            <?= empty($errors)?'':"<span class='reuired_field'><i class='fas fa-exclamation-circle'></i>".'address-01 is required!</span>' ?>
+                            <input type="text" class="form-control" id="add1" name="address" placeholder="Full Address" style="<?= $class ?>" value="<?= !empty($_POST['address']) ? $_POST['address'] : '' ?>">
+                            <?= empty($errors) ? '' : "<span class='reuired_field'><i class='fas fa-exclamation-circle'></i>" . 'address-01 is required!</span>' ?>
                             <!-- <span class="placeholder" data-placeholder="Address line 01"></span> -->
                         </div>
-                        
+
                         <div class="col-md-12 form-group p_star">
-                            <input type="text" class="form-control" id="city" name="city" placeholder="Town/City" style="<?= $class ?>" value="<?= !empty($_POST['city']) ? $_POST['city'] :'' ?>">
-                            <?= empty($errors)?'':"<span class='reuired_field'><i class='fas fa-exclamation-circle'></i>".'city is required!</span>' ?>
+                            <input type="text" class="form-control" id="city" name="city" placeholder="Town/City" style="<?= $class ?>" value="<?= !empty($_POST['city']) ? $_POST['city'] : '' ?>">
+                            <?= empty($errors) ? '' : "<span class='reuired_field'><i class='fas fa-exclamation-circle'></i>" . 'city is required!</span>' ?>
                             <!-- <span class="placeholder" data-placeholder="Town/City"></span> -->
                         </div>
-                        
+
                         <div class="col-md-12 form-group">
-                            <input type="number" class="form-control" id="zip" name="zip" placeholder="Postcode/ZIP" style="<?= $class ?>" value="<?= !empty($_POST['zip']) ? $_POST['zip'] :'' ?>">
-                            <?= empty($errors)?'':"<span class='reuired_field'><i class='fas fa-exclamation-circle'></i>".'Zip code is required!</span>' ?>
+                            <input type="number" class="form-control" id="zip" name="zip" placeholder="Postcode/ZIP" style="<?= $class ?>" value="<?= !empty($_POST['zip']) ? $_POST['zip'] : '' ?>">
+                            <?= empty($errors) ? '' : "<span class='reuired_field'><i class='fas fa-exclamation-circle'></i>" . 'Zip code is required!</span>' ?>
                         </div>
-                        <?php if(!empty($guest_id)){ ?>
-                        <div class="col-md-12 form-group">
-                            <div class="creat_account">
-                                <input type="checkbox" id="c_acc" name="create_account">
-                                <label for="c_acc">Create an account?</label>
+                        <?php if (!empty($guest_id)) { ?>
+                            <div class="col-md-12 form-group">
+                                <div class="creat_account">
+                                    <input type="checkbox" id="c_acc" name="create_account">
+                                    <label for="c_acc">Create an account?</label>
+                                </div>
                             </div>
-                        </div>
-                        
-                         <div class="col-md-12 form-group p_star" id="password_field" style="display:none;">
-                            <input type="password" class="form-control" name="password" placeholder="Password" >
-                            <?= empty($errors)?'':"<span class='reuired_field'><i class='fas fa-exclamation-circle'></i>".'Password is required!</span>' ?>
-                        </div>
-                        
+
+                            <div class="col-md-12 form-group p_star" id="password_field" style="display:none;">
+                                <input type="password" class="form-control" name="password" placeholder="Password">
+                                <?= empty($errors) ? '' : "<span class='reuired_field'><i class='fas fa-exclamation-circle'></i>" . 'Password is required!</span>' ?>
+                            </div>
+
                         <?php } ?>
                         <script>
                             let is_check = document.getElementById('c_acc');
                             let pwd_field = document.getElementById('password_field');
-                            is_check.addEventListener("change", function(){
-                                if(this.checked){
+                            is_check.addEventListener("change", function() {
+                                if (this.checked) {
                                     // alert("Checked");
                                     pwd_field.style.display = "block";
-                                }else{
+                                } else {
                                     pwd_field.style.display = "none";
                                 }
                             });
                         </script>
-                        
+
                         <div class="col-md-12 form-group mb-0">
                             <div class="creat_account">
                                 <h3>Shipping Details</h3>
@@ -184,14 +197,14 @@ require_once('header.php');
                             </div>
                             <textarea class="form-control" style="display:none;" name="ship_message" id="message" rows="1" placeholder="Order Notes"></textarea>
                         </div>
-                         <script>
+                        <script>
                             let is_check_ship = document.getElementById('ship_diff');
                             let ship_diff_note = document.getElementById('message');
-                            is_check_ship.addEventListener("change", function(){
-                                if(this.checked){
+                            is_check_ship.addEventListener("change", function() {
+                                if (this.checked) {
                                     // alert("Checked");
                                     ship_diff_note.style.display = "block";
-                                }else{
+                                } else {
                                     ship_diff_note.style.display = "none";
                                 }
                             });
@@ -208,10 +221,10 @@ require_once('header.php');
                             <?php
                             try {
                                 $grandTot = 0;
-                                if($user_id){
+                                if ($user_id) {
                                     $cart = $conn->prepare("SELECT * FROM ep_cart WHERE u_id = :uid");
                                     $cart->execute(['uid' => $user_id]);
-                                }else{
+                                } else {
                                     $cart = $conn->prepare("SELECT * FROM ep_cart WHERE guest_id = :gid");
                                     $cart->execute(['gid' => $guest_id]);
                                 }
@@ -234,13 +247,12 @@ require_once('header.php');
                             <?php
                             //calculate grand total
                             try {
-                            if($user_id){
-                                $total = $conn->prepare("SELECT SUM(qty * price) as gTotal FROM ep_cart WHERE u_id = $user_id");
-                            } else{
-                                $total = $conn->prepare("SELECT SUM(qty * price) as gTotal FROM ep_cart WHERE guest_id = '$guest_id'");
-
-                            }   
-                            if ($total->execute()) {
+                                if ($user_id) {
+                                    $total = $conn->prepare("SELECT SUM(qty * price) as gTotal FROM ep_cart WHERE u_id = $user_id");
+                                } else {
+                                    $total = $conn->prepare("SELECT SUM(qty * price) as gTotal FROM ep_cart WHERE guest_id = '$guest_id'");
+                                }
+                                if ($total->execute()) {
                                     $result = $total->fetch(PDO::FETCH_ASSOC);
                                     // echo $result['gTotal'];
 
@@ -271,7 +283,7 @@ require_once('header.php');
                                 <label for="f-option5">PayPal</label>
                                 <img src="img/product/card.jpg" alt="">
 
-                        
+
                                 <div class="check"></div>
                             </div>
                             <p>You will be redirected to PayPal secure payment page.You can login OR pay using debit/credit card.</p>

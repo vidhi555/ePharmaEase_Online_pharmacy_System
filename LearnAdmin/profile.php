@@ -380,15 +380,15 @@ require_once('header2.php');
 
             <div class="row g-3">
               <div class="col-md-12">
-                <label class="text-muted small">Current Password</label>
+                <label class="text-muted small">Current Password</label><span style="color: darkred;font-size: 22px;">*</span>
                 <input type="password" name="current_password" class="form-control custom-input" placeholder="Current password">
 
                 <div class="col-md-12">
-                  <label class="text-muted small">New Password</label>
+                  <label class="text-muted small">New Password</label><span style="color: darkred;font-size: 22px;">*</span>
                   <input type="password" name="new_password" class="form-control custom-input" placeholder="Enter new password">
                 </div>
                 <div class="col-md-12">
-                  <label class="text-muted small">Confirm Password</label>
+                  <label class="text-muted small">Confirm Password</label><span style="color: darkred;font-size: 22px;">*</span>
                   <input type="password" name="confirm_password" class="form-control custom-input" placeholder="Confirm new password">
                 </div>
 

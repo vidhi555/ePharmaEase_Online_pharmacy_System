@@ -6,7 +6,7 @@ if (isset($_POST['input'])) {
     $input = $_POST['input'];   //get data from textbox
 
     //Query
-    $query = $conn->prepare("SELECT * FROM ep_products p JOIN ep_category c ON c.c_id = p.c_id WHERE name LIKE '{$input}%' OR category_name LIKE '{$input}%' OR price LIKE '{$input}%' ");
+    $query = $conn->prepare("SELECT * FROM ep_products p JOIN ep_category c ON c.c_id = p.c_id WHERE name LIKE '%{$input}%' OR category_name LIKE '{$input}%' OR price LIKE '{$input}%' ");
     $query->execute();
     $fetch_prod = $query->fetchAll(PDO::FETCH_ASSOC);
 

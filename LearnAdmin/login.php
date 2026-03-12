@@ -89,7 +89,7 @@ require_once('header2.php');
                 <form method="post">
                     <!-- Email Input -->
                     <div class="mb-3 position-relative">
-                        <label for="email" class="form-label text-muted small">Email</label>
+                        <label for="email" class="form-label text-muted small">Email</label><span style="color: darkred;font-size: 20px;">*</span>
                         <div class="position-relative">
                             <input type="email" name="email" class="form-control form-control-lg rounded-3"
                                 id="email" placeholder="example@outlook.com" value="<?php echo $email_cookie; ?>">
@@ -99,7 +99,7 @@ require_once('header2.php');
 
                     <!-- Password Input -->
                     <div class="mb-4 position-relative">
-                        <label for="password" class="form-label text-muted small">Password</label>
+                        <label for="password" class="form-label text-muted small">Password</label><span style="color: darkred;font-size: 20px;">*</span>
                         <div class="position-relative">
                             <input type="password" name="password" class="form-control form-control-lg rounded-3"
                                 id="password" placeholder="••••••••" value="<?php echo $password_cookie; ?>">

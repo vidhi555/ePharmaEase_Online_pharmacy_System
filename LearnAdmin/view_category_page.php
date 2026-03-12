@@ -9,50 +9,50 @@ if (isset($_POST['update'])) {
   $cname = $_POST['categoryName'];
   $cdesc = $_POST['categoryDesc'];
 
-   if(!empty($_FILES['cat_img']['name'])){
+  if (!empty($_FILES['cat_img']['name'])) {
     //image upload
-  $updateimg = $_FILES['cat_img']['name'];
-  $tempimg = $_FILES['cat_img']['tmp_name'];
-  $ext = pathinfo($updateimg, PATHINFO_EXTENSION);
-  $allowed = ['jpg', 'jpeg', 'png', 'webp'];
-  $img_name = "category_" . time() . "." . $ext;
-  $size = $_FILES['cat_img']['size'];
-  $max_size = 2097152;
+    $updateimg = $_FILES['cat_img']['name'];
+    $tempimg = $_FILES['cat_img']['tmp_name'];
+    $ext = pathinfo($updateimg, PATHINFO_EXTENSION);
+    $allowed = ['jpg', 'jpeg', 'png', 'webp'];
+    $img_name = "category_" . time() . "." . $ext;
+    $size = $_FILES['cat_img']['size'];
+    $max_size = 2097152;
 
-  if($size>$max_size){
-    $errors[] = "Invalid Image Size!";
-  }
+    if ($size > $max_size) {
+      $errors[] = "Invalid Image Size!";
+    }
 
-  $target = "All_images_uploads/" . basename($img_name);
-  //move_uploaded_file($tempimg,$target);
-  if (!in_array(strtolower($ext), $allowed)) {
-    $errors[] = "Invalid image format!!";
-  }
+    $target = "All_images_uploads/" . basename($img_name);
+    //move_uploaded_file($tempimg,$target);
+    if (!in_array(strtolower($ext), $allowed)) {
+      $errors[] = "Invalid image format!!";
+    }
 
-  if (!move_uploaded_file($tempimg, $target)) {
-    $errors[] = "Image upload failed!!!";
-    // sweetAlert("Warning!", "Image upload failed!!", "warning");
-    // exit;
-  }
-   }else{
+    if (!move_uploaded_file($tempimg, $target)) {
+      $errors[] = "Image upload failed!!!";
+      // sweetAlert("Warning!", "Image upload failed!!", "warning");
+      // exit;
+    }
+  } else {
     $img_name = $_POST['old_image'];
   }
-     
- 
+
+
 
   $data = [
     "category_name" => $cname,
-    "description"=>$cdesc,
-    "cat_image"=>$img_name
-    ];
+    "description" => $cdesc,
+    "cat_image" => $img_name
+  ];
   $condition = "c_id = $id";
   //update function call
   $q = update_record($table, $data, $condition);
   if (!$q) {
     // $message = "Updation Fail";
     sweetAlert("Warning!", "Updation Fail!Try Again!!!", "warning");
-  }else{
-    sweetAlert("Updated Successfully.","","success");
+  } else {
+    sweetAlert("Updated Successfully.", "", "success");
   }
 }
 
@@ -63,9 +63,9 @@ require_once('header2.php');
 
 <body>
   <!-- Preloader -->
-  <div id="preloader">
+  <!-- <div id="preloader">
     <div class="spinner"></div>
-  </div>
+  </div> -->
   <!-- Main Wrapper -->
   <div id="main-wrapper" class="d-flex">
     <?php
@@ -105,11 +105,11 @@ require_once('header2.php');
         </div>
         <?php
         try {
-          $query = $conn->prepare("SELECT * FROM  ep_category c JOIN ep_products p ON p.c_id = c.c_id  WHERE c.c_id = :cid ");
+          $query = $conn->prepare("SELECT * FROM  ep_category WHERE c_id = :cid ");
           $query->execute([':cid' => $cid]);
           $fetch_product = $query->fetch(PDO::FETCH_ASSOC);
-          $count_products = $query->rowCount();
           if ($fetch_product) {
+
         ?>
 
             <div class="mt-4">
@@ -123,13 +123,15 @@ require_once('header2.php');
                 <div class="product-right">
                   <div class="product-header">
                     <h3><?= $fetch_product['category_name'] ?></h3>
-                    
+
 
                     <div class="action-buttons">
+                      <p class="icon-btn view" data-bs-toggle="tooltip" title="View Products"><a href="category_wise_listing.php?c_id=<?= $fetch_product['c_id'] ?>"><i class="fas fa-eye"></i></a></p>
                       <button type="button"
                         data-bs-toggle="modal"
                         data-bs-target="#categoryEditModal"
                         class="icon-btn edit"
+
 
                         data-cid="<?= $fetch_product['c_id'] ?>"
                         data-cname="<?= htmlspecialchars($fetch_product['category_name']) ?>"
@@ -140,15 +142,28 @@ require_once('header2.php');
 
                     </div>
                   </div>
+
                   <p class="product-desc"><strong>Category ID:</strong> <?= $fetch_product['c_id'] ?><br>
-                  <strong>Total Products:</strong> <?= $count_products ?></p>
+
+                    <?php
+                    try {
+                      $count_product_query = $conn->prepare("SELECT * from ep_products WHERE c_id = :id");
+                      $count_product_query->execute(['id' => $cid]);
+                      // $fetch_count_product = $count_product_query->fetch(PDO::FETCH_ASSOC);
+                      $count_products = $count_product_query->rowCount();
+                    } catch (PDOException $e) {
+                      echo "<p>$e</p>";
+                    }
+                    ?>
+                    <strong>Total Products:</strong> <?= $count_products ?>
+                  </p>
                   <p class="product-desc">
                     "<?= $fetch_product['description'] ?? 'No description available.' ?>"
                   </p>
+
+
                 </div>
               </div>
-
-
 
 
 
@@ -193,8 +208,12 @@ require_once('header2.php');
         </div>
       </div>
     </div>
-<?php
-          }
+  <?php
+          } else { ?>
+    <div class="alert">
+      <p>No Product</p>
+    </div>
+<?php   }
         } catch (PDOException $ex) {
           echo $ex;
         }
@@ -202,12 +221,12 @@ require_once('header2.php');
 <script>
   //add event listner
   document.getElementById('categoryEditModal').addEventListener('show.bs.modal', function(event) {
-        let btn = event.relatedTarget; //helps to load extra data attributes(data-*)
-        let image = btn.getAttribute('data-cimg');
-        document.getElementById('edit_cid').value = btn.getAttribute('data-cid');
-        document.getElementById('edit_category').value = btn.getAttribute('data-cname');
-        document.getElementById('categorydescedit').value = btn.getAttribute('data-cdesc');
-        document.getElementById('old_image').value = image; 
-        document.getElementById('edit_img_prev').src = "All_images_uploads/"+image; 
-      });
+    let btn = event.relatedTarget; //helps to load extra data attributes(data-*)
+    let image = btn.getAttribute('data-cimg');
+    document.getElementById('edit_cid').value = btn.getAttribute('data-cid');
+    document.getElementById('edit_category').value = btn.getAttribute('data-cname');
+    document.getElementById('categorydescedit').value = btn.getAttribute('data-cdesc');
+    document.getElementById('old_image').value = image;
+    document.getElementById('edit_img_prev').src = "All_images_uploads/" + image;
+  });
 </script>

@@ -18,30 +18,30 @@ if (isset($_POST['submit'])) {
   $ext = pathinfo($pimg, PATHINFO_EXTENSION);
   $allowed = ['jpg', 'jpeg', 'png', 'webp'];
   $img_name = "category_" . time() . "." . $ext;
-
   $target = "All_images_uploads/" . basename($img_name);
-  //move_uploaded_file($tempimg,$target);
   if (!in_array(strtolower($ext), $allowed)) {
     $errors[] = "Invalid image format!!";
   }
-
   if (!move_uploaded_file($tempimg, $target)) {
     $errors[] = "Image upload failed!!!";
-    // sweetAlert("Warning!", "Image upload failed!!", "warning");
-    // exit;
   }
-
   try {
-
-    //ADD Category
-    $query = $conn->prepare("INSERT INTO `$table`(c_id, category_name,description ,cat_image) VALUES (null,'$cname','$cdesc','$img_name')");
-    $result = $query->execute();
-    if ($result) {
-      // echo "Category Added Successfuly";
-      sweetAlert("Added!!!", "Category Added Successfuly", "success");
+    if (empty($cname) || empty($cdesc) || empty($pimg)) {
+      $errors[] = "All Fields are required!!!";
+    }
+    if (empty($errors)) {
+      //ADD Category
+      $query = $conn->prepare("INSERT INTO `$table`(c_id, category_name,description ,cat_image) VALUES (null,'$cname','$cdesc','$img_name')");
+      $result = $query->execute();
+      if ($result) {
+        // echo "Category Added Successfuly";
+        sweetAlert("Added!!!", "Category Added Successfuly", "success");
+      } else {
+        // echo "Fail ";
+        sweetAlert("Fail!", "Category not Added!!!", "warning");
+      }
     } else {
-      // echo "Fail ";
-      sweetAlert("Fail!", "Category not Added!!!", "warning");
+      sweetAlert("Error!", "Something Went Wrong!!", "error");
     }
   } catch (PDOException $e) {
     echo "Error:$e";
@@ -67,15 +67,12 @@ if (isset($_POST['update'])) {
     }
 
     $target = "All_images_uploads/" . basename($img_name);
-    //move_uploaded_file($tempimg,$target);
     if (!in_array(strtolower($ext), $allowed)) {
       $errors[] = "Invalid image format!!";
     }
 
     if (!move_uploaded_file($tempimg, $target)) {
       $errors[] = "Image upload failed!!!";
-      // sweetAlert("Warning!", "Image upload failed!!", "warning");
-      // exit;
     }
   } else {
     $img_name = $_POST['old_image'];
@@ -90,7 +87,6 @@ if (isset($_POST['update'])) {
   //update function call
   $q = update_record($table, $data, $condition);
   if (!$q) {
-    // $message = "Updation Fail";
     sweetAlert("Warning!", "Updation Fail!Try Again!!!", "warning");
   } else {
     sweetAlert("Updated Successfully.", "", "success");
@@ -99,7 +95,6 @@ if (isset($_POST['update'])) {
 if (isset($_POST['page'])) {
 
   $search = $_POST['search'] ?? '';
-
   $limit = 5;
   $page = $_POST['page'];
   $offset = ($page - 1) * $limit;
@@ -109,7 +104,6 @@ if (isset($_POST['page'])) {
     'search' => $search . '%'
   ]);
   $data = $q->fetchAll(PDO::FETCH_ASSOC);
-
   foreach ($data as $p) {
 ?>
     <tr>
@@ -131,14 +125,33 @@ if (isset($_POST['page'])) {
     </tr>
 <?php
   }
+  // Split pagination content
+  echo "###pagination###";
+
+  // Pagination
+  $count_stmt = $conn->prepare("SELECT * FROM ep_category WHERE category_name LIKE :search");
+  $count_stmt->execute([
+    'search' => $search . '%'
+  ]);
+  $total =  $count_stmt->rowCount();
+  $pages = ceil($total / $limit);
+
+  if ($pages > 0) {
+    for ($i = 1; $i <= $pages; $i++) {
+      echo "<li class='page-item'>
+              <a href='#' class='page-link' data-page='$i'>$i</a>
+              </li>";
+    }
+  } else {
+    echo "<li class='text-center text-muted'>No records</li>";
+  }
   exit;
 }
 
-$page_title = "Category";
+$page_title = "Category page";
 require_once("header2.php");
 
 ?>
-
 
 <body>
   <!-- Preloader -->
@@ -156,7 +169,7 @@ require_once("header2.php");
       <!-- Header -->
       <div class="header d-flex align-items-center justify-content-between">
         <?php
-        $page_title = "Category page";
+        
         require_once('header.php');
         ?>
       </div>
@@ -168,10 +181,8 @@ require_once("header2.php");
               <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="index.php">Home</a></li>
                 <li class="breadcrumb-item active">Category</li>
-
               </ol>
             </nav>
-
             <div class="category-header d-flex align-items-lg-center  flex-column flex-md-row flex-lg-row mt-3">
               <div class="flex-grow-1">
                 <h3 class="mb-2 text-color-2">Top Category</h3>
@@ -206,11 +217,8 @@ require_once("header2.php");
                   <thead>
                     <tr>
                       <!-- <th><input type="checkbox" id="select-all" class="custom-checkbox"></th> -->
-
-
                       <th>Category Name</th>
                       <th>Description</th>
-
                       <th class="text-center">Action</th>
                     </tr>
                   </thead>
@@ -222,26 +230,10 @@ require_once("header2.php");
 
               <div class="pb-3 ps-3 mt-3 d-flex justify-content-center justify-content-md-between justify-content-lg-between flex-wrap flex-md-nowrap">
                 <nav aria-label="Page navigation" class="mb-3 mb-md-0 mb-lg-0">
-                  <ul class="pagination">
-                    <?php
-                    $s = $_POST['search'] ?? '';
-                    createPagination("ep_category", "category_name", $s, 5);
-                    ?>
+                  <ul class="pagination" id="pagination">
+
                   </ul>
                 </nav>
-                <!-- <div class="d-flex justify-content-end">
-                  <div class="page-selector">
-                    <span>PAGE</span>
-                    <select class="form-select" aria-label="Select page">
-                      <option value="1" selected>1</option>
-                      <option value="2">2</option>
-                      <option value="3">3</option>
-                      <option value="4">4</option>
-                      <option value="5">5</option>
-                    </select>
-                    <span>OF 100</span>
-                  </div>
-                </div> -->
               </div>
             </div>
           </div>
@@ -262,7 +254,6 @@ require_once("header2.php");
             <button type="button" class="btn position-absolute end-1" data-bs-dismiss="modal" aria-label="Close"><i class="fas fa-times"></i></button>
             <h2 class="h5 text-color-2 py-2">Create Category</h2>
             <form class="row g-3" method="post" enctype="multipart/form-data">
-              <!-- <input type="hidden" name="c_id"> -->
               <div class="col-12">
                 <label for="categoryName" class="form-label text-color-2 text-normal">Category Name</label>
                 <input type="text" class="form-control" name="categoryName" id="categoryName" placeholder="e.g. Eye Care">
@@ -317,8 +308,6 @@ require_once("header2.php");
         </div>
       </div>
     </div>
-
-
     <script src="pagi.js"></script>
     <script>
       //add event listner

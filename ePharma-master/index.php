@@ -63,7 +63,7 @@ require_once('header.php');  ?>
       <h2 data-aos="fade-up"><span class="section-intro__style">Popular Health Categories</span></h2>
       
     </div>
-    <div class="owl-carousel owl-theme hero-carousel" >
+    <div class="owl-carousel owl-theme hero-carousel" id="categoryCarousel">
       <?php
       try {
         $query = $conn->prepare("SELECT * FROM ep_category ORDER BY category_name");
@@ -110,7 +110,7 @@ require_once('header.php');  ?>
             <h3>15% off</h3>
             <p>Best Health care Products..</p>
             <p>Vitamins and Suppliments</p>
-            <a class="button button--active mt-3 mt-xl-4" href="category.php" style="box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);">Shop Now</a>
+            <a class="shop-btn mt-3 mt-xl-4" href="category.php" style="box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);">Shop Now</a>
           </div>
         </div>
         <div class="col-lg-6">
@@ -119,7 +119,7 @@ require_once('header.php');  ?>
             <h3> 35% off </h3>
             <p>Skin care products..</p>
             <p>Glow begins with great skincare.</p>
-            <a class="button button--active mt-3 mt-xl-4" href="category.php" style="box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);">Shop Now</a>
+            <a class="shop-btn mt-3 mt-xl-4" href="category.php" style="box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);">Shop Now</a>
           </div>
         </div>
       </div>
@@ -239,7 +239,7 @@ LIMIT 10");
                 $available_stock = $p['stock'];
         ?>
 
-            <div class="card text-center card-product" data-aos="fade-up">
+            <!-- <div class="card text-center card-product" data-aos="fade-up">
               <form action="" method="post">
                 <div class="card-product__img">
                   <h6 class="card-product__price">$<?= $p['price'] ?></h6>
@@ -270,8 +270,42 @@ LIMIT 10");
                   <p style="text-transform: capitalize;"><?= $p['category_name'] ?></p>
                 </div>
               </form>
-            </div>
+            </div> -->
 
+            <div class="card text-center card-product">
+              <form action="" method="post">
+                <div class="card-product__img">
+                  <h6 class="card-product__price">$<?= $p['price'] ?></h6>
+                  <a href="single-product.php?p_id=<?= $p['p_id'] ?>"><img class="card-img" src="../LearnAdmin/All_images_uploads/<?= $p['image'] ?>" alt=""></a>
+                  <input type="hidden" name="product_id" value="<?= $p['p_id'] ?>">
+                  <input type="hidden" name="cart_id" value="<?= $p['p_id'] ?>">
+                  <ul class="card-product__imgOverlay">
+                    <?php if($available_stock<5){
+                             $alert = "<i class='fas fa-exclamation-triangle'></i> Only few items left";
+                          }elseif($available_stock <= 0 ){
+                            $alert = "<i class='far fa-exclamation-triangle'></i> Out Of Stock";
+                          }else{
+                            $alert = "<i class='ti-shopping-cart'></i>";
+                          } ?>
+                          <li><button name="cart"><?= $alert ?></button></li>
+                  </ul>
+                </div>
+
+                <div class="card-body">
+                  <h4 class="card-product__title"><a href="single-product.php?p_id=<?= $p['p_id'] ?>"><?= $p['name'] ?></a></h4>
+
+                  <h6 class="rating"><?php
+                                      for ($i = 0; $i < $fetch_avg['rating_avg']; $i++) {
+                                        echo "<i class='fas fa-star rating-stars text-size-13'></i>";
+                                      }
+
+                                      ?>
+                  </h6>
+                  <p style="text-transform: capitalize;"><?= $p['category_name'] ?></p>
+                </div>
+              </form>
+            </div>
+          
         <?php
           }
         } catch (PDOException $ex) {

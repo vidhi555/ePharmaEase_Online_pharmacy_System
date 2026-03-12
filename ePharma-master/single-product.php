@@ -17,7 +17,7 @@ if (isset($_POST['cart'])) {
         //   $user_id = $_SESSION['user_id'];
 
 
-        if($user_id){
+        if ($user_id) {
             $check = $conn->prepare(
                 "SELECT cart_id FROM ep_cart WHERE p_id = :pid AND u_id = :uid"
             );
@@ -25,7 +25,7 @@ if (isset($_POST['cart'])) {
                 'pid' => $pid,
                 'uid' => $user_id
             ]);
-        }else{
+        } else {
             $check = $conn->prepare(
                 "SELECT cart_id FROM ep_cart WHERE p_id = :pid AND guest_id = :gid"
             );
@@ -34,37 +34,41 @@ if (isset($_POST['cart'])) {
                 'gid' => $guest_id
             ]);
         }
-            if ($check->rowCount() > 0) {
-                sweetAlert("Already in your cart!!", "This product is Already exist in your cart!!!", "warning");
+        if ($check->rowCount() > 0) {
+            sweetAlert("Already in your cart!!", "This product is Already exist in your cart!!!", "warning");
+        } else {
+
+            // fetch product
+            $product = $conn->prepare(
+                "SELECT name, price,stock FROM ep_products WHERE p_id = :pid"
+            );
+            $product->execute(['pid' => $pid]);
+            $p = $product->fetch(PDO::FETCH_ASSOC);
+            $qty = $_POST['qty'] ?? '1';
+            if (!$p) {
+                // $_SESSION['warning'] = "Product not found";
+                sweetAlert("Error!", "Product Not Found!!", "warning");
             } else {
-
-                // fetch product
-                $product = $conn->prepare(
-                    "SELECT name, price FROM ep_products WHERE p_id = :pid"
-                );
-                $product->execute(['pid' => $pid]);
-                $p = $product->fetch(PDO::FETCH_ASSOC);
-
-                if (!$p) {
-                    // $_SESSION['warning'] = "Product not found";
-                    sweetAlert("Error!", "Product Not Found!!", "warning");
+                if ($p['stock'] <= 0) {
+                    sweetAlert("Insufficent Stock", "Currently Unavailable This Product!", "warning");
                 } else {
                     // insert into cart
                     $insert = $conn->prepare(
                         "INSERT INTO ep_cart (u_id, p_id, pname, qty, price,guest_id)
-                     VALUES (:uid, :pid, :pname, :qty, :price ,:gid)"
+                        VALUES (:uid, :pid, :pname, :qty, :price ,:gid)"
                     );
                     $insert->execute([
                         'uid'   => $user_id,
                         'pid'   => $pid,
                         'pname' => $p['name'],
-                        'qty'   => $_POST['qty'],
+                        'qty'   => $qty,
                         'price' => $p['price'],
-                        'gid'=>$guest_id
+                        'gid' => $guest_id
                     ]);
                     sweetAlert("Item Added!", "Successfully Added in Your cart!", "success");
                 }
             }
+        }
 
 
 
@@ -159,32 +163,26 @@ try {
         <div class="product_image_area">
             <div class="container">
                 <div class="row s_product_inner ">
-                    <div class="col-lg-6 slide-right">
-                        <div class="owl-carousel owl-theme s_Product_carousel" style="background: #f6f6f6;border-radius:20px;" >
-                            <?php 
-                                try{
-                                    $get_image = $conn->prepare("SELECT * FROM ep_image_gallery WHERE p_id = :pid");
-                                    $get_image->execute(['pid'=>$pid]);
-                                    $fetch_iamge = $get_image->fetchAll(PDO::FETCH_ASSOC);
-                                    foreach($fetch_iamge as $a){
-                                        ?>
-                                    <div class="single-prd-item" style="    width: 635px;
-    margin-left: 1px;">
-                                        <img style="display: block;
-    width: 100%;
-    height: 500px;
-    border: 1px solid #333;
-    object-fit: contain;
-    border-radius: 70px;
-    position: relative;" class="img-fluid" src="../LearnAdmin/All_images_uploads/<?= $a['image_name'] ?>" alt="p_image" >
-                                    </div>
-                                        <?php
-                                    }
-                                }catch(PDOException $e){
-                                    echo $e;
-                                }
+                    <div class="col-lg-6 col-md-6 col-xl-6 slide-right">
+                        <div class="owl-carousel owl-theme s_Product_carousel" id="single_product_caraousel">
+                            <?php
+                            try {
+                                $get_image = $conn->prepare("SELECT * FROM ep_image_gallery WHERE p_id = :pid");
+                                $get_image->execute(['pid' => $pid]);
+                                $fetch_iamge = $get_image->fetchAll(PDO::FETCH_ASSOC);
+                                foreach ($fetch_iamge as $a) {
                             ?>
-                            
+                                    <div class="single-prd-item">
+
+                                        <img id='single-prd-img-style' class="img-fluid" src="../LearnAdmin/All_images_uploads/<?= $a['image_name'] ?>" alt="p_image">
+                                    </div>
+                            <?php
+                                }
+                            } catch (PDOException $e) {
+                                echo $e;
+                            }
+                            ?>
+
                             <!-- <div class="single-prd-item">
                                 <img class="img-fluid" src="img/images__2_-removebg-preview.png" alt="" style="width: 100%;">
                             </div>
@@ -202,16 +200,20 @@ try {
                                     <input type="hidden" name="product_id" value="<?= $product['p_id'] ?>">
                                     <input type="hidden" name="cart_id" value="<?= $product['p_id'] ?>">
                                     <li><a class="active" href="#"><span>Category</span> : <?= $product['category_name'] ?></a></li>
-                                    <li><a href="#"><span>Availibility</span> : <?php echo $product['status'] == 'Active' ? "In-Stock" : "" ?></a></li>
-                                    <li><a class="active" href="#"><span>Expiry Date</span> : <?php echo date("d M Y", strtotime($product['expiry_date'])); ?></a></li>
-
+                                    <li><a href="#"><span>Availibility</span> : <?php echo $product['stock'] >= 0 ? "In-Stock" : "Not Available" ?></a></li>
+                                    <li><a class="active" href="#"><span>Expiry Date</span> : <?= ($product['stock'] <= 0) ? '<i class="fa-solid fa-ban"></i>' : date("d M Y", strtotime($product['expiry_date'])) ?></a></li>
+                                    <?php
+                                    if ($product['stock'] <= 0) {
+                                        echo "<li><i class='fa-solid fa-triangle-exclamation'></i> This medicine is currently unavailable.</li>";
+                                    }
+                                    ?>
 
                                 </ul>
 
                                 <div class="product_count">
                                     <h2>$<?= $product['price'] ?></h2>
                                     <label for="qty">Quantity:</label>
-                                    <input type="number" name="qty" min="1" max="<?= $product['stock'] ?>" value="1" class="increase items-count">
+                                    <input type="number" name="qty" min="0" max="<?= $product['stock'] ?>" value="1" class="increase items-count">
 
                                     <!-- <a class="button primary-btn" name="cart" href="cart.php?p_id=<?= $product['p_id'] ?>">Add to Cart</a> -->
                                 </div>
@@ -290,17 +292,27 @@ try {
             <li class="nav-item">
                 <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true">Description</a>
             </li>
-                <li class="nav-item">
+            <!-- <li class="nav-item">
 					<a class="nav-link" id="profile-tab" data-toggle="tab" href="#profile" role="tab" aria-controls="profile"
 						aria-selected="false">Additional Information</a>
-				</li>
-				<!-- <li class="nav-item"> 
+				</li> -->
+            <!-- <li class="nav-item"> 
 					<a class="nav-link" id="contact-tab" data-toggle="tab" href="#contact" role="tab" aria-controls="contact"
 						aria-selected="false">Comments</a> -->
             </li>
             <li class="nav-item">
+                <?php
+                try {
+                    $query = $conn->prepare("SELECT AVG(rate) as overall_rate , COUNT(*) as total_review FROM ep_review r WHERE p_id = :pid");
+                    $query->execute(['pid' => $pid]);
+                    $fetch_r = $query->fetch(PDO::FETCH_ASSOC);
+                    $total_review = $fetch_r['total_review'];
+                } catch (PDOException $r) {
+                    echo $r;
+                }
+                ?>
                 <a class="nav-link" id="review-tab" data-toggle="tab" href="#review" role="tab" aria-controls="review"
-                    aria-selected="false">Reviews</a>
+                    aria-selected="false">Reviews (<?= $total_review ?>)</a>
             </li>
         </ul>
         <div class="tab-content" id="myTabContent">
@@ -320,7 +332,7 @@ try {
                 <div class="table-responsive">
                     <table class="table">
                         <tbody>
-                            
+
                             <tr>
                                 <td>
                                     <h5>Category Name</h5>
@@ -337,7 +349,7 @@ try {
                                     <h5><?= $product['name'] ?></h5>
                                 </td>
                             </tr>
-                            
+
                             <tr>
                                 <td>
                                     <h5>Quality checking</h5>
@@ -346,7 +358,7 @@ try {
                                     <h5>yes</h5>
                                 </td>
                             </tr>
-                            
+
                             <tr>
                                 <td>
                                     <h5>When packeting</h5>
@@ -468,7 +480,7 @@ try {
                                     ?>
 
                                             <h5>Overall</h5>
-                                            <h4><?= round($fetch_r['overall_rate'],1) ?></h4>
+                                            <h4><?= round($fetch_r['overall_rate'], 1) ?></h4>
                                             <h6>(<?= $total_review ?> Reviews)</h6>
                                 </div>
                             </div>
@@ -591,7 +603,7 @@ try {
                                         <h4><?= $count ?> review for <?= $product['name'] ?>:</h4>
                                         <hr>
                                     </div>
-                                    
+
                                     <?php
                                     foreach ($fetch_review as $rev) {
                                     ?>
@@ -615,7 +627,7 @@ try {
                                             <p class="text-muted"><?= $rev['description'] ?></p>
                                             <hr>
                                         </div>
-                            <?php
+                                <?php
 
                                     }
                                 } else {
@@ -624,41 +636,41 @@ try {
                             } catch (PDOException $e) {
                                 echo $e;
                             }
-                            if($count > 2){
+                            if ($count > 2) {
                                 ?>
-                                 <!-- Arrow Button -->
-                        <div class=" text-center">
-                            <button id="loadmore" class="load_more_btn"><i class="fa fa-arrow-down"></i></button>
-                        </div>
-                                <?php } ?>
-                       
-                            
-                        
+                                <!-- Arrow Button -->
+                                <div class=" text-center">
+                                    <button id="loadmore" class="load_more_btn"><i class="fa fa-arrow-down"></i></button>
+                                </div>
+                            <?php } ?>
+
+
+
                         </div>
                         <style>
-                            .review_item{
+                            .review_item {
                                 display: none;
                             }
-                            
-                            #loadmore.active i{
+
+                            #loadmore.active i {
                                 transform: rotate(180deg);
                                 transition: 0.3s;
                             }
                         </style>
                         <script>
-                            $(document).ready(function(){
+                            $(document).ready(function() {
                                 let expand = false;
-                                 $(".review_item").slice(0,5).show();
-                                $("#loadmore").on("click",function(){
+                                $(".review_item").slice(0, 5).show();
+                                $("#loadmore").on("click", function() {
                                     // alert("HEllo");
-                                   
-                                    if(!expand){
-                                        $(".review_item:hidden").slice(0,5).slideDown();
+
+                                    if (!expand) {
+                                        $(".review_item:hidden").slice(0, 5).slideDown();
                                         $(this).addClass("active");
-                                        expand =true;
+                                        expand = true;
                                         //  alert("Show");
-                                    }else{
-                                       
+                                    } else {
+
                                         $(".review_item").slice(5).slideUp();
                                         $(this).removeClass("active");
                                         expand = false;
@@ -668,6 +680,67 @@ try {
                             });
                         </script>
                     </div>
+                  <?php
+try {
+    if (isset($_POST['review'])) {
+        $user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : NULL;
+        $guest_id = !$user_id ? session_id() : NULL;
+
+
+        // $name = $_POST['name'];
+        // $email = $_POST['email'];
+        $subject = $_POST['subject'];
+        $message = $_POST['message'];
+        $rate = $_POST['rate'];
+        // echo $rate;
+        // die();
+
+        if ($user_id) {
+            $check = $conn->prepare("SELECT * FROM ep_cart WHERE p_id = :pid AND u_id = :uid ");
+            $check->execute([
+                'pid' => $pid,
+                'uid' => $user_id
+            ]);
+        } else {
+            $check = $conn->prepare("SELECT * FROM ep_cart WHERE p_id = :pid AND guest_id = :gid ");
+            $check->execute([
+                'pid' => $pid,
+                'gid' => $guest_id
+            ]);
+        }
+        $fetch_pid = $check->fetch(PDO::FETCH_ASSOC);
+        $cart_pid = $fetch_pid['p_id'] ?? '';
+
+        if ($cart_pid != $pid) {
+            sweetAlert("First, Add to cart this Product!!!!", "You Can Send Review After Purchasing It.", "warning");
+        } else {
+            $style = '';
+            if (empty($subject) || empty($message) || empty($rate) || empty($pid)) {
+                sweetAlert("Fill the required fields!!!", "", "warning");
+                $style = "border:1px solid red;";
+            } else {
+
+                if ($user_id) {
+                    $query = "INSERT INTO `ep_review`( `u_id`, `title`, `description`, `rate`, `p_id`) VALUES (:uid, :title , :description , :rate, :pid)";
+                    $review = $conn->prepare($query);
+                    $review->execute([
+                        'uid' => $uid,
+                        'title' => $subject,
+                        'description' => $message,
+                        'rate' => $rate,
+                        'pid' => $pid,
+                    ]);
+                    sweetAlert("Review Submitted successfully.", " ", "success");
+                } else {
+                    sweetAlert("Access Denied!", "Guest users are not allowed to submit reviews. Please login first.", "warning");
+                }
+            }
+        }
+    }
+} catch (PDOException $e) {
+    echo $e;
+}
+?>
                     <div class="col-lg-6">
                         <div class="review_box">
                             <h4>Add a Review</h4>
@@ -685,7 +758,7 @@ try {
                                 <li><a href="#"><i class="fa fa-star"></i></a></li> -->
                             </ul>
 
-                            <p id="rate_text">Outstanding</p>
+                            <p id="rate_text">Outstanding <?= (empty($rate) ? '<span class="text-danger">*</span>':'') ?></p>
                             <form action="" method="post" class="form-contact form-review mt-3">
                                 <!-- <div class="form-group">
 										<input class="form-control" name="name" type="text" placeholder="Enter your name" required>
@@ -694,15 +767,16 @@ try {
 										<input class="form-control" name="email" type="email" placeholder="Enter email address" required>
 									</div> -->
                                 <input type="hidden" name="rate" id="rate" value="0">
+
                                 <div class="form-group">
-                                    <input class="form-control" name="subject" type="text" placeholder="Enter Subject">
+                                    <input class="form-control" name="subject" type="text" placeholder="Enter Subject" style="<?= $style ?>">
                                 </div>
 
                                 <!-- <div class="form-group">
                                     <input class="form-control" name="rate" type="number" min="1" max="5" placeholder="Your Rating">
                                 </div> -->
                                 <div class="form-group">
-                                    <textarea class="form-control different-control w-100" name="message" id="textarea" cols="30" rows="5" placeholder="Enter Message"></textarea>
+                                    <textarea class="form-control different-control w-100" name="message" id="textarea" cols="30" rows="5" placeholder="Enter Message" style="<?= $style ?>"></textarea>
                                 </div>
                                 <div class="form-group text-center text-md-right mt-3">
                                     <button type="submit" name="review" class="button button--active button-review">Submit Now</button>
@@ -773,66 +847,7 @@ try {
         }
     }
 </script>
-<?php
-try {
-    if (isset($_POST['review'])) {
-        $user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : NULL;
-        $guest_id = !$user_id ? session_id() : NULL;
 
-
-        // $name = $_POST['name'];
-        // $email = $_POST['email'];
-        $subject = $_POST['subject'];
-        $message = $_POST['message'];
-        $rate = $_POST['rate'];
-        // echo $rate;
-        // die();
-
-        if($user_id){
-            $check = $conn->prepare("SELECT * FROM ep_cart WHERE p_id = :pid AND u_id = :uid ");
-            $check->execute([
-                'pid' => $pid,
-                'uid' => $user_id
-            ]);
-        }else{
-            $check = $conn->prepare("SELECT * FROM ep_cart WHERE p_id = :pid AND guest_id = :gid ");
-            $check->execute([
-                'pid' => $pid,
-                'gid' => $guest_id
-            ]);
-        }
-        $fetch_pid = $check->fetch(PDO::FETCH_ASSOC);
-        $cart_pid = $fetch_pid['p_id'] ?? '';
-        
-        if ($cart_pid != $pid) {
-            sweetAlert("First, Add to cart this Product!!!!", "You Can Send Review After Purchasing It.", "warning");
-        } else {
-            if (empty($subject) || empty($message) || empty($rate) || empty($pid)) {
-                sweetAlert("Fill the required fields!!!", "", "warning");
-            } else {
-
-                if($user_id){
-                    $query = "INSERT INTO `ep_review`( `u_id`, `title`, `description`, `rate`, `p_id`) VALUES (:uid, :title , :description , :rate, :pid)";
-                    $review = $conn->prepare($query);
-                    $review->execute([
-                        'uid' => $uid,
-                        'title' => $subject,
-                        'description' => $message,
-                        'rate' => $rate,
-                        'pid' => $pid,
-                    ]);
-                    sweetAlert("Review Submitted successfully.", " ", "success");
-                }else{
-                    sweetAlert("Access Denied!", "Guest users are not allowed to submit reviews. Please login first.", "warning");
-                }
-                
-            }
-        }
-    }
-} catch (PDOException $e) {
-    echo $e;
-}
-?>
 <!--================End Product Description Area =================-->
 
 <!--================ Start related Product area =================-->

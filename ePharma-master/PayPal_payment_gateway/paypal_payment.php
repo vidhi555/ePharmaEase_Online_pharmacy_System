@@ -21,18 +21,7 @@ $price = number_format($row['total_amount'],2);
     <input type="hidden" name="amount" value="<?= $price ?>">
     <input type="hidden" name="currency_code" value="USD">
     
-    <!-- Billing details -->
-    <!-- <input type="hidden" name="item_fname" value="<?= $row['fname'] ?>"> -->
 
-    <!-- <input type="hidden" name="item_lname" value="Medicine Order #<?= $order_id ?>">
-    <input type="hidden" name="item_name" value="Medicine Order #<?= $order_id ?>">
-    <input type="hidden" name="item_name" value="Medicine Order #<?= $order_id ?>">
-    <input type="hidden" name="item_name" value="Medicine Order #<?= $order_id ?>">
-    <input type="hidden" name="item_name" value="Medicine Order #<?= $order_id ?>">
-    <input type="hidden" name="item_name" value="Medicine Order #<?= $order_id ?>">
-    <input type="hidden" name="item_name" value="Medicine Order #<?= $order_id ?>">
-    <input type="hidden" name="item_name" value="Medicine Order #<?= $order_id ?>">
-    <input type="hidden" name="item_name" value="Medicine Order #<?= $order_id ?>"> -->
 
 
     <input type="hidden" name="return"

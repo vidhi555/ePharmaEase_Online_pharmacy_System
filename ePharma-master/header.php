@@ -30,15 +30,15 @@ $count = $q->fetchColumn();
   <link rel="stylesheet" href="./vendors/owl-carousel/owl.theme.default.min.css">
   <link rel="stylesheet" href="./vendors/owl-carousel/owl.carousel.min.css">
   <link rel="stylesheet" href="new_css/css/bootstrap.min.css">
-  <!-- Mobile no. with country code -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@18.1.1/build/css/intlTelInput.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
   <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet">
 
+  <!-- Mobile no. with country code -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@18.1.1/build/css/intlTelInput.css">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-  <link rel="stylesheet" href="./css/style14.css">
+  <link rel="stylesheet" href="./css/style15.css">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
   <script>
     function confirm_order() {
@@ -60,7 +60,13 @@ $count = $q->fetchColumn();
       });
     }
   </script>
-
+  <script>
+    // Tooltip Script
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+  </script>
 </head>
 
 <body>
@@ -105,9 +111,9 @@ $count = $q->fetchColumn();
                 <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
                   aria-expanded="false">Pages</a>
                 <ul class="dropdown-menu"> -->
-                  <!-- <li class="nav-item"><a class="nav-link" href="login.php">Login</a></li>
+              <!-- <li class="nav-item"><a class="nav-link" href="login.php">Login</a></li>
                 <li class="nav-item"><a class="nav-link" href="register.php">Register</a></li> -->
-                  <!-- <li class="nav-item"><a class="nav-link" href="tracking-order.php">Tracking</a></li>
+              <!-- <li class="nav-item"><a class="nav-link" href="tracking-order.php">Tracking</a></li>
                 </ul>
               </li> -->
               <li class="nav-item"><a class="nav-link" href="contact.php">Contact</a></li>
@@ -185,24 +191,24 @@ $count = $q->fetchColumn();
               <p>Qty:<?= $cart['qty'] ?></p>
               <p>$<?= $cart['price'] ?></p>
             </div>
-            
+
             <!-- <a href="deletecart.php?cart_id=<?= $cart['cart_id'] ?>"><span class="delete">🗑</span></a> -->
           </div>
         <?php
           $total = $cart['qty'] * $cart['price'];
           $gtotal += $total;
         }
-       
+
         ?>
 
         <div class="subtotal">
           <span>Subtotal:</span>
-          <span>$ <?= number_format($gtotal,2) ?></span>
-          
+          <span>$ <?= number_format($gtotal, 2) ?></span>
+
         </div>
-         <!-- Buttons -->
-    <button class="btn-checkout" ><a href="checkout.php">Checkout</a></button>
-    <button class="btn-view"><a href="cart.php">View Cart</a></button>
+        <!-- Buttons -->
+        <button class="btn-checkout"><a href="checkout.php">Checkout</a></button>
+        <button class="btn-view"><a href="cart.php">View Cart</a></button>
 
       <?php
       }
@@ -212,7 +218,7 @@ $count = $q->fetchColumn();
     <?php  }
     ?>
 
-   
+
   </div>
 
   <script>

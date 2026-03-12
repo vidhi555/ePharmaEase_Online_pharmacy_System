@@ -1,23 +1,30 @@
 <?php
 require_once("../connection/db.php");
+// print_r($_SESSION);
+// $user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : NULL;
+// // $uid = $_SESSION['user_id'] ;
+// echo $user_id."-";
+// die();
+
 $txn_id  = $_GET['tx'] ?? '';
-$status  = $_GET['st'] ?? '';
+// $status  = $_GET['st'] ?? '';
 $amount  = $_GET['amt'] ?? '';
 $currency = $_GET['cc'] ?? '';
 
-// echo $txn_id;
-// echo $status;
-// echo $amount;
-// echo $currency;
+// echo "\nTransaction: ".$txn_id;
+// echo "\sts: ".$status;
+// echo "\amt: ".$amount;
+// echo "\cuure: ".$currency;
 // die();
 
 $order_id = $_GET['o_id'] ?? '';
-$txn_id = $_POST['txn_id'] ?? '';
 
-$updatePayment = $conn->prepare("UPDATE ep_payment SET payment_status = 'paid', transaction_id = :txn_id,payment_date = NOW()
+
+$updatePayment = $conn->prepare("UPDATE ep_payment SET payment_status = 'paid', transaction_id = :txn_id, currency = :crr , payment_date = NOW()
 WHERE o_id = :oid");
 $updatePayment->execute([
-    'txn_id' => $_GET['txn_id'],   // PayPal transaction ID
+    'txn_id' => $txn_id,   // PayPal transaction ID
+    'crr'=>$currency,
     'oid' => $order_id
 ]);
 
@@ -32,6 +39,7 @@ $check_payment_status = $conn->prepare("SELECT * FROM ep_orders_master WHERE o_i
 $check_payment_status->execute(['oid'=>$order_id]);
 $fetch_payment_status = $check_payment_status->fetch(PDO::FETCH_ASSOC);
 $payment_method = $fetch_payment_status['payment_method'];
+$uid = $fetch_payment_status['u_id'];
 
 // Only confirmed & Online payment option can update status
 if($payment_method == 'paypal'){
@@ -57,4 +65,4 @@ if($payment_method == 'paypal'){
 }else{
     echo "Order is not confirmed";
 }
-header("Location:../confirmation.php");
+header("Location:../confirmation.php?o_id=".$order_id);

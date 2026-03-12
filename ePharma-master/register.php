@@ -56,6 +56,10 @@ if (isset($_POST['submit'])) {
 	if(!preg_match('/^[a-zA-Z0-9]{6}$/',$password)){
           $errors[] = "Password must be exactly 6 characters (letters & numbers only)";
         }
+	
+	if(!preg_match('/^\+?[0-9]{10,15}$/',$mobile)){
+		$errors[] = "Mobile number Length is Invalid";
+	}
 	if ($password !== $confirmPassword) {
 		$errors[] = "Password is not Match with Confirm-Password!";
 		// sweetAlert("Warning","Password is not Match with Confirm-Password!","warning");
@@ -160,7 +164,7 @@ require_once('header.php') ?>
 
 <section class="login_box_area section-margin">
 	<div class="container">
-		<div class="row">
+		<div class="row" style="box-shadow: 0 0 6px rgba(0, 0, 0, 0.8);">
 			<div class="col-lg-6">
 				<div class="login_box_img">
 					<div class="hover">
@@ -196,6 +200,7 @@ require_once('header.php') ?>
 				?>
 					
 					<h3>Create an account</h3>
+					<img src="img/image-removebg-preview.png" alt="">
 					<form class="row login_form" id="register_form" method="post">
 						<div class="col-md-12 form-group">
 			
@@ -250,8 +255,6 @@ require_once('header.php') ?>
 </section>
 
 <!--================End Login Box Area =================-->
-
-
 
 <!--================ Start footer Area  =================-->
 <?php require_once('footer.php'); ?>

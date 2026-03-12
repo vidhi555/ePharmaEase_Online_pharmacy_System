@@ -88,7 +88,7 @@ require_once('header2.php');
         </div>
         <?php } ?>
         <div class="row justify-content-center min-vh-100 align-items-center">
-            <div class="col-11 col-sm-8 col-md-6 col-lg-4" style="width: auto;border-radius: 20px;background: aliceblue;padding: 37px;box-shadow: 0 8px 25px #303030;">
+            <div class="col-lg-6 col-12 col-md-12 " style="border-radius: 20px;background: aliceblue;padding: 37px;box-shadow: 0 8px 25px #303030;">
 
                 <!-- Logo -->
                 <div class="text-center mb-4">
@@ -103,7 +103,7 @@ require_once('header2.php');
 
                     <!-- Name Input -->
                     <div class="mb-3 position-relative">
-                        <label for="name" class="form-label text-muted small">Name</label>
+                        <label for="name" class="form-label text-muted small">Name</label><span style="color: darkred;font-size: 20px;">*</span>
                         <?php if(!empty($errors)){ ?>
                             <span style="<?= $class ?>">*</span>
                         <?php  } ?>
@@ -116,7 +116,7 @@ require_once('header2.php');
 
                     <!-- Email Input -->
                     <div class="mb-3 position-relative">
-                        <label for="email" class="form-label text-muted small">Email</label>
+                        <label for="email" class="form-label text-muted small">Email</label><span style="color: darkred;font-size: 20px;">*</span>
                         <?php if(!empty($errors)){ ?>
                             <span style="<?= $class ?>">*</span>
                         <?php  } ?>
@@ -129,7 +129,7 @@ require_once('header2.php');
 
                     <!-- Password Input -->
                     <div class="mb-4 position-relative">
-                        <label for="password" class="form-label text-muted small">Password</label>
+                        <label for="password" class="form-label text-muted small">Password</label><span style="color: darkred;font-size: 20px;">*</span>
                         <?php if(!empty($errors)){ ?>
                             <span style="<?= $class ?>">*</span>
                         <?php  } ?>
@@ -141,13 +141,13 @@ require_once('header2.php');
 
                     <!-- Mobile Input -->
                     <div class="mb-3 position-relative">
-                        <label for="mobile" class="form-label text-muted small">Mobile No.</label>
+                        <label for="mobile" class="form-label text-muted small">Mobile No.</label><span style="color: darkred;font-size: 20px;">*</span>
                         <?php if(!empty($errors)){ ?>
                             <span style="<?= $class ?>">*</span>
                         <?php  } ?>
                         <div class="position-relative">
-                            <input id="phone" type="tel" name="phone" style="<?= $class ?>" class="form-control" placeholder="00000 00000" value="<?= isset($_POST['phone']) ? htmlspecialchars($_POST['phone']) : '' ?>" >
-
+                            <!-- <input id="phone" type="tel" name="phone" style="<?= $class ?>" class="form-control" value="<?= isset($_POST['phone']) ? htmlspecialchars($_POST['phone']) : '' ?>" > -->
+<input type="tel" name="phone" id="phone" style="width: 586px;<?= $class ?>" class="form-control" maxlength="10" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
                            
                             <i class="fas fa-mobile-alt input-icon"></i>
                         </div>
@@ -157,7 +157,7 @@ require_once('header2.php');
 
                     <!-- Address Input -->
                     <div class="mb-3 position-relative">
-                        <label for="address" class="form-label text-muted small">Address</label>
+                        <label for="address" class="form-label text-muted small">Address</label><span style="color: darkred;font-size: 20px;">*</span>
                         <?php if(!empty($errors)){ ?>
                             <span style="<?= $class ?>">*</span>
                         <?php  } ?>
@@ -171,7 +171,7 @@ require_once('header2.php');
 
                     <!-- Gender Input -->
                     <div class="mb-3 position-relative">
-                        <label for="gender" class="form-label text-muted small">Gender</label>
+                        <label for="gender" class="form-label text-muted small">Gender</label><span style="color: darkred;font-size: 20px;">*</span>
                         <?php if(!empty($errors)){ ?>
                             <span style="<?= $class ?>">*</span>
                         <?php  } ?>

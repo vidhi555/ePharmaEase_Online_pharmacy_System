@@ -102,115 +102,72 @@
 <script src="vendors/mail-script.js"></script>
 <script src="js/main.js"></script>
 <script src="new_css/js/bootstrap.min.js"></script>
+<!-- This used for animation on scroll -->
+<script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script> 
 
+	
 <!-- Phone number JS Library -->
 <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@18.1.1/build/js/intlTelInput.min.js"></script>
 
 <!-- this used for mobile numbers validations -->
-<script src="https://cdn.jsdelivr.net/npm/intl-tel-input@18.1.1/build/js/utils.js"></script> 
-<!-- This used for animation on scroll -->
-<script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script> 
+<script src="https://cdn.jsdelivr.net/npm/intl-tel-input@18.1.1/build/js/utils.js"></script>
 <script>
-document.addEventListener("DOMContentLoaded", function () {
+    document.addEventListener("DOMContentLoaded", function() {
 
-    var input = document.querySelector("#phone");
+        var input = document.querySelector("#phone");
 
-    var iti = window.intlTelInput(input, {
+        var iti = window.intlTelInput(input, {
 
-        initialCountry: "auto",   // it will Auto detect country
-        geoIpLookup: function(callback) {
-            fetch("https://ipapi.co/json")
-                .then(res => res.json())
-                .then(data => callback(data.country_code))
-                .catch(() => callback("in")); // fallback India
-        },
-        separateDialCode: false,
-        utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@18.1.1/build/js/utils.js"
+            initialCountry: "auto", // it will Auto detect country
+            geoIpLookup: function(callback) {
+                fetch("https://ipapi.co/json")
+                    .then(res => res.json())
+                    .then(data => callback(data.country_code))
+                    .catch(() => callback("in")); // fallback India
+            },
+
+            // onlyCountries: ["in", "us","uk"],  // Restrict to India + USA
+            separateDialCode: false,
+            utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@18.1.1/build/js/utils.js"
+        });
+
+        // Validate + Store Full Number
+        document.querySelector("#register_form").addEventListener("submit", function(e) {
+
+            // Check empty
+            // if (input.value.trim() === "") {
+            //     alert("Phone number is required");
+            //     e.preventDefault();
+            //     return;
+            // }
+
+            // Validate number length according to country
+            // if (!iti.isValidNumber()) {
+            //     alert("Please enter a valid phone number according to selected country");
+            //     e.preventDefault();
+            //     return;
+            // }
+
+            // Store full international number
+            input.value = iti.getNumber();
+        });
+
+
     });
 
-    // Validate + Store Full Number
-   document.querySelector("#register_form").addEventListener("submit", function(e) {
-
-    // Check empty
-    if (input.value.trim() === "") {
-        alert("Phone number is required");
-        e.preventDefault();
-        return;
-    }
-
-    // Validate number length according to country
-    if (!iti.isValidNumber()) {
-        alert("Please enter a valid phone number according to selected country");
-        e.preventDefault();
-        return;
-    }
-
-    // Store full international number
-    input.value = iti.getNumber();
-});
-
-
-});
-
-  $(document).ready(function() {
-
-    function load_products(page = 1) {
-
-      let category_id = $('input[name="category"]:checked').val();
-      let search = $('#live_search').val();
-      let sort = $('#filter_by_status').val();
-      let max_price = $('#priceRange').val();
-
-      $.ajax({
-        url: "load_products_ajax.php",
-        method: "POST",
-        data: {
-          page: page,
-          category_id: category_id,
-          search: search,
-          sort: sort,
-          max_price: max_price
-        },
-        success: function(data) {
-          $("#product-list").html(data);
-        }
-      });
-    }
-
-    // Category change
-    $(document).on("change", 'input[name="category"]', function() {
-      load_products();
-    });
-
-    // Search
-    $(document).on("keyup", "#live_search", function() {
-      load_products();
-    });
-
-    // Sort
-    $(document).on("change", "#filter_by_status", function() {
-      load_products();
-    });
-
-    // Price filter
-    $(".filter-btn").on("click", function() {
-      load_products();
-    });
-
-    // Pagination click
-    $(document).on("click", ".page-link", function(e) {
-      e.preventDefault();
-      let page = $(this).data("page");
-      load_products(page);
-    });
-
-  });
+</script>
+<script>
+  
 
 //Animatio on Scroll
   AOS.init({
     duration: 900,
     once: true
   });
+
+
+
+
 //   Used as: data-aos="fade-up" 
 // | Animation    | Effect                       |
 // | ------------ | ---------------------------- |

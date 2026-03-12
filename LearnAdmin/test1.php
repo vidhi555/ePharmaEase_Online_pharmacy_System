@@ -7,172 +7,166 @@ if (!isset($_SESSION['user'])) {
   header("Location: login.php");
   exit;
 }
-$table = "ep_products";
-
-//Add New Products
+$table = "ep_category";
 if (isset($_POST['submit'])) {
-
-  //collect user input
-  $pname = $_POST['pname'];
-  $desc = $_POST['desc'];
-  $price = $_POST['price'];
-  $stock = $_POST['stock'];
-  $category = $_POST['category'];
-  $edate = $_POST['edate'];
-  $status = $_POST['status'];
-
+  $cname = $_POST['categoryName'];
+  $cdesc = $_POST['categoryDesc'];
 
   //image upload
-  $pimg = $_FILES['pimg']['name'];
-  $tempimg = $_FILES['pimg']['tmp_name'];
+  $pimg = $_FILES['categoryimg']['name'];
+  $tempimg = $_FILES['categoryimg']['tmp_name'];
   $ext = pathinfo($pimg, PATHINFO_EXTENSION);
   $allowed = ['jpg', 'jpeg', 'png', 'webp'];
-  $img_name = "product_" . time() . "." . $ext;
+  $img_name = "category_" . time() . "." . $ext;
 
   $target = "All_images_uploads/" . basename($img_name);
   //move_uploaded_file($tempimg,$target);
-  $allowed = ['jpg', 'jpeg', 'png', 'webp'];
   if (!in_array(strtolower($ext), $allowed)) {
-    $message[] = "Invalid image format";
+    $errors[] = "Invalid image format!!";
   }
-
 
   if (!move_uploaded_file($tempimg, $target)) {
-    $message[] = "Image Fails";
+    $errors[] = "Image upload failed!!!";
+    // sweetAlert("Warning!", "Image upload failed!!", "warning");
+    // exit;
   }
 
-  //expiry date validation
-  $today = date('Y-m-d');
-  if ($edate < $today) {
-    echo "<script>alert('Date must be Greater than today!!!!')</script>";
-  }
-
-  //check required fields
-  if (
-    empty($pname) || empty($desc) || empty($price) ||
-    empty($stock) || empty($category) || empty($edate) || empty($pimg)
-  ) {
-    $message[] = "Please Fill required fields!!!";
-  } else {
-    try {
-
-      $query = insert($table, [
-        "name" => $pname,
-        "description" => $desc,
-        "stock" => $stock,
-        "price" => $price,
-        "image" => $img_name,
-        "c_id" => $category,
-        "expiry_date" => $edate,
-        "status" => $status
-      ]);
+  try {
 
 
-      if ($query) {
-        echo "<script>alert('Product Added Succefully!');</script>";
-        $message[] = "Product Added Successfully";
-      } else {
-        $message[] = "Product Not Added!!!";
-      }
-    } catch (PDOException $e) {
-      echo "Error:$e";
+    if (empty($cname) || empty($cdesc) || empty($pimg)) {
+      $errors[] = "All Fields are required!!!";
     }
+    if (empty($errors)) {
+      //ADD Category
+      $query = $conn->prepare("INSERT INTO `$table`(c_id, category_name,description ,cat_image) VALUES (null,'$cname','$cdesc','$img_name')");
+      $result = $query->execute();
+      if ($result) {
+        // echo "Category Added Successfuly";
+        sweetAlert("Added!!!", "Category Added Successfuly", "success");
+      } else {
+        // echo "Fail ";
+        sweetAlert("Fail!", "Category not Added!!!", "warning");
+      }
+    } else {
+      sweetAlert("Error!", "Something Went Wrong!!", "error");
+    }
+  } catch (PDOException $e) {
+    echo "Error:$e";
   }
 }
+if (isset($_POST['update'])) {
+  $id = $_POST['c_id'];
+  $cname = $_POST['categoryName'];
+  $cdesc = $_POST['categoryDesc'];
 
-//pagination
-$total_page = $conn->prepare("SELECT * FROM $table WHERE 1");
-$total_page->execute();
-
-
-
-
-
-//update products
-if (isset($_POST['edit'])) {
-  $id = $_POST['p_id'];
-  //collect user input
-  $pname = $_POST['pname'];
-  $desc = $_POST['desc'];
-  $price = $_POST['price'];
-  $stock = $_POST['stock'];
-  $category = $_POST['category'];
-  $edate = $_POST['edate'];
-  $status = $_POST['status'];
-
-  $data = [
-    "name" => $pname,
-    "description" => $desc,
-    "stock" => $stock,
-    "price" => $price,
-    "c_id" => $category,
-    "expiry_date" => $edate,
-    "status" => $status
-  ];
-  //check image
-  if (!empty($_FILES['pimg']['name'])) {
-
-    $pimg = $_FILES['pimg']['name'];
-    $tempimg = $_FILES['pimg']['tmp_name'];
-    $ext = pathinfo($pimg, PATHINFO_EXTENSION);
+  if (!empty($_FILES['cat_img']['name'])) {
+    //image upload
+    $updateimg = $_FILES['cat_img']['name'];
+    $tempimg = $_FILES['cat_img']['tmp_name'];
+    $ext = pathinfo($updateimg, PATHINFO_EXTENSION);
     $allowed = ['jpg', 'jpeg', 'png', 'webp'];
-    $img_name = "product_" . time() . "." . $ext;
+    $img_name = "category_" . time() . "." . $ext;
+    $size = $_FILES['cat_img']['size'];
+    $max_size = 2097152;
+
+    if ($size > $max_size) {
+      $errors[] = "Invalid Image Size!";
+    }
 
     $target = "All_images_uploads/" . basename($img_name);
-    $allowed = ['jpg', 'jpeg', 'png', 'webp'];
+    //move_uploaded_file($tempimg,$target);
     if (!in_array(strtolower($ext), $allowed)) {
-      $message[] = "Invalid image format";
+      $errors[] = "Invalid image format!!";
     }
-    move_uploaded_file($img_name, $target);
-    
+
+    if (!move_uploaded_file($tempimg, $target)) {
+      $errors[] = "Image upload failed!!!";
+      // sweetAlert("Warning!", "Image upload failed!!", "warning");
+      // exit;
+    }
+  } else {
+    $img_name = $_POST['old_image'];
   }
 
-
-
-  //  if(!empty($_FILES['pimg']['name'])){
-  //   //new image upload
-  //   $pimg = $_FILES['pimg']['name'];
-  //   $tempimg = $_FILES['pimg']['tmp_name'];
-  //   $ext = pathinfo($pimg , PATHINFO_EXTENSION);
-
-
-
-  //   $allowed = ['jpg','jpeg','png','webp'];
-  //   if(in_array(strtolower($ext), $allowed)){
-  //       $img_name = "editproduct_".time().".".$ext;
-  //       $target = "All_images_uploads/".basename($pimg);
-  //       move_uploaded_file($tempimg,$target);
-  //       $data["image"]= $pimg;
-  //   } 
-  //  }
-
-
-  $condition = "p_id = $id";
-  $query = update_record($table, $data, $condition);
-  if (!$query) {
-    echo "Updation Failed!!!";
+  $data = [
+    "category_name" => $cname,
+    "description" => $cdesc,
+    "cat_image" => $img_name
+  ];
+  $condition = "c_id = $id";
+  //update function call
+  $q = update_record($table, $data, $condition);
+  if (!$q) {
+    // $message = "Updation Fail";
+    sweetAlert("Warning!", "Updation Fail!Try Again!!!", "warning");
+  } else {
+    sweetAlert("Updated Successfully.", "", "success");
   }
 }
+if (isset($_POST['page'])) {
 
+  $search = $_POST['search'] ?? '';
+
+  $limit = 5;
+  $page = $_POST['page'];
+  $offset = ($page - 1) * $limit;
+
+  $q = $conn->prepare("SELECT * FROM ep_category WHERE category_name LIKE :search LIMIT $offset , $limit");
+  $q->execute([
+    'search' => $search . '%'
+  ]);
+  $data = $q->fetchAll(PDO::FETCH_ASSOC);
+
+  foreach ($data as $p) {
+?>
+    <tr>
+      <td><img src="All_images_uploads/<?= $p['cat_image'] ?>" alt="cat_img" width="90px" height="90px">
+        <?= $p['category_name'] ?></td>
+      <td><?= substr($p['description'], 0, 50) ?>...</td>
+      <td class="text-center">
+        <a class="btn btn-sm btn-warning mb-2 mb-lg-0 me-0 me-lg-2" href="view_category_page.php?c_id=<?= $p['c_id'] ?>"><i class="fa-regular fa-eye view-icon"></i></a>
+        <button type="button"
+          data-bs-toggle="modal"
+          data-bs-target="#categoryEditModal"
+          class="btn btn-sm btn-primary me-2"
+          data-cid="<?= $p['c_id'] ?>"
+          data-cname="<?= htmlspecialchars($p['category_name']) ?>"
+          data-cdesc="<?= htmlspecialchars($p['description']) ?>"
+          data-cimg="<?= $p['cat_image'] ?>"><i class="fa-regular fa-pen-to-square"></i></button>
+        <button class="btn btn-danger btn-sm" onclick="confirmDelete(<?= $p['c_id'] ?> , 'delete_category.php?c_id=')"><i class="fas fa-trash"></i></button>
+      </td>
+    </tr>
+<?php
+  }
+  // Split pagination content
+  echo "###pagination###";
+
+  // Pagination
+  $count_stmt = $conn->prepare("SELECT * FROM ep_category WHERE category_name LIKE :search");
+  $count_stmt->execute([
+    'search' => $search . '%'
+  ]);
+  $total =  $count_stmt->rowCount();
+  $pages = ceil($total / $limit);
+
+  if ($pages > 0) {
+    for ($i = 1; $i <= $pages; $i++) {
+      echo "<li class='page-item'>
+              <a href='#' class='page-link' data-page='$i'>$i</a>
+              </li>";
+    }
+  } else {
+    echo "<li>No records</li>";
+  }
+  exit;
+}
+
+$page_title = "Category";
+require_once("header2.php");
 
 ?>
-<!DOCTYPE html>
-<html lang="en">
 
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Products</title>
-  <!-- Stylesheets -->
-  <link rel="shortcut icon" href="./assets/images/logo6.ico" type="image/x-icon">
-  <link href="./assets/css/bootstrap.min.css" rel="stylesheet">
-  <link href="./assets/icons/fontawesome/css/fontawesome.min.css" rel="stylesheet">
-  <link href="./assets/icons/fontawesome/css/brands.min.css" rel="stylesheet">
-  <link href="./assets/icons/fontawesome/css/solid.min.css" rel="stylesheet">
-  <link href="./assets/plugin/quill/quill.snow.css" rel="stylesheet">
-  <link href="./assets/css/style5.css" rel="stylesheet">
-
-</head>
 
 <body>
   <!-- Preloader -->
@@ -183,85 +177,54 @@ if (isset($_POST['edit'])) {
   <div id="main-wrapper" class="d-flex">
     <?php
     //Sidebar content
-    include('sidebar.php');
+    include_once('sidebar.php');
     ?>
-
     <!-- Content Wrapper -->
     <div class="content-wrapper">
-
       <!-- Header -->
       <div class="header d-flex align-items-center justify-content-between">
         <?php
-        include('header.php');
+        $page_title = "Category page";
+        require_once('header.php');
         ?>
       </div>
-
       <!-- Main Content -->
       <div class="main-content">
         <div class="row">
           <div class="col-12">
-            <div class="d-flex align-items-lg-center  flex-column flex-md-row flex-lg-row mt-3">
+            <nav>
+              <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="index.php">Home</a></li>
+                <li class="breadcrumb-item active">Category</li>
+
+              </ol>
+            </nav>
+
+            <div class="category-header d-flex align-items-lg-center  flex-column flex-md-row flex-lg-row mt-3">
               <div class="flex-grow-1">
-                <h3 class="mb-2 text-size-26 text-color-2">Products</h3>
+                <h3 class="mb-2 text-color-2">Top Category</h3>
               </div>
               <div class="mt-3 mt-lg-0">
                 <div class="d-flex align-items-center">
+
                   <!-- Date Range Button -->
 
-                  <div class="cursor-pointer bg-white d-flex align-items-center text-color-1 px-3 py-2 rounded-2 text-normal fw-bolder letter-spacing-26 dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                    <!-- <i class="fa-solid fa-filter me-3"></i>
-                                      Filter by
-                                    <i class="fa-solid fa-chevron-right ms-3 text-size-sm"></i>
-                                    <ul class="dropdown-menu">
-                                      <li><a class="dropdown-item"  href="#">Active</a></li>
-                                      <li><a class="dropdown-item" href="#">Inactive</a></li>
-                                   </ul> -->
-                    <select class="cursor-pointer bg-white d-flex align-items-center text-color-1 px-3 py-2 rounded-2 text-normal fw-bolder letter-spacing-26" name="filter" id="">
-                      <option value="" selected="selected">Filter by</option>
-                      <option value="active"><a href="products.php?status='active'">Active</a></option>
-                      <option value="inactive"> <a href="products.php?status='inactive'">In-Active</option>
-                    </select>
+                  <div class="search-wrapper cursor-pointer bg-white d-flex align-items-center text-color-1 px-3 py-2 rounded-2 text-normal fw-bolder letter-spacing-26 dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    <div class="input-group flex-nowrap">
+                      <span style="border:none;" class="input-group-text bg-white " id="addon-wrapping"><i class="fa-solid search-icon fa-magnifying-glass text-color-1"></i></span>
+                      <input style="border:none;" type="text" id="livesearch" name="search" class="form-control search-input border-l-none ps-0" placeholder="Search Category" aria-label="Username" aria-describedby="addon-wrapping">
+                    </div>
                   </div>
                   <!-- Reports Button -->
-                  <a href="#" data-bs-toggle="modal" data-bs-target="#CreateModal" class="cursor-pointer ms-4 bg-white bg-primary text-white d-flex align-items-center px-3 py-2 rounded-2 text-normal fw-bolder letter-spacing-26">
+                  <a href="#" data-bs-toggle="modal" data-bs-target="#courseCreateModal" class="cursor-pointer ms-4 bg-white bg-primary text-white d-flex align-items-center px-3 py-2 rounded-2 text-normal fw-bolder letter-spacing-26">
                     <i class="fa-solid fa-plus me-3"></i>
-                    Add Products
+                    Add Category
                   </a>
                 </div>
               </div>
             </div><!-- end card header -->
           </div>
           <!--end col-->
-          <?php
-          // if(isset($_POST['search'])){
-          //   $search = $_POST['search'];
-
-          // $q = $conn->prepare("SELECT * FROM ep_products WHERE name = :search");
-          // $q->execute(['search'=>$search]);
-          //   $fetch1 = $q->fetchAll(PDO::FETCH_ASSOC);
-          //   foreach($fetch1 as $row){
-
-          //   }
-          // }
-          ?>
-          <div class="col-6">
-            <div class="d-flex align-items-center">
-
-              <div class="d-none d-md-block d-lg-block">
-                <form action="test1.php" method="post">
-                  <div class="input-group flex-nowrap">
-                    <span class="input-group-text bg-white " id="addon-wrapping"><i class="fa-solid search-icon fa-magnifying-glass text-color-1"></i></span>
-                    <input type="text" name="search" class="form-control search-input border-l-none ps-0" placeholder="Search Product Name" aria-label="Username" aria-describedby="addon-wrapping">
-
-                    <!-- Small Search Button -->
-                    <button name="searchbtn" type="submit" class="btn btn-sm btn-outline-secondary ms-2">
-                      <i class="fa-solid fa-magnifying-glass"></i>
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
         </div>
         <div class="mt-4">
           <div class="card shadow-sm border-0">
@@ -270,102 +233,16 @@ if (isset($_POST['edit'])) {
                 <table class="table align-middle">
                   <thead>
                     <tr>
-                      <th><input type="checkbox" id="select-all" class="custom-checkbox"></th>
-                      <th>Product Name</th>
+                      <!-- <th><input type="checkbox" id="select-all" class="custom-checkbox"></th> -->
+
+
+                      <th>Category Name</th>
                       <th>Description</th>
-                      <th>Price</th>
-                      <th>Stock</th>
-                      <th>Category</th>
-                      <th>Expiry Date</th>
-                      <th>Status</th>
-                      <th class="text-center"><i class="fas fa-ellipsis-h"></i></th>
+
+                      <th class="text-center">Action</th>
                     </tr>
                   </thead>
-                  <tbody>
-
-                    <?php
-
-
-
-                    //pagination - display products accordingly
-                    $limit = 5;
-                    if (isset($_GET['page'])) {
-                      //if you click on pagination button - product.php?page = 2
-                      $page = $_GET['page'];
-                    } else {
-                      //default it redirect first button(Diplay first 5 records)
-                      $page = 1;
-                    }
-                    $offset = ($page - 1) * $limit;
-                    //Search by customer
-                    if (isset($_POST['searchbtn'])) {
-                      $search = $_POST['search'];
-
-                      $res = $conn->prepare("SELECT * FROM ep_products WHERE name LIKE %$search%");
-                      $res->execute();
-                    } else {
-                      $q = "SELECT p.p_id, c.category_name, p.name, p.description,
-                                  p.stock, p.price, p.image, p.expiry_date, p.status
-                                  FROM ep_products p
-                                  JOIN ep_category c ON p.c_id = c.c_id
-                                  
-                                  LIMIT {$offset} , {$limit}
-                                  ";
-                      $res = $conn->prepare($q);
-                      $res->execute();
-                    }
-
-                    $products = $res->fetchAll(PDO::FETCH_ASSOC);
-                    foreach ($products as $p) {
-                    ?>
-                      <tr>
-                        <td><input type="checkbox" class="custom-checkbox row-checkbox"></td>
-                        <td>
-                          <div class="d-flex justify-content-start align-items-center">
-                            <img src="./All_images_uploads/<?= $p['image'] ?>" class="tbl-img" alt="img">
-                            <span class="ms-2"><?= $p['name'] ?></span>
-                          </div>
-                        </td>
-                        <!-- <td><img class="tbl-img"  src="All_images_uploads/<?= $p['image'] ?>" alt=""></td> -->
-                        <td><?= $p['description'] ?></td>
-                        <td>$<?= $p['price'] ?></td>
-                        <td><?= $p['stock'] ?></td>
-                        <td>
-                          <?= $p['category_name']  ?>
-                        </td>
-                        <td><?= $p['expiry_date'] ?></td>
-                        <td><span class="badge bg-success">Active</span></td>
-                        <td class="text-center">
-
-                          <!-- <a href="edit.php?p_id=<?= $p['p_id'] ?>" name="update" data-bs-toggle="modal" data-bs-target="#EditModal" class="btn btn-sm btn-primary mb-2 mb-lg-0 me-0 me-lg-2"><i class="fa-regular fa-pen-to-square"></i></a> -->
-
-                          <button type="button"
-                            class="btn btn-sm btn-primary mb-2 mb-lg-0 me-0 me-lg-2"
-                            data-bs-toggle="modal"
-                            data-bs-target="#EditModal"
-
-                            data-id="<?= $p['p_id'] ?>"
-                            data-name="<?= htmlspecialchars($p['name']) ?>"
-                            data-desc="<?= htmlspecialchars($p['description']) ?>"
-                            data-price="<?= $p['price'] ?>"
-                            data-stock="<?= $p['stock'] ?>"
-                            data-expiry="<?= $p['expiry_date'] ?>"
-                            data-status="<?= $p['status'] ?>"
-                            data-category="<?= $p['category_name']  ?>"
-                            data-img="<?= $p['image'] ?>">
-                            <i class="fa-regular fa-pen-to-square"></i>
-                          </button>
-
-                          <!-- <a href="edit.php?p_id=<?= $p['p_id'] ?>" class="btn btn-sm btn-primary mb-2 mb-lg-0 me-0 me-lg-2"><i class="fa-regular fa-pen-to-square"></i></a> -->
-                          <a href="delete_product.php?p_id=<?= $p['p_id'] ?>" class="btn btn-sm btn-danger"><i class="fa-solid fa-trash-can"></i></a>
-
-                        </td>
-                      </tr>
-                    <?php
-                    }
-
-
-                    ?>
+                  <tbody id="result">
 
                   </tbody>
                 </table>
@@ -373,48 +250,11 @@ if (isset($_POST['edit'])) {
 
               <div class="pb-3 ps-3 mt-3 d-flex justify-content-center justify-content-md-between justify-content-lg-between flex-wrap flex-md-nowrap">
                 <nav aria-label="Page navigation" class="mb-3 mb-md-0 mb-lg-0">
-                  <ul class="pagination">
-                    <?php
-                    $q = $conn->prepare("SELECT p.p_id, c.category_name, p.name, p.description,
-                                        p.stock, p.price, p.image, p.expiry_date, p.status
-                                        FROM ep_products p
-                                        JOIN ep_category c ON p.c_id = c.c_id
-                                        ORDER BY p.price DESC");
-                    $q->execute();
-                    $count = $q->fetchColumn();
-                    // echo $count;
-                    if ($count > 0) {
-                      $pages = ceil($count / $limit);  //find total pages of all records per limit
-                    ?>
-                      <li class="page-item">
-                        <?php if ($page > 1) { ?>
-                          <a class="page-link" href="products.php?page=<?= $page - 1 ?>" aria-label="Previous"><i class="fa-solid fa-chevron-left text-size-12"></i></a>
-                        <?php } ?>
-                      </li>
-                      <?php
-                      for ($i = 1; $i <= $pages; $i++) {
-                      ?>
-                        <li class="page-item"><a class="page-link" href="products.php?page=<?= $i ?>"><?php echo $i; ?></a></li>
-                      <?php
-                      } ?>
-                      <li class="page-item">
-                        <?php if ($page < $pages) { ?>
-                          <a class="page-link" href="products.php?page=<?= $page + 1 ?>" aria-label="Next"><i class="fa-solid fa-chevron-right text-size-12"></i></a>
-                        <?php } ?>
-                      </li>
+                  <ul class="pagination" id="pagination">
 
-                    <?php } ?>
-                    <!-- <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                              <li class="page-item"><a class="page-link" href="#">2</a></li>
-                              <li class="page-item"><a class="page-link" href="#"><i class="fas fa-ellipsis-h"></i></a></li>
-                              <li class="page-item"><a class="page-link" href="#">6</a></li>
-                              <li class="page-item"><a class="page-link" href="#">7</a></li>
-                              <li class="page-item">
-                                <a class="page-link" href="#" aria-label="Next"><i class="fa-solid fa-chevron-right text-size-12"></i></a>
-                              </li> -->
                   </ul>
                 </nav>
-                <div class="d-flex justify-content-end">
+                <!-- <div class="d-flex justify-content-end">
                   <div class="page-selector">
                     <span>PAGE</span>
                     <select class="form-select" aria-label="Select page">
@@ -424,215 +264,139 @@ if (isset($_POST['edit'])) {
                       <option value="4">4</option>
                       <option value="5">5</option>
                     </select>
-                    <span>OF 102</span>
+                    <span>OF 100</span>
                   </div>
-                </div>
+                </div> -->
               </div>
             </div>
           </div>
         </div>
       </div>
       <!-- Footer -->
-      <?php include('footer.php'); ?>
+      <?php
+      include('footer.php');
+      ?>
     </div>
+
 
     <!--Create  Modal -->
-    <div class="modal fade" id="CreateModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal fade" id="courseCreateModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-dialog-scrollable">
         <div class="modal-content rounded-0">
           <div class="modal-body p-4 position-relative">
             <button type="button" class="btn position-absolute end-1" data-bs-dismiss="modal" aria-label="Close"><i class="fas fa-times"></i></button>
-            <h2 class="h5 text-color-2 py-2">Create Product</h2>
+            <h2 class="h5 text-color-2 py-2">Create Category</h2>
             <form class="row g-3" method="post" enctype="multipart/form-data">
+              <!-- <input type="hidden" name="c_id"> -->
               <div class="col-12">
-                <label for="Product_name" class="form-label text-color-2 text-normal">Product Name</label>
-                <input type="text" name="pname" class="form-control" id="Product_name" placeholder="Enter product name">
+                <label for="categoryName" class="form-label text-color-2 text-normal">Category Name</label>
+                <input type="text" class="form-control" name="categoryName" id="categoryName" placeholder="e.g. Eye Care">
               </div>
               <div class="col-12">
-                <label for="Product_desc" class="form-label text-color-2 text-normal">Description</label>
-                <input type="text" name="desc" class="form-control" id="Product_desc" placeholder="Enter Description">
+                <label for="desc" class="form-label text-color-2 text-normal">Category Description</label>
+                <input type="text" class="form-control" name="categoryDesc" id="categorydesc" placeholder="Description">
               </div>
-              <div class="col-6">
-                <label for="price" class="form-label text-color-2 text-normal">Price</label>
-                <input type="number" name="price" class="form-control" id="price" placeholder="Enter Price">
-              </div>
-              <div class="col-6">
-                <label for="stock" class="form-label text-color-2 text-normal">Stock</label>
-                <input type="number" name="stock" class="form-control" id="stock" placeholder="Enter Stock">
-              </div>
-
-              <div class="col-6">
-                <label for="edate" class="form-label text-color-2 text-normal">Expiry Date</label>
-                <input type="date" name="edate" class="form-control" id="edate" min="<?= date('Y-m-d') ?>" placeholder="mm/dd/yyyy">
-              </div>
-              <div class="col-6">
-                <label for="status" class="form-label text-color-2 text-normal">Status</label>
-                <select id="status" name="status" class="form-select text-normal">
-                  <option value="">Choose Status</option>
-                  <option value="Active">Active</option>
-                  <option value="In-Active">In-Active</option>
-                </select>
-              </div>
-
               <div class="col-12">
-                <label for="UserEducation" class="form-label text-color-2 text-normal">Category</label>
-                <select id="UserEducation" name="category" class="form-select text-normal">
-                  <option value="" selected="selected" disabled>Choose Category</option>
-                  <?php
-                  $q = "SELECT * FROM ep_category";
-                  $res = $conn->prepare($q);
-
-                  if ($res->execute()) {
-                    $fetch_row = $res->fetchAll(PDO::FETCH_ASSOC);
-                    // echo $fetch_row['category_name'];
-                    foreach ($fetch_row as $r) {
-                      echo "<option value='{$r['c_id']}'>" . $r['category_name'] . "</option>";
-                    }
-                  } else {
-                    echo "Fail";
-                  }
-                  ?>
-
-                </select>
-              </div>
-
-              <div class="col-12">
-                <label class="form-label text-color-2 text-normal">Product Image</label>
-                <input type="file" name="pimg" class="form-control">
-                <div class="file-input-container max-w-100">
-                  <!-- <input type="file" id="fileInput" name="pimg" class="file-input">
-                        <label for="fileInput" class="file-label">
-                          <span class="file-name">Choose file</span>
-                          <span class="file-button">Browse</span>
-                        </label> -->
-
-
-                </div>
+                <label for="catimg" class="form-label text-color-2 text-normal">Upload Image</label>
+                <input type="file" class="form-control" name="categoryimg" id="categoryImg">
               </div>
 
               <div class="col-12 mt-5">
-                <button type="submit" name="submit" class="btn bg-white bg-primary text-white d-flex align-items-center px-4 py-2 rounded-2 text-normal fw-bolder letter-spacing-26">ADD Product</button>
+                <button type="submit" name="submit" class="btn bg-white bg-primary text-white d-flex align-items-center px-4 py-2 rounded-2 text-normal fw-bolder letter-spacing-26">Save Informations</button>
               </div>
             </form>
           </div>
         </div>
       </div>
     </div>
-
 
     <!--Edit  Modal -->
-    <div class="modal fade" id="EditModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal fade" id="categoryEditModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-dialog-scrollable">
         <div class="modal-content rounded-0">
           <div class="modal-body p-4 position-relative">
             <button type="button" class="btn position-absolute end-1" data-bs-dismiss="modal" aria-label="Close"><i class="fas fa-times"></i></button>
-            <h2 class="h5 text-color-2 py-2">Edit Student</h2>
-            <form class="row g-3" method="post">
-              <input type="hidden" name="p_id" id="edit_p_id">
-
+            <h2 class="h5 text-color-2 py-2">Edit Category</h2>
+            <form class="row g-3" method="post" enctype="multipart/form-data">
+              <input type="hidden" name="c_id" id="edit_cid">
               <div class="col-12">
-                <label for="Product_name" class="form-label text-color-2 text-normal">Product Name</label>
-                <input type="text" name="pname" class="form-control" id="edit_pname" placeholder="Enter product name">
+                <label for="edit_category" class="form-label text-color-2 text-normal">Category Name</label>
+                <input type="text" name="categoryName" class="form-control" id="edit_category" placeholder="e.g. Oral care">
               </div>
               <div class="col-12">
-                <label for="Product_desc" class="form-label text-color-2 text-normal">Description</label>
-                <input type="text" name="desc" class="form-control" id="edit_desc" placeholder="Enter Description">
+                <label for="desc" class="form-label text-color-2 text-normal">Category Description</label>
+                <input type="text" class="form-control" name="categoryDesc" id="categorydescedit" placeholder="Description">
               </div>
-              <div class="col-6">
-                <label for="price" class="form-label text-color-2 text-normal">Price</label>
-                <input type="number" name="price" class="form-control" id="edit_price" placeholder="Enter Price">
-              </div>
-              <div class="col-6">
-                <label for="stock" class="form-label text-color-2 text-normal">Stock</label>
-                <input type="number" name="stock" class="form-control" id="edit_stock" placeholder="Enter Stock">
-              </div>
-
-              <div class="col-6">
-                <label for="edate" class="form-label text-color-2 text-normal">Expiry Date</label>
-                <input type="date" name="edate" class="form-control" min="<?= date('Y-m-d') ?>" id="edit_edate" placeholder="mm/dd/yyyy">
-              </div>
-              <div class="col-6">
-                <label for="status" class="form-label text-color-2 text-normal">Status</label>
-                <select name="status" id="edit_status" class="form-select text-normal">
-                  <option value="">Choose Status</option>
-                  <option value="Active">Active</option>
-                  <option value="In-Active">In-Active</option>
-                </select>
-              </div>
-
               <div class="col-12">
-                <label for="edit_category" class="form-label text-color-2 text-normal">Category</label>
-                <select id="edit_category" name="category" class="form-select text-normal">
-                  <option value="" selected="selected" disabled>Choose Category</option>
-                  <?php
-                  $q = "SELECT * FROM ep_category";
-                  $res = $conn->prepare($q);
-
-                  if ($res->execute()) {
-                    $fetch_row = $res->fetchAll(PDO::FETCH_ASSOC);
-                    // echo $fetch_row['category_name'];
-                    foreach ($fetch_row as $r) {
-                      echo "<option value='{$r['c_id']}'>" . $r['category_name'] . "</option>";
-                    }
-                  } else {
-                    echo "Fail";
-                  }
-                  ?>
-
-                </select>
-              </div>
-
-              <div class="col-12">
-                <label class="form-label text-color-2 text-normal">Product Image</label>
-                <input type="file" name="pimg" id="edit_img" class="form-control">
-                <div class="file-input-container max-w-100">
-                  <!-- <input type="file" id="fileInput" name="pimg" class="file-input">
-                        <label for="fileInput" class="file-label">
-                          <span class="file-name">Choose file</span>
-                          <span class="file-button">Browse</span>
-                        </label> -->
-
-
-                </div>
+                <input type="hidden" id="old_image" name="old_image">
+                <label for="catimg" class="form-label text-color-2 text-normal">Upload Image</label>
+                <img src="" id="edit_img_prev" alt="img" width="100px" height="100px" srcset="">
+                <input type="file" class="form-control" name="cat_img" id="categoryImgedit">
               </div>
 
               <div class="col-12 mt-5">
-                <button type="submit" name="edit" class="btn bg-white bg-primary text-white d-flex align-items-center px-4 py-2 rounded-2 text-normal fw-bolder letter-spacing-26">Update Product</button>
+                <button type="submit" name="update" class="btn bg-white bg-primary text-white d-flex align-items-center px-4 py-2 rounded-2 text-normal fw-bolder letter-spacing-26">Update Informations</button>
               </div>
             </form>
-
-
           </div>
         </div>
       </div>
     </div>
 
+
     <script>
-      document.getElementById('EditModal').addEventListener('show.bs.modal', function(event) {
+      // Pagination + Search
 
-        let btn = event.relatedTarget;
+      function loadData(page = 1) {
+        let search = document.getElementById("livesearch").value;
 
-        document.getElementById('edit_p_id').value = btn.getAttribute('data-id');
-        document.getElementById('edit_pname').value = btn.getAttribute('data-name');
-        document.getElementById('edit_desc').value = btn.getAttribute('data-desc');
-        document.getElementById('edit_price').value = btn.getAttribute('data-price');
-        document.getElementById('edit_stock').value = btn.getAttribute('data-stock');
-        document.getElementById('edit_edate').value = btn.getAttribute('data-expiry');
-        document.getElementById('edit_status').value = btn.getAttribute('data-status');
-        document.getElementById('edit_img').value = btn.getAttribute('data-img');
+        $.ajax({
+          url: window.location.href,
+          method: "POST",
+          data: {
+            page: page,
+            search: search
+          },
+          success: function(data) {
 
+            let parts = data.split("###pagination###");
+
+            $("#result").html(parts[0]);
+            $("#pagination").html(parts[1]);
+          }
+        });
+      }
+
+
+
+      // click pagination
+      $(document).on("click", ".page-link", function(e) {
+        e.preventDefault();
+        var page = $(this).data("page");
+        loadData(page);
+      });
+      $(document).ready(function() {
+        $(document).on("keyup", "#livesearch", function() {
+          var a = $(this).val();
+          // alert(a);
+          loadData(1);
+          // loadPagination();
+        })
+      })
+
+      // first load
+      loadData();
+      // loadPagination();
+    </script>
+    <script>
+      //add event listner
+      document.getElementById('categoryEditModal').addEventListener('show.bs.modal', function(event) {
+        let btn = event.relatedTarget; //helps to load extra data attributes(data-*)
+        let image = btn.getAttribute('data-cimg');
+        document.getElementById('edit_cid').value = btn.getAttribute('data-cid');
+        document.getElementById('edit_category').value = btn.getAttribute('data-cname');
+        document.getElementById('categorydescedit').value = btn.getAttribute('data-cdesc');
+        document.getElementById('old_image').value = image;
+        document.getElementById('edit_img_prev').src = "All_images_uploads/" + image;
       });
     </script>
-
-
-    <!-- Scripts -->
-    <script src="./assets/js/jquery-3.6.0.min.js"></script>
-    <script src="./assets/js/bootstrap.bundle.min.js"></script>
-    <script src="./assets/plugin/chart/chart.js"></script>
-    <script src="./assets/plugin/quill/quill.js"></script>
-    <script src="./assets/js/chart.js"></script>
-    <script src="./assets/js/main.js"></script>
-    <script src="./js/bootstrap.min.js"></script>
-</body>
-
-</html>

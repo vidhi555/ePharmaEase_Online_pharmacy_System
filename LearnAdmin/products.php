@@ -34,7 +34,6 @@ if (isset($_POST['page'])) {
 
   if ($fstatus != '') {
     // map dropdown values to DB values
-
     $where .= " AND (status = :sttus) ";
   }
   $q = $conn->prepare("SELECT p.* , c.category_name FROM ep_products p JOIN ep_category c ON p.c_id = c.c_id $where LIMIT $offset , $limit");
@@ -46,10 +45,8 @@ if (isset($_POST['page'])) {
   }
   $q->execute();
   $data = $q->fetchAll(PDO::FETCH_ASSOC);
-
-
-
   foreach ($data as $p) {
+
     // // getimages
     // $get_image  = $conn->prepare("SELECT * FROM ep_image_gallery WHERE p_id = :pid");
     // $get_image->execute(['pid' => $p['p_id']]);
@@ -58,12 +55,15 @@ if (isset($_POST['page'])) {
     //   echo $fi['image_name'];
     //   die();
     // }
-    
 ?>
     <tr class="text-center">
+
       <!-- <td><input type="checkbox" class="custom-checkbox row-checkbox"></td> -->
       <td>
-        <div class="d-flex justify-content-start align-items-center">
+        <?php if ($p['stock'] <= 1 || $p['expiry_date'] < date('Y-m-d')) { ?>
+          <span class="alert-badge">Alert</span>
+        <?php } ?>
+        <div class="d-flex justify-content-start align-items-center" style="width: 300px;word-wrap: break-word;white-space: normal;">
           <img src="./All_images_uploads/<?= $p['image'] ?>" class="tbl-img" alt="img">
           <span class="ms-2"><?= ucfirst($p['name']) ?></span>
         </div>
@@ -86,11 +86,8 @@ if (isset($_POST['page'])) {
       <td><?= date("d/m/Y", strtotime($p['expiry_date'])) ?></td>
       <td><?= $p['status'] == "Active" ? "<span class='badge bg-success'>Active</span>" : "<span class='badge bg-warning'>In-active</span>" ?></td>
       <td class="text-center">
+        <a data-bs-toggle="tooltip" title="View" class="btn btn-sm btn-warning mb-2 mb-lg-0 me-0 me-lg-2" href="view_product_detail.php?p_id=<?= $p['p_id'] ?>"><i class="fa-regular fa-eye view-icon"></i></a>
 
-        <!-- <a href="edit.php?p_id=<?= $p['p_id'] ?>" name="update" data-bs-toggle="modal" data-bs-target="#EditModal" class="btn btn-sm btn-primary mb-2 mb-lg-0 me-0 me-lg-2"><i class="fa-regular fa-pen-to-square"></i></a> -->
-        <a class="btn btn-sm btn-warning mb-2 mb-lg-0 me-0 me-lg-2" href="view_product_detail.php?p_id=<?= $p['p_id'] ?>"><i class="fa-regular fa-eye view-icon"></i></a>
-
-        
         <button type="button"
           class="btn btn-sm btn-primary mb-2 mb-lg-0 me-0 me-lg-2"
           data-bs-toggle="modal"
@@ -107,16 +104,48 @@ if (isset($_POST['page'])) {
           data-img="<?= $p['image'] ?>">
           <i class="fa-regular fa-pen-to-square"></i>
         </button>
-        <button class="btn btn-sm btn-danger" onclick="confirmDelete(<?= $p['p_id'] ?>,'delete_product.php?p_id=')"><i class="fa-solid fa-trash-can"></i></button>
+        <button  class="btn btn-sm btn-danger" onclick="confirmDelete(<?= $p['p_id'] ?>,'delete_product.php?p_id=')"><i class="fa-solid fa-trash-can"></i></button>
         <!-- <a href="delete_product.php?p_id=<?= $p['p_id'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?');"><i class="fa-solid fa-trash-can"></i></a> -->
 
       </td>
     </tr>
 <?php
   }
+
+  echo "###pagination###";
+  $limit = 5;
+
+  $where = "WHERE 1 ";
+  if ($input != '') {
+    $where .= " AND (name LIKE :input OR category_name LIKE :input) ";
+  }
+
+  if ($fstatus != '') {
+    $where .= " AND (status = :sttus) ";
+  }
+  $q = $conn->prepare("SELECT * FROM ep_products p JOIN ep_category c ON p.c_id = c.c_id $where");
+  if ($input != '') {
+    $q->bindValue(':input', $input . '%');
+  }
+  if ($fstatus != '') {
+    $q->bindValue(':sttus', $fstatus);
+  }
+  $q->execute();
+  $total = $q->rowCount();
+  $pages = ceil($total / $limit);
+  if ($pages > 0) {
+    for ($i = 1; $i <= $pages; $i++) {
+      echo "<li class='page-item'>
+              <a href='#' class='page-link' data-page='$i'>$i</a>
+              </li>";
+    }
+  } else {
+    echo "<li class='text-center text-muted'>No records</li>";
+  }
+
   exit;
 }
-// ==============================================================================
+
 $errors = [];
 
 //Add New Products
@@ -238,51 +267,50 @@ if (isset($_POST['submit'])) {
       // }
       $last_inserted_pid = $conn->lastInsertId();
 
-$num = 0;
+      $num = 0;
 
-foreach ($_FILES['pimg']['name'] as $key => $val) {
+      foreach ($_FILES['pimg']['name'] as $key => $val) {
 
-    if (!empty($_FILES['pimg']['name'][$key])) {
+        if (!empty($_FILES['pimg']['name'][$key])) {
 
-        $num++;
+          $num++;
 
-        $pimg = $_FILES['pimg']['name'][$key];
-        $tempimg = $_FILES['pimg']['tmp_name'][$key];
-        $size = $_FILES['pimg']['size'][$key];
+          $pimg = $_FILES['pimg']['name'][$key];
+          $tempimg = $_FILES['pimg']['tmp_name'][$key];
+          $size = $_FILES['pimg']['size'][$key];
 
-        $ext = strtolower(pathinfo($pimg, PATHINFO_EXTENSION));
-        $allowed = ['jpg','jpeg','png','webp'];
+          $ext = strtolower(pathinfo($pimg, PATHINFO_EXTENSION));
+          $allowed = ['jpg', 'jpeg', 'png', 'webp'];
 
-        //extension validation
-        if (!in_array($ext, $allowed)) {
+          //extension validation
+          if (!in_array($ext, $allowed)) {
             sweetAlert("Warning!", "Invalid image format!", "warning");
             continue;
-        }
+          }
 
-        //size validation 
-        if ($size > 2 * 1024 * 1024) {
+          //size validation 
+          if ($size > 2 * 1024 * 1024) {
             sweetAlert("Warning!", "Image size must be less than 2MB!", "warning");
             continue;
-        }
+          }
 
-        $img_name = "products_" . $last_inserted_pid . "_" . $num . "." . $ext;
+          $img_name = "products_" . $last_inserted_pid . "_" . $num . "." . $ext;
 
-        $target = "All_images_uploads/" . $img_name;
+          $target = "All_images_uploads/" . $img_name;
 
-        if (move_uploaded_file($tempimg, $target)) {
+          if (move_uploaded_file($tempimg, $target)) {
 
-         // FIRST IMAGE → MAIN IMAGE
-            if($num == 1){
+            // FIRST IMAGE → MAIN IMAGE
+            if ($num == 1) {
 
-                $conn->prepare("
+              $conn->prepare("
                 UPDATE ep_products 
                 SET image=:img 
                 WHERE p_id=:pid
                 ")->execute([
-                    'img'=>$img_name,
-                    'pid'=>$last_inserted_pid
-                ]);
-
+                'img' => $img_name,
+                'pid' => $last_inserted_pid
+              ]);
             }
             $insert_image = $conn->prepare("
                 INSERT INTO ep_image_gallery(image_name,p_id)
@@ -290,18 +318,16 @@ foreach ($_FILES['pimg']['name'] as $key => $val) {
             ");
 
             $insert_image->execute([
-                'img_name' => $img_name,
-                'pid' => $last_inserted_pid
+              'img_name' => $img_name,
+              'pid' => $last_inserted_pid
             ]);
-
-        } else {
+          } else {
             sweetAlert("Error!", "Image upload failed!", "error");
+          }
         }
+      }
 
-    }
-}
-
-sweetAlert("Success!", "Product Added Successfully", "success");
+      sweetAlert("Success!", "Product Added Successfully", "success");
     }
   } catch (PDOException $e) {
     sweetAlert("Error!", "$e", "error");
@@ -362,16 +388,23 @@ require_once('header2.php');
                     <i class="fa-solid fa-filter"></i>
                     <select id="filterbystatus" class="form-select text-size-sm" style="border: none;">
                       <option value="" selected="selected" disabled>Filter By</option>
+                      <option value="">All Products</option>
                       <option value="Active">Active</option>
                       <option value="In-Active">Inactive</option>
                     </select>
                   </div>
+                  <!-- <p data-bs-toggle="tooltip" title="Clear Filter">
+                    <button id="remove_filter" class="clear-filter-btn">
+                      <i class="fa-solid fa-ban"></i>
+                    </button>
+                  </p> -->
 
                   <!-- Reports Button -->
                   <a href="#" id="add_prod" data-bs-toggle="modal" data-bs-target="#CreateModal" class="cursor-pointer ms-4 bg-white bg-primary text-white d-flex align-items-center px-3 py-2 rounded-2 text-normal fw-bolder letter-spacing-26">
                     <i class="fa-solid fa-plus me-3"></i>
                     Add Products
                   </a>
+                  
                 </div>
               </div>
             </div><!-- end card header -->
@@ -399,38 +432,14 @@ require_once('header2.php');
                   </thead>
                   <tbody id="result">
 
-
-                    <!-- <button type="button"
-                              class="btn btn-sm btn-primary mb-2 mb-lg-0 me-0 me-lg-2"
-                              data-bs-toggle="modal"
-                              data-bs-target="#EditModal"
-
-                              data-id="<?= $p['p_id'] ?>"
-                              data-name="<?= htmlspecialchars($p['name']) ?>"
-                              data-desc="<?= htmlspecialchars($p['description']) ?>"
-                              data-price="<?= $p['price'] ?>"
-                              data-stock="<?= $p['stock'] ?>"
-                              data-expiry="<?= $p['expiry_date'] ?>"
-                              data-status="<?= $p['status'] ?>"
-                              data-category="<?= $p['c_id']  ?>"
-                              data-img="<?= $p['image'] ?>">
-                              <i class="fa-regular fa-pen-to-square"></i>
-                            </button> -->
-
                   </tbody>
                 </table>
               </div>
 
               <div class="pb-3 ps-3 mt-3 d-flex justify-content-center justify-content-md-between justify-content-lg-between flex-wrap flex-md-nowrap">
                 <nav aria-label="Page navigation" class="mb-3 mb-md-0 mb-lg-0">
-                  <!-- <ul class="pagination" id="pagination">
-                   
-                  </ul> -->
-                  <ul class="pagination">
-                    <?php
-                    $s = $_POST['search'] ?? '';
-                    createPagination("ep_products", "name", $s, 5);
-                    ?>
+                  <ul class="pagination" id="pagination">
+
                   </ul>
                 </nav>
                 <!-- <div class="d-flex justify-content-end">
@@ -632,14 +641,14 @@ require_once('header2.php');
               <input type="hidden" name="old_img" id="old_image" class="form-control">
               <div class="col-12">
                 <label class="form-label text-color-2 text-normal">Product Image</label>
-                <?php 
-                  //  $get_image  = $conn->prepare("SELECT * FROM ep_image_gallery WHERE p_id = :pid");
-                  //   $get_image->execute(['pid' => $p['p_id']]);
-                  //   $fetch_image = $get_image->fetchAll(PDO::FETCH_ASSOC);
-                  //   foreach ($fetch_image as $fi) {
-                  //     echo $fi['image_name'];
-                  //     die();
-                  //   }
+                <?php
+                //  $get_image  = $conn->prepare("SELECT * FROM ep_image_gallery WHERE p_id = :pid");
+                //   $get_image->execute(['pid' => $p['p_id']]);
+                //   $fetch_image = $get_image->fetchAll(PDO::FETCH_ASSOC);
+                //   foreach ($fetch_image as $fi) {
+                //     echo $fi['image_name'];
+                //     die();
+                //   }
                 ?>
                 <img src="" alt="product" id="edit_img_prev" style="height: 100px;width: 100px;border: 1px solid lightblue;">
                 <input type="file" name="pimg[]" class="form-control" multiple>
@@ -678,56 +687,11 @@ require_once('header2.php');
 
       });
     </script>
+    <script src="pagin_search_filter.js"></script>
     <script>
-      function loadData(page = 1) {
-        let search = document.getElementById("livesearch").value;
-        var filter_status = document.getElementById("filterbystatus").value;
-
-        $.ajax({
-          url: window.location.href,
-          type: "POST",
-          data: {
-            page: page,
-            search: search,
-            filter_status: filter_status
-          },
-          success: function(data) {
-            $("#result").html(data);
-          }
-        });
-      }
-
-      function loadPagination() {
-        $.ajax({
-          url: "pagination_category.php",
-          success: function(data) {
-            $("#pagination").html(data);
-          }
-        });
-      }
-
-      // click pagination
-      $(document).on("click", ".page-btn", function(e) {
-        e.preventDefault();
-        var page = $(this).data("page");
-        loadData(page);
-      });
-      $(document).ready(function() {
-        $(document).on("keyup", "#livesearch", function() {
-          var a = $(this).val();
-          // alert(a);
-          loadData(1);
-          loadPagination();
-        });
-      });
-      $(document).on("change", "#filterbystatus", function() {
-        var b = $(this).val();
-        // alert(b);
-        loadData(1);
-        loadPagination();
-      });
-
-      // first load
-      loadData();
-      loadPagination();
+       $(document).on("click", "#remove_filter", function() {
+      let search = $("#livesearch").val('');
+      var filter_status = $("#filter_by_rating").val('');
+      loadData(1);
+    });
     </script>

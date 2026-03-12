@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -36,4 +36,4 @@ if(isset($_POST['submit'])){
     $phone = $_POST['phone'];
     echo "Saved Phone Number: " . $phone;
 }
-?>
+?> -->

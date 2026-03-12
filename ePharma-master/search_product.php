@@ -10,6 +10,23 @@ $page_title = "Search Medicine";
 require_once('header.php');  ?>
 <!--================ End Header Menu Area =================-->
 
+ <!-- ================ start banner area ================= -->
+            <section class="blog-banner-area fade-up" id="category">
+                <div class="container h-100">
+                    <div class="blog-banner">
+                        <div class="text-center">
+                            <h1>Search</h1>
+                            <nav aria-label="breadcrumb" class="banner-breadcrumb">
+                                <ol class="breadcrumb">
+                                    <li class="breadcrumb-item"><a href="index.php">Home</a></li>
+                                    <li class="breadcrumb-item active" aria-current="page">Search</li>
+                                </ol>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <!-- ================ end banner area ================= -->
 <main class="site-main">
 
   <!-- Search start -->

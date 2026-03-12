@@ -24,6 +24,7 @@ require_once('header.php');
 				<nav aria-label="breadcrumb" class="banner-breadcrumb">
 					<ol class="breadcrumb">
 						<li class="breadcrumb-item"><a href="index.php">Home</a></li>
+						<li class="breadcrumb-item"><a href="login.php">Login</a></li>
 						<li class="breadcrumb-item active" aria-current="page">Fogot-password</li>
 					</ol>
 				</nav>
@@ -36,13 +37,13 @@ require_once('header.php');
 <!--================Forgot Password Box Area =================-->
 <section class="login_box_area section-margin">
 	<div class="container">
-		<div class="row">
+		<div class="row" style="box-shadow: 0 0 6px rgba(0, 0, 0, 0.8);">
 			<div class="col-lg-6">
 				<div class="login_box_img">
 					<div class="hover">
 						<h4>Recover your account?</h4>
 						<p>Enter your email and we’ll help you reset your password.</p>
-						<!-- <a class="button button-account" href="register.php">Create an Account</a> -->
+						<a class="button button-account" href="login.php">Back to Login</a>
 					</div>
 				</div>
 			</div>
@@ -126,7 +127,8 @@ Your trusted online pharmacy
 			?>
 			<div class="col-lg-6">
 				<div class="fp_form_inner">
-					<h3>Email Verification</h3>
+					<h3 style="text-transform: uppercase;">Email Verification</h3>
+					<img src="img/image-removebg-preview.png" alt="">
 					<form class="row fp_form" id="contactForm" method="post">
 						<div class="col-md-12 form-group">
 							<input type="text" class="form-control" id="email" name="email" placeholder="Enter Email" onfocus="this.placeholder = ''" onblur="this.placeholder = 'Enter Email'">

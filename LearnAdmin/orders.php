@@ -21,6 +21,8 @@ try {
     $check->execute(['oid' => $o_id]);
     $row = $check->fetch(PDO::FETCH_ASSOC);
 
+
+
     if (!$row) {
       sweetAlert("Invalid Order ID", "", "error");
     }
@@ -71,6 +73,11 @@ try {
         'pym' => $payment_status,
         'oid' => $o_id
       ]);
+      $payment_query = $conn->prepare("UPDATE ep_payment SET payment_status = 'paid' WHERE payment_method = 'Cash on Delivery' AND o_id = :oid");
+      $is_update = $query->execute([
+        'oid'=>$o_id
+      ]);
+
       if (!$is_update) {
         sweetAlert("Order not Updated!", "Check the Payment is Paid or not!", "warning");
         // if($currentStatus == 'delivered'){
@@ -86,7 +93,7 @@ try {
 }
 
 if (isset($_POST['page'])) {
-  $data = $_POST['values'];
+  $data = $_POST['filter_status'];
   $search = $_POST['search'];
 
   $limit = 5;
@@ -99,7 +106,7 @@ if (isset($_POST['page'])) {
   if ($data != '') {
     $where .= " AND order_status = :sts";
   }
-  if($search != ''){
+  if ($search != '') {
     $where .= ' AND (fname LIKE :search OR o_id LIKE :search) ';
   }
 
@@ -108,8 +115,8 @@ if (isset($_POST['page'])) {
   if ($data != '') {
     $query->bindValue(':sts', $data);
   }
-   if($search != ''){
-    $query->bindValue(':search',$search.'%');
+  if ($search != '') {
+    $query->bindValue(':search', $search . '%');
   }
   $query->execute();
 
@@ -125,7 +132,7 @@ if (isset($_POST['page'])) {
         <td>#<?= $order['o_id'] ?></td>
         <td><?= $order['u_id'] ?></td>
         <td><?= date('d/m/Y', strtotime($order['oder_date'])) ?></td>
-        <td><?= date('d/m/Y', strtotime($order['expected_date'])) ?></td>
+        <td><?= ($order['expected_date'] < date('Y-m-d') && $order['order_status'] != 'delivered') ? '<i class="fa-solid fa-circle-exclamation text-danger"></i>' : '<i class="fa-solid fa-check-circle text-success"></i>' ?> <?= date('d/m/Y', strtotime($order['expected_date'])) ?></td>
         <td><?= $order['fname'];
             $order['lname'] ?></td>
         <td><?= $order['mobile'] ?></td>
@@ -163,6 +170,36 @@ if (isset($_POST['page'])) {
 
 
 <?php
+    }
+  } else {
+    echo "<tr><td colspan='13'><p class='text-center'>No Products Found!😥</p></td></tr>";
+  }
+  echo "###pagination###";
+  $where = "WHERE 1";
+
+  if ($data != '') {
+    $where .= " AND order_status = :sts";
+  }
+  if ($search != '') {
+    $where .= ' AND (fname LIKE :search OR o_id LIKE :search) ';
+  }
+
+  $query = $conn->prepare("SELECT * FROM ep_orders_master $where ORDER BY oder_date DESC ");
+
+  if ($data != '') {
+    $query->bindValue(':sts', $data);
+  }
+  if ($search != '') {
+    $query->bindValue(':search', $search . '%');
+  }
+  $query->execute();
+  $total = $query->rowCount();
+  $pages = ceil($total / $limit);
+  if ($pages > 0) {
+    for ($i = 1; $i <= $pages; $i++) {
+      echo "<li class='page-item'>
+              <a href='#' class='page-link' data-page='$i'>$i</a>
+              </li>";
     }
   }
   exit();
@@ -208,8 +245,8 @@ require_once("header2.php");
               <div class="mt-3 mt-lg-0">
                 <div class="d-flex align-items-center">
                   <!-- Date Range Button -->
-                   
-                   <div class="search-wrapper cursor-pointer bg-white d-flex align-items-center text-color-1 px-3 py-2 rounded-2 text-normal fw-bolder letter-spacing-26" data-bs-toggle="dropdown" aria-expanded="false">
+
+                  <div class="search-wrapper cursor-pointer bg-white d-flex align-items-center text-color-1 px-3 py-2 rounded-2 text-normal fw-bolder letter-spacing-26" data-bs-toggle="dropdown" aria-expanded="false">
                     <div class="input-group flex-nowrap">
                       <span style="border:none;" class="input-group-text bg-white " id="addon-wrapping"><i class="fa-solid search-icon fa-magnifying-glass text-color-1"></i></span>
                       <input style="border:none;" type="text" id="livesearch" name="search" class="form-control search-input border-l-none ps-0" placeholder="Search Orders by Order-id & Customer Name" aria-label="Username" aria-describedby="addon-wrapping">
@@ -219,6 +256,7 @@ require_once("header2.php");
                     <i class="fa-solid fa-filter"></i>
                     <select id="filterbystatus" class="form-select text-size-sm" style="border: none;">
                       <option value="" selected="selected" disabled>Filter By Order Status</option>
+                      <option value="">All Order </option>
                       <option value="Placed">Order placed</option>
                       <option value="delivered">Delivered</option>
                       <option value="confirmed">Confirmed</option>
@@ -227,10 +265,11 @@ require_once("header2.php");
                   </div>
 
                   <!-- Reports Button -->
-                  <!-- <a href="#" data-bs-toggle="modal" data-bs-target="#CreateModal" class="cursor-pointer ms-4 bg-white bg-primary text-white d-flex align-items-center px-3 py-2 rounded-2 text-normal fw-bolder letter-spacing-26">
-                                      <i class="fa-solid fa-plus me-3"></i>
-                                      Add Staff
-                                   </a> -->
+                  <p data-bs-toggle="tooltip" title="Remove Filter">
+                    <button id="remove_filter" class="clear-filter-btn">
+                      <i class="fa-solid fa-ban"></i>
+                    </button>
+                  </p>
                 </div>
               </div>
             </div><!-- end card header -->
@@ -249,7 +288,7 @@ require_once("header2.php");
                       <th>OrderID</th>
                       <th>UserID</th>
                       <th>Order date</th>
-                      <th>Expected Delivery Date</th>
+                      <th>Delivery Date</th>
                       <th> Customer Name</th>
                       <th>Mobile</th>
                       <th>Address</th>
@@ -269,60 +308,11 @@ require_once("header2.php");
               </div>
               <div class="pb-3 ps-3 mt-3 d-flex justify-content-center justify-content-md-between justify-content-lg-between flex-wrap flex-md-nowrap">
                 <nav aria-label="Page navigation" class="mb-3 mb-md-0 mb-lg-0">
-                  <ul class="pagination">
-                    <?php
-                    $s = $_POST['search'] ?? '';
-                    createPagination("ep_orders_master", "", $s, 5);
-                    ?>
+                  <ul class="pagination" id="pagination">
+
                   </ul>
                 </nav>
               </div>
-
-              <!-- <div class="pb-3 ps-3 mt-3 d-flex justify-content-center justify-content-md-between justify-content-lg-between flex-wrap flex-md-nowrap">
-                <nav aria-label="Page navigation" class="mb-3 mb-md-0 mb-lg-0">
-                  <ul class="pagination"> -->
-              <?php
-              // $q = $conn->prepare("SELECT * FROM ep_orders_master");
-              // $q->execute();
-              // $count = $q->fetchColumn();
-              // // echo $count;
-              // if ($count > 0) {
-              //   $pages = ceil($count / $limit);  //find total pages of all records per limit
-              ?>
-              <!-- <li class="page-item">
-                        <?php if ($page > 1) { ?>
-                          <a class="page-link" aria-label="Previous" data-page=""><i class="fa-solid fa-chevron-left text-size-12"></i></a>
-                        <?php } ?>
-                      </li> -->
-              <?php
-              // for ($i = 1; $i <= $pages; $i++) {
-              ?>
-              <!-- <li class="page-item"><a class="pagination-link" data-page="<?= $i ?>"><?php echo $i; ?></a></li> -->
-              <?php
-              // } 
-              ?>
-              <!-- <li class="page-item">
-                        <?php if ($page < $pages) { ?>
-                          <a class="pagination-link" aria-label="Next"><i class="fa-solid fa-chevron-right text-size-12"></i></a>
-                        <?php } ?>
-                      </li> -->
-
-              <?php
-              // } 
-              ?>
-              <!-- <li class="page-item">
-                      <a class="page-link" href="#" aria-label="Previous"><i class="fa-solid fa-chevron-left text-size-12"></i></a>
-                    </li>
-                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                    <li class="page-item"><a class="page-link" href="#">2</a></li>
-                    <li class="page-item"><a class="page-link" href="#"><i class="fas fa-ellipsis-h"></i></a></li>
-                    <li class="page-item"><a class="page-link" href="#">6</a></li>
-                    <li class="page-item"><a class="page-link" href="#">7</a></li>
-                    <li class="page-item">
-                      <a class="page-link" href="#" aria-label="Next"><i class="fa-solid fa-chevron-right text-size-12"></i></a>
-                    </li> -->
-              </ul>
-              </nav>
               <!-- <div class="d-flex justify-content-end">
                   <div class="page-selector">
                     <span>PAGE</span>
@@ -397,90 +387,87 @@ require_once("header2.php");
       </div>
     </div>
     <script>
-     document.getElementById('EditModal').addEventListener('show.bs.modal', function(event) {
+      document.getElementById('EditModal').addEventListener('show.bs.modal', function(event) {
 
-    let btn = event.relatedTarget;
-    
-    let select = document.getElementById('edit_status');
-    let current_status = btn.getAttribute('data-status');
+        let btn = event.relatedTarget;
 
-    document.getElementById('edit_o_id').value = btn.getAttribute('data-o_id');
-    document.getElementById('edit_name').innerHTML = btn.getAttribute('data-orderid');
+        let select = document.getElementById('edit_status');
+        let current_status = btn.getAttribute('data-status');
 
-    select.value = current_status;
+        document.getElementById('edit_o_id').value = btn.getAttribute('data-o_id');
+        document.getElementById('edit_name').innerHTML = btn.getAttribute('data-orderid');
 
-    // First enable all options
-    for (let i = 0; i < select.options.length; i++) {
-        select.options[i].disabled = false;
-    }
+        select.value = current_status;
 
-    // Then check if delivered
-    if (current_status.toLowerCase() === "delivered") {
-
-        document.getElementById("para").innerHTML = "<span class='text-danger fw-bold'>This Order is already Delivered!</span>";
-        // Disable all options
+        // First enable all options
         for (let i = 0; i < select.options.length; i++) {
-            select.options[i].disabled = true;
+          select.options[i].disabled = false;
         }
-    } else {
-        document.getElementById("para").innerHTML = "";
-    }
 
-});
-</script>
+        // Then check if delivered
+        if (current_status.toLowerCase() === "delivered") {
+
+          document.getElementById("para").innerHTML = "<span class='text-danger fw-bold'>This Order is already Delivered!</span>";
+          // Disable all options
+          for (let i = 0; i < select.options.length; i++) {
+            select.options[i].disabled = true;
+          }
+        } else {
+          document.getElementById("para").innerHTML = "";
+        }
+
+      });
+    </script>
+
 
 
     <script>
-      // Pagination + Search
-
       function loadData(page = 1) {
-        let values = $('#filterbystatus').val();
-        let search = $("#livesearch").val();
-
+        let search = document.getElementById("livesearch").value;
+        var filter_status = document.getElementById("filterbystatus").value;
         $.ajax({
           url: window.location.href,
-          method: "POST",
+          type: "POST",
           data: {
             page: page,
-            values: values,
-            search:search
+            search: search,
+            filter_status: filter_status
           },
           success: function(data) {
-            $("#result").html(data);
-          }
-        });
-      }
-
-      function loadPagination() {
-        $.ajax({
-          url: "pagination_category.php",
-          success: function(data) {
-            $("#pagination").html(data);
+            let parts = data.split("###pagination###");
+            $("#result").html(parts[0]);
+            $("#pagination").html(parts[1]);
           }
         });
       }
 
       // click pagination
-      $(document).on("click", ".page-btn", function(e) {
+      $(document).on("click", ".page-link", function(e) {
         e.preventDefault();
         var page = $(this).data("page");
         loadData(page);
       });
-      $(document).on('keyup',"#livesearch",function(){
-        var s = $(this).val();
-        loadData(1);
-        loadPagination();
-      })
       $(document).ready(function() {
-        $(document).on("change", "#filterbystatus", function() {
+
+
+        $(document).on("keyup", "#livesearch", function() {
           var a = $(this).val();
           // alert(a);
           loadData(1);
           loadPagination();
-        })
-      })
+        });
+      });
+      $(document).on("change", "#filterbystatus", function() {
+        var b = $(this).val();
+        // alert(b);
+        loadData(1);
 
+      });
+      $(document).on("click", "#remove_filter", function() {
+        let search = $("#livesearch").val('');
+        var filter_status = $("#filterbystatus").val('');
+        loadData(1);
+      });
       // first load
-      loadData();
-      loadPagination();
+      loadData(1);
     </script>

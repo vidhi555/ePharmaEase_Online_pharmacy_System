@@ -8,8 +8,10 @@ if (isset($_POST['contact'])) {
   $subject = $_POST['subject'];
   $message = $_POST['message'];
 
+  $style = '';
   if (empty($name) || empty($email) || empty($subject) ) {
     $errors[] = "All Fields are Required!!!";
+    $style = "border: 1px solid red;box-shadow: 0 0 20px rgb(243 16 16 / 8%);";
   }
   if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     $errors[] = "Invalid Email Format!";
@@ -114,18 +116,18 @@ require_once('header.php') ?>
 
               </div>
               <div class="form-group">
-                <input class="form-control" name="name" id="name" type="text" placeholder="Enter Your Name">
+                <input class="form-control" style="<?= $style ?>" name="name" id="name" type="text" placeholder="Enter Your Name">
               </div>
               <div class="form-group">
-                <input class="form-control" name="email" id="email" type="email" placeholder="Enter E-Mail Address">
+                <input class="form-control" style="<?= $style ?>" name="email" id="email" type="email" placeholder="Enter E-Mail Address">
               </div>
               <div class="form-group">
-                <input class="form-control" name="subject" id="subject" type="text" placeholder="Enter Subject">
+                <input class="form-control" style="<?= $style ?>" name="subject" id="subject" type="text" placeholder="Enter Subject">
               </div>
 
 
               <div class="form-group">
-                <textarea class="form-control different-control w-100" name="message" id="message" cols="30" rows="5" placeholder="Enter Message"></textarea>
+                <textarea class="form-control different-control w-100" name="message" id="message" cols="30" rows="5" placeholder="Enter Message(Optional)"></textarea>
               </div>
 
 
@@ -143,30 +145,7 @@ require_once('header.php') ?>
 
 <?php require_once("features.php"); ?>
 
-<!-- ================ Subscribe section start ================= -->
-<section class="subscribe-position">
-  <div class="container">
-    <div class="subscribe text-center" data-aos="fade-up">
-      <h3 class="subscribe__title">Get Update From Anywhere</h3>
-      <p>Bearing Void gathering light light his eavening unto dont afraid</p>
-      <div id="mc_embed_signup">
-        <form target="_blank" action="https://spondonit.us12.list-manage.com/subscribe/post?u=1462626880ade1ac87bd9c93a&amp;id=92a4423d01" method="get" class="subscribe-form form-inline mt-5 pt-1">
-          <div class="form-group ml-sm-auto">
-            <input class="form-control mb-1" type="email" name="EMAIL" placeholder="Enter your email" onfocus="this.placeholder = ''" onblur="this.placeholder = 'Your Email Address '">
-            <div class="info"></div>
-          </div>
-          <button class="button button-subscribe mr-auto mb-1" type="submit">Subscribe Now</button>
-          <div style="position: absolute; left: -5000px;">
-            <input name="b_36c4fd991d266f23781ded980_aefe40901a" tabindex="-1" value="" type="text">
-          </div>
 
-        </form>
-      </div>
-
-    </div>
-  </div>
-</section>
-<!-- ================ Subscribe section end ================= -->
 
 <!--================ Start footer Area  =================-->
 <?php require_once('footer.php'); ?>
